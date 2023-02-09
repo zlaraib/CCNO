@@ -20,7 +20,8 @@ pipeline {
 	//=======//
 	stage('Test'){ steps{
 		sh 'g++ -Wall exp.cc -o exp'
-		sh './exp'
+		sh './exp > asdf.txt'
+		sh 'python3 test.py'
 	}}
 
 
