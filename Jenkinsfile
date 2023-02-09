@@ -18,8 +18,9 @@ pipeline {
 	//=======//
 	// Tests //
 	//=======//
-	stage('MSW'){ steps{
+	stage('Test'){ steps{
 		sh 'g++ -Wall exp.cc -o exp'
+		sh './exp'
 	}}
 
 
