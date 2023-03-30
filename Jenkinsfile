@@ -18,11 +18,8 @@ pipeline {
 	//=======//
 	// Tests //
 	//=======//
-	stage('Test'){ steps{
-		sh 'g++ -Wall exp.cc -o exp'
-		sh './exp > asdf.txt'
-		sh 'python3 test.py'
-		sh 'julia mps_idk.jl'
+	stage('Basic Expectation Values'){ steps{
+		sh 'julia tests/exp_file.jl'
 	}}
 
 
