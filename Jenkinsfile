@@ -20,7 +20,8 @@ pipeline {
 	//=======//
 	stage('Basic Expectation Values'){ steps{
 		sh 'julia tests/exp_file.jl'
-		sh 'julia time_evol_Sx.jl'
+ 		sh 'julia time_evol_Sx.jl'
+		sh 'julia tests/time_evol_Sx.jl'
 	}}
 
 
