@@ -28,7 +28,8 @@ pipeline {
 		sh 'julia tests/time_evol.jl'
 
 
-    } 
+    }
+} 
 }// stages{
 
     post {
