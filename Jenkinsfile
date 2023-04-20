@@ -23,11 +23,13 @@ pipeline {
 
 
     } 
+}
 	stage('Time Evolution'){ steps{
 		sh 'julia tests/time_evol.jl'
 
 
-    } // stages{
+    } 
+}// stages{
 
     post {
         always {
