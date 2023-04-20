@@ -10,7 +10,9 @@ let
   ttotal = 5.0 # total time of evolution 
 
   # Make an array of 'site' indices
-  s = siteinds("S=1/2", N; conserve_qns=false)  # conserve_qns=true specifies the quantum numbers (total spin in sys = quantum number "S") that are conserved by the system (as sys evolves)
+  # conserve_qns=true specifies the quantum numbers (total spin in sys = quantum number "S")
+  # that are conserved by the system (as sys evolves)
+  s = siteinds("S=1/2", N; conserve_qns=false)  
 
   # Make gates (1,2),(2,3),(3,4),... i.e. unitary gates which act on neighboring pairs of sites in the chain
   gates = ITensor[] # empty array that will hold ITensors that will be our Trotter gates
@@ -22,11 +24,12 @@ let
       op("S+", s2) * op("Id", s1) + op("S-", s2) * op("Id", s1)
     )
     Gj = exp(-im * tau / 2 * hj)  #making Trotter gate Gj that would correspond to each gate in the gate array of ITensors
-    push!(gates, Gj) # The push! function adds an element to the end of an array, ! = performs an operation without creating a new object, (in a wy overwite the previous array in consideration) i.e. it appends a new element Gj (which is an ITensor object representing a gate) to the end of the gates array.
+    # The push! function adds an element to the end of an array, 
+    # ! = performs an operation without creating a new object, (in a wy overwite the previous array in consideration) 
+    push!(gates, Gj) # i.e. it appends a new element Gj (which is an ITensor object representing a gate) to the end of the gates array.
   end
 
-  # Include gates in reverse order too
-  # (N,N-1),(N-1,N-2),...
+  # Include gates in reverse order too i.e. (N,N-1),(N-1,N-2),...
   append!(gates, reverse(gates)) # append! adds all the elements of a collection to the end of an array.
 
   # Initialize psi to be a product state (alternating up and down)
@@ -34,21 +37,24 @@ let
 
   c = div(N, 2) # center site # c = N/2 because only half of the spins on the chain are utilized 
 
-  # Compute and print <Sz> at each time step
-  # then apply the gates to go to the next time
-  Sz = Float64[]
+  Sz = Float64[] # empty array to store Sz values 
+  # Compute and print <Sz> at each time step then apply the gates to go to the next time
   for t in 0.0:tau:ttotal
     sz = expect(psi, "Sz"; sites=c) # computing initial expectation value of Sz at the center of the chain (site c)
-    push!(Sz, sz)
+    push!(Sz, sz) #The push! function adds an element sz to the end of Sz array, 
     println("$t $sz")
 
-    # Do the time evolution by applying the gates
-    # till ttotal with the time difference of Tau
-    t ≈ ttotal && break #shorthand way of writing an if statement that checks whether the current value of t is equal to the final time ttotal, and if so, it executes the break statement, which causes the loop to terminate early.
+    #shorthand way of writing an if statement that checks whether the current value of t
+    # is equal to the final time ttotal, and if so, it executes the break statement, which causes the loop to terminate early.
+    t ≈ ttotal && break  
 
+    # The apply function is smart enough to determine which site indices each gate has, and then figure out where to apply it to our MPS. 
+    #It automatically handles truncating the MPS and can even handle non-nearest-neighbor gates, though that feature is not used in this example.
     psi = apply(gates, psi; cutoff)# apply each gate in gates successively to the wavefunction psi =  evolving the wavefunction in time according to the time-dependent Hamiltonian represented by the gates.
-    # The apply function is smart enough to determine which site indices each gate has, and then figure out where to apply it to our MPS. It automatically handles truncating the MPS and can even handle non-nearest-neighbor gates, though that feature is not used in this example.
-    normalize!(psi) #The normalize! function is used to ensure that the MPS is properly normalized after each application of the time evolution gates. This is necessary to ensure that the MPS represents a valid quantum state
+
+    #The normalize! function is used to ensure that the MPS is properly normalized after each application of the time evolution gates. 
+    #This is necessary to ensure that the MPS represents a valid quantum state
+    normalize!(psi) 
   end
 
   # Check some values of Sz
