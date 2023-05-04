@@ -11,6 +11,7 @@ pipeline {
 	    sh 'nvidia-smi'
 	    sh 'nvcc -V'
 	    sh 'git submodule update --init'
+	    sh 'julia -v'
 }}
 
 
