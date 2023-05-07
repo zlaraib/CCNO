@@ -9,64 +9,81 @@ let
   tau = 0.1 # time step 
   ttotal = 5.0 # total time of evolution 
 
-  # Make an array of 'site' indices
-  # conserve_qns=true specifies the quantum numbers (total spin in sys = quantum number "S")
-  # that are conserved by the system (as sys evolves)
+  # Make an array of 'site' indices and label as s 
+  # conserve_qns=true conserves the total spin quantum number "S"(in z direction) in the system as it evolves
   s = siteinds("S=1/2", N; conserve_qns=false)  
 
-  # Make gates (1,2),(2,3),(3,4),... i.e. unitary gates which act on neighboring pairs of sites in the chain
-  gates = ITensor[] # empty array that will hold ITensors that will be our Trotter gates
+  # Make gates (1,2),(2,3),(3,4),... i.e. unitary gates which act on neighboring pairs of sites in the chain.
+  # Create an empty ITensors array that will be our Trotter gates
+  # gates acts as a single-particle operator that does not actually entangle pairs
+  gates = ITensor[] 
+
   for j in 1:(N - 1)
-    s1 = s[j]
+    #s1, s2 are neighbouring spin site/indices from the s array
+    s1 = s[j] 
     s2 = s[j + 1]
-    hj = pi * 0.5 * (
-      op("S+", s1) * op("Id", s2) + op("S-", s1) * op("Id", s2) +
-      op("S+", s2) * op("Id", s1) + op("S-", s2) * op("Id", s1)
+
+    # Hamiltonian operator oriented in the x direction of neigbouring spin sites. 
+    # "Sx" and "Id" are inbuilt ITensor operators in ITensors library and op function applies these ITensors to a set of neigboring site indices aka pairs s1, s2.
+    # hj operator acts on the pair system such that h at site index j and j+1 is computed separately and then summed on this 1D chain.
+    # identity operator on adjacent index is added to effectively make a pair to attach the gate operator so gates is effectively a one-particle operator.
+    hj = pi * (
+      op("Sx", s1)* op("Id", s2)  + op("Sx", s2) * op("Id", s1)
     )
-    Gj = exp(-im * tau / 2 * hj)  #making Trotter gate Gj that would correspond to each gate in the gate array of ITensors
-    # The push! function adds an element to the end of an array, 
-    # ! = performs an operation without creating a new object, (in a wy overwite the previous array in consideration) 
-    push!(gates, Gj) # i.e. it appends a new element Gj (which is an ITensor object representing a gate) to the end of the gates array.
+
+    # make Trotter gate Gj that would correspond to each gate in the gate array of ITensors
+    Gj = exp(-im * tau / 2 * hj)  
+
+    # The push! function adds (appends) an element to the end of an array;
+    # ! performs an operation without creating a new object, (in a way overwites the previous array in consideration); 
+    # i.e. we append a new element Gj (which is an ITensor object representing a gate) to the end of the gates array.
+    push!(gates, Gj) 
   end
 
-  # Include gates in reverse order too i.e. (N,N-1),(N-1,N-2),...
-  append!(gates, reverse(gates)) # append! adds all the elements of a collection to the end of an array.
+  # append! adds all the elements of a gates in reverse order (i.e. (N,N-1),(N-1,N-2),...) to the end of gates array.
+  append!(gates, reverse(gates)) 
 
   # Initialize psi to be a product state (alternating up and down)
   psi = productMPS(s, n -> isodd(n) ? "Up" : "Dn")
 
-  c = div(N, 2) # center site # c = N/2 because only half of the spins on the chain are utilized 
+  # center site 
+  c = div(N, 2) # c = N/2 as only half of the spins on the chain are utilized 
 
-  Sz = Float64[] # empty array to store Sz values 
+  # Create empty array to store sz values 
+  Sz_array = Float64[] 
+
   # Compute and print <Sz> at each time step then apply the gates to go to the next time
   for t in 0.0:tau:ttotal
-    sz = expect(psi, "Sz"; sites=c) # computing initial expectation value of Sz at the center of the chain (site c)
-    push!(Sz, sz) #The push! function adds an element sz to the end of Sz array, 
+    # compute initial expectation value of Sz(inbuilt operator in ITensors library) at the center of the chain (site c)
+    sz = expect(psi, "Sz"; sites=c)
+    # add an element sz to the end of Sz array  
+    push!(Sz_array, sz) 
     println("$t $sz")
 
-    #shorthand way of writing an if statement that checks whether the current value of t
-    # is equal to the final time ttotal, and if so, it executes the break statement, which causes the loop to terminate early.
+    # Writing an if statement in a shorthand way that checks whether the current value of t is equal to ttotal, 
+    # and if so, it executes the break statement, which causes the loop to terminate early.
     t ≈ ttotal && break  
 
+    # apply each gate in gates successively to the wavefunction psi (it is equivalent to time evolving psi according to the time-dependent Hamiltonian represented by gates).
     # The apply function is smart enough to determine which site indices each gate has, and then figure out where to apply it to our MPS. 
-    #It automatically handles truncating the MPS and can even handle non-nearest-neighbor gates, though that feature is not used in this example.
-    psi = apply(gates, psi; cutoff)# apply each gate in gates successively to the wavefunction psi =  evolving the wavefunction in time according to the time-dependent Hamiltonian represented by the gates.
+    # It automatically handles truncating the MPS (and can even handle non-nearest-neighbor gates but this feature is not used in this example).
+    psi = apply(gates, psi; cutoff)
 
-    #The normalize! function is used to ensure that the MPS is properly normalized after each application of the time evolution gates. 
-    #This is necessary to ensure that the MPS represents a valid quantum state
+    # The normalize! function is used to ensure that the MPS is properly normalized after each application of the time evolution gates. 
+    # This is necessary to ensure that the MPS represents a valid quantum state.
     normalize!(psi) 
   end
 
-  # Check some values of Sz
-  @assert Sz[1] == -0.5
-  @assert Sz[6] == 0.5
-  @assert Sz[11] == -0.5
-  @assert Sz[16] == 0.5
-  @assert Sz[21] == -0.5
-  @assert Sz[26] == 0.5
-  @assert Sz[31] == -0.5
-  @assert Sz[36] == 0.5
-  @assert Sz[41] == -0.5
-  @assert Sz[46] == 0.5
-  @assert Sz[51] == -0.5
+  # Checking that the the value of Sz at the center spin oscillates between -0.5 and 0.5 every 5 timesteps
+  @assert Sz_array[1] == -0.5
+  @assert Sz_array[6] == 0.5
+  @assert Sz_array[11] == -0.5
+  @assert Sz_array[16] == 0.5
+  @assert Sz_array[21] == -0.5
+  @assert Sz_array[26] == 0.5
+  @assert Sz_array[31] == -0.5
+  @assert Sz_array[36] == 0.5
+  @assert Sz_array[41] == -0.5
+  @assert Sz_array[46] == 0.5
+  @assert Sz_array[51] == -0.5
 end
