@@ -20,14 +20,10 @@ pipeline {
 	//=======//
 	stage('Basic Expectation Values'){ steps{
 		sh 'julia tests/exp_file.jl'
-
-
     } 
 }
 	stage('Time Evolution'){ steps{
 		sh 'julia tests/time_evol.jl'
-
-
     }
 } 
 }// stages{
