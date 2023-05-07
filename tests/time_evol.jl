@@ -26,7 +26,7 @@ let
     # Hamiltonian operator oriented in the x direction of neigbouring spin sites. 
     # "Sx" and "Id" are inbuilt ITensor operators in ITensors library and op function applies these ITensors to a set of neigboring site indices aka pairs s1, s2.
     # hj operator acts on the pair system such that h at site index j and j+1 is computed separately and then summed on this 1D chain.
-    # identity operator on adjacent index is added to effectively make a pair to attach the gate operator so gates is effectively a one-particle operator.
+    # identity operator on adjacent index is added to make a pair to attach the gate operator so gates is effectively a one-particle operator.
     hj = pi * (
       op("Sx", s1)* op("Id", s2)  + op("Sx", s2) * op("Id", s1)
     )
