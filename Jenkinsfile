@@ -11,6 +11,7 @@ pipeline {
 	    sh 'nvidia-smi'
 	    sh 'nvcc -V'
 	    sh 'git submodule update --init'
+	    sh 'julia -v'
 }}
 
 
@@ -20,10 +21,13 @@ pipeline {
 	//=======//
 	stage('Basic Expectation Values'){ steps{
 		sh 'julia tests/exp_file.jl'
-	}}
-
-
-    } // stages{
+    } 
+}
+	stage('Time Evolution'){ steps{
+		sh 'julia tests/time_evol.jl'
+    }
+} 
+}// stages{
 
     post {
         always {
