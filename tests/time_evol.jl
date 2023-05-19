@@ -46,8 +46,8 @@ let
   # Initialize psi to be a product state (alternating up and down)
   psi = productMPS(s, n -> isodd(n) ? "Up" : "Dn")
 
-  # center site 
-  c = div(N, 2) # c = N/2 as only half of the spins on the chain are utilized 
+  # center site because the Sz operator is arbitralily chosen to be placed at this site at each time step 
+  c = div(N, 2) # c = N/2 
 
   # Create empty array to store sz values 
   Sz_array = Float64[] 
