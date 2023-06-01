@@ -3,8 +3,8 @@ using Plots
 
 N = 96 # number of sites
 cutoff = 1E-8 # specifies a truncation threshold for the SVD in MPS representation
-tau = 0.5 # time step 
-ttotal = 10.0 # total time of evolution 
+tau = 5 # time step 
+ttotal = tau # total time of evolution 
 
 s = siteinds("S=1/2", N; conserve_qns=true)  
 
@@ -18,8 +18,7 @@ for j in 1:(N - 1)
     #     op("Sz", s1) * op("Id", s2)  + op("Sz", s2) * op("Id", s1)
     # ) + 
     # op("Sz", s1) * op("Sz", s2) +
-    # 1 / 2 * op("S+", s1) * op("S-", s2) +
-    # 1 / 2 * op("S-", s1) * op("S+", s2)
+    # 1 / 2 * op("S+", s1) * op("S-", s2) +    # 1 / 2 * op("S-", s1) * op("S+", s2)
     
     hj =
     op("Sz", s1) * op("Sz", s2) +
@@ -59,6 +58,7 @@ for t in 0.0:tau:ttotal
     
 end
 
+@assert prob_surv_array[1] == 1.0
 # Plotting P_elec vs t
 #plot(0.0:tau:tau*(length(P_elec_array)-1), P_elec_array, xlabel = "t", ylabel = "P_elec", legend = false)
 plot(0.0:tau:tau*(length(prob_surv_array)-1), prob_surv_array, xlabel = "t", ylabel = "prob_surv", legend = false)
