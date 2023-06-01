@@ -30,7 +30,7 @@ pipeline {
 	stage('Rog_test_file'){ steps{
 		sh 'julia tests/Rog_tests.jl'
     } 
-
+}
 }// stages{
 
     post {
