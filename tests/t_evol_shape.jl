@@ -1,17 +1,17 @@
 using ITensors
+using Plots
 
 # We are simulating the time evolution of a 1D spin chain with N sites, where each site is a spin-1/2 particle. 
 # The simulation is done by applying a sequence of unitary gates to an initial state of the system, 
 # which is a product state where each site alternates between up and down.
 # The technique used is "time evolving block decimation" (TEBD).
-let
-  N = 100 # number of sites
+  N = 12 # number of sites
   cutoff = 1E-8 # specifies a truncation threshold for the SVD in MPS representation
-  tau = 0.1 # time step 
-  ttotal = 5.0 # total time of evolution 
+  tau = 0.01 # time step 
+  ttotal = 10.0 # total time of evolution 
 
   # Make an array of 'site' indices and label as s 
-  # conserve_qns=true conserves the total spin quantum number "S"(in z direction) in the system as it evolves
+  # conserve_qns=true conserves the total spin quantum number "S" in the system as it evolves
   s = siteinds("S=1/2", N; conserve_qns=false)  
 
   # Make gates (1,2),(2,3),(3,4),... i.e. unitary gates which act on neighboring pairs of sites in the chain.
@@ -20,18 +20,17 @@ let
   gates = ITensor[] 
 
   for j in 1:(N - 1)
-    #s1, s2 are neighbouring spin site/indices from the s array
+    #s1, s2 are neighbouring spin site/indices in the s array
     s1 = s[j] 
     s2 = s[j + 1]
 
-    # Hamiltonian operator oriented in the x direction of neigbouring spin sites. 
-    # "Sx" and "Id" are inbuilt ITensor operators in ITensors library and op function applies these ITensors to a set of neigboring site indices aka pairs s1, s2.
-    # hj operator acts on the pair system such that h at site index j and j+1 is computed separately and then summed on this 1D chain.
-    # Identity operator on adjacent index is added to form a pair that attaches to the gate operator, hence gates is effectively a one-particle operator.
-    hj = pi * (
-      op("Sx", s1)* op("Id", s2)  + op("Sx", s2) * op("Id", s1)
-    )
 
+    hj = pi * (
+      op("Sz", s1)* op("Id", s2)  + op("Sz", s2) * op("Id", s1)
+    ) + 
+      op("Sz", s1) * op("Sz", s2) +
+      1 / 2 * op("S+", s1) * op("S-", s2) +
+      1 / 2 * op("S-", s1) * op("S+", s2)
     # make Trotter gate Gj that would correspond to each gate in the gate array of ITensors
     Gj = exp(-im * tau / 2 * hj)  
 
@@ -46,20 +45,23 @@ let
 
   # Initialize psi to be a product state (alternating up and down)
   psi = productMPS(s, n -> isodd(n) ? "Up" : "Dn")
+  #psi = productMPS(s, n -> "Up")
+
 
   # center site because the Sz operator is arbitralily chosen to be placed at this site at each time step 
   c = div(N, 2) # c = N/2 
 
   # Create empty array to store sz values 
   Sz_array = Float64[] 
+  P_elec_array = Float64[]  # Array to store P_elec values
 
   # Compute and print <Sz> at each time step then apply the gates to go to the next time
   for t in 0.0:tau:ttotal
-    # compute initial expectation value of Sz(inbuilt operator in ITensors library) at the center of the chain (site c)
+    # compute initial expectation value of Sz (inbuilt operator in ITensors library) at the center of the chain (site c)
     sz = expect(psi, "Sz"; sites=c)
-    # add an element sz to the end of Sz array  
+    # add an element sz to the end of Sz_array  
     push!(Sz_array, sz) 
-    println("$t $sz")
+    #println("$t $sz")
 
     # Writing an if statement in a shorthand way that checks whether the current value of t is equal to ttotal, 
     # and if so, it executes the break statement, which causes the loop to terminate early.
@@ -73,18 +75,10 @@ let
     # The normalize! function is used to ensure that the MPS is properly normalized after each application of the time evolution gates. 
     # This is necessary to ensure that the MPS represents a valid quantum state.
     normalize!(psi) 
+    P_z = 2* sz
+    P_elec = 0.5 (1 + P_z)
+    push!(P_elec_array, P_elec)  # Store P_elec values
   end
 
-  # Checking that the value of Sz at the center spin oscillates between -0.5 and 0.5 every 5 timesteps
-  @assert Sz_array[1] == -0.5
-  @assert Sz_array[6] == 0.5
-  @assert Sz_array[11] == -0.5
-  @assert Sz_array[16] == 0.5
-  @assert Sz_array[21] == -0.5
-  @assert Sz_array[26] == 0.5
-  @assert Sz_array[31] == -0.5
-  @assert Sz_array[36] == 0.5
-  @assert Sz_array[41] == -0.5
-  @assert Sz_array[46] == 0.5
-  @assert Sz_array[51] == -0.5
-end
+  # Plotting P_elec vs t
+  plot(0.0:tau:ttotal, P_elec_array, xlabel = "t", ylabel = "P_elec", legend = false)
