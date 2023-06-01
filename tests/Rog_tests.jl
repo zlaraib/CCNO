@@ -1,33 +1,36 @@
 using ITensors
 using Plots
 
-N = 96 # number of sites
-cutoff = 1E-4 # specifies a truncation threshold for the SVD in MPS representation
+N = 10 # number of sites
+cutoff = 1E-8 # specifies a truncation threshold for the SVD in MPS representation
 tau = 0.05 # time step 
-ttotal = 10 # total time of evolution 
+ttotal = 20 # total time of evolution 
 
 s = siteinds("S=1/2", N; conserve_qns=true)  
 
 gates = ITensor[] 
 
-for j in 1:(N - 1)
-    s1 = s[j] 
-    s2 = s[j + 1]
+for i in 1:(N-1) 
+    # s1 = s[j] 
+    # s2 = s[j + 1]
     
-    # hj = pi * (
-    #     op("Sz", s1) * op("Id", s2)  + op("Sz", s2) * op("Id", s1)
-    # ) + 
-    # op("Sz", s1) * op("Sz", s2) +
-    # 1 / 2 * op("S+", s1) * op("S-", s2) +    # 1 / 2 * op("S-", s1) * op("S+", s2)
-    
-    hj =
-    op("Sz", s1) * op("Sz", s2) +
-    1 / 2 * op("S+", s1) * op("S-", s2) +
-    1 / 2 * op("S-", s1) * op("S+", s2)
+    for j in i+1:N
+        s1 = s[i]
+        s2 = s[j]
+        # println(i)
+        # println(j)
+    # Rog sigma = 2 * sz of our code here 
+        hj = 2.0/N *
+        (op("Sz", s1) * op("Sz", s2) +
+        1 / 2 * op("S+", s1) * op("S-", s2) +
+        1 / 2 * op("S-", s1) * op("S+", s2))
+        #println(2/N)
+        Gj = exp(-im * tau / 2 * hj)  
+        
+        push!(gates, Gj) 
+        #println(gates)
+    end
 
-    Gj = exp(-im * tau / 2 * hj)  
-
-    push!(gates, Gj) 
 end
 
 append!(gates, reverse(gates)) 
@@ -45,7 +48,7 @@ for t in 0.0:tau:ttotal
     push!(Sz_array, sz) 
     #println("$t $sz")
     t ≈ ttotal && break  
-    psi = apply(gates, psi; cutoff)
+    global psi = apply(gates, psi; cutoff)
     normalize!(psi) 
 
     # P_z = 2 * sz
