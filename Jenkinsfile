@@ -27,6 +27,10 @@ pipeline {
 		sh 'julia tests/time_evol.jl'
     }
 } 
+	stage('Rog_test_file'){ steps{
+		sh 'julia tests/Rog_tests.jl'
+    } 
+
 }// stages{
 
     post {
