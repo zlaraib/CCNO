@@ -32,7 +32,7 @@ end
 
 append!(gates, reverse(gates)) 
 
-psi = productMPS(s, n -> isodd(n) ? "Up" : "Dn")
+psi = productMPS(s, n -> isodd(n) ? "Dn" : "Up")
 
 c = div(N, 2) # c = N/2 
 
@@ -41,7 +41,7 @@ P_elec_array = Float64[]  # Array to store P_elec values
 prob_surv_array = Float64[] 
 
 for t in 0.0:tau:ttotal
-    sz = expect(psi, "Sz"; sites=c)
+    sz = expect(psi, "Sz"; sites=1)
     push!(Sz_array, sz) 
     #println("$t $sz")
     t ≈ ttotal && break  
@@ -52,7 +52,7 @@ for t in 0.0:tau:ttotal
     # P_elec = 0.5 * (1 + P_z)
     # push!(P_elec_array, P_elec)  # Store P_elec values
 
-    prob_surv= 0.5 * (1- sz)
+    prob_surv= 0.5 * (1- 2*sz)
     push!(prob_surv_array, prob_surv)
     println("$t $prob_surv")
     
