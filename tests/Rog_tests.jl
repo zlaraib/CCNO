@@ -2,9 +2,9 @@ using ITensors
 using Plots
 
 N = 96 # number of sites
-cutoff = 1E-8 # specifies a truncation threshold for the SVD in MPS representation
-tau = 5 # time step 
-ttotal = tau # total time of evolution 
+cutoff = 1E-4 # specifies a truncation threshold for the SVD in MPS representation
+tau = 0.05 # time step 
+ttotal = 10 # total time of evolution 
 
 s = siteinds("S=1/2", N; conserve_qns=true)  
 
