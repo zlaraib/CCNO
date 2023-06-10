@@ -1,7 +1,7 @@
 using ITensors
 using Plots
 
-N = 10 # number of sites
+N = 20 # number of sites
 cutoff = 1E-8 # specifies a truncation threshold for the SVD in MPS representation
 tau = 0.05 # time step 
 ttotal = 20 # total time of evolution 
