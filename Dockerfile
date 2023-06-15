@@ -10,5 +10,5 @@ ENV USER=jenkins
 ENV LOGNAME=jenkins
 ENV JULIA_DEPOT_PATH=/opt/julia:$JULIA_DEPOT_PATH
 ENV JULIA_LOAD_PATH=/opt/julia:$JULIA_LOAD_PATH
-RUN julia -e 'import Pkg; Pkg.add("ITensors"); Pkg.add("Plots"); Pkg.precompile()' 
+RUN julia -e 'import Pkg; Pkg.add("ITensors"); Pkg.add("Plots"); Pkg.add("Measures"); Pkg.precompile()' 
 RUN chmod a+rX -R /opt/julia
