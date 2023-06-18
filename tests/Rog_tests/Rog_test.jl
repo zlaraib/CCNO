@@ -2,20 +2,11 @@ using ITensors
 using Plots
 using Measures
 
-N = 50 # number of sites NEED TO GO TILL 96
+N = 10 # number of sites NEED TO GO TILL 96
 cutoff = 1E-8 # specifies a truncation threshold for the SVD in MPS representation THE SMALLER THE BETTER BECUASE SMALL CUTOFF MEANS MORE ENTANGLEMENT
 tau = 0.05 # time step NEED TO BE 0.05
 ttotal = 25 # total time of evolution NEED TO GO TILL 50
-# delta_w_const =  0 #value for delta_w from Rog paper
-
-
-# delta_w = ones(Float64, N÷2)
-# delta_wB= - ones(Float64, N÷2)
-# #delta_w = append!(delta_wA, delta_wB)
-# append!(delta_w,delta_wB)
-# delta_w = delta_w_const * delta_w
-# println(delta_w)
-
+tolerance  = 4E-1 
 s = siteinds("S=1/2", N; conserve_qns=true)  
 
 gates = ITensor[] 
@@ -26,10 +17,8 @@ for i in 1:(N-1)
         s1 = s[i]
         s2 = s[j]
         # Rog sigma_i = 2 * S_i of our code here 
-
          hj=  
          
-         #-1/(4 *(N-1)) * (delta_w[i] * op("Sz", s1)* op("Id", s2) + delta_w[j] * op("Sz", s2) * op("Id", s1) ) + #S
         2.0/N *
         (op("Sz", s1) * op("Sz", s2) +
         1 / 2 * op("S+", s1) * op("S-", s2) +
@@ -77,7 +66,14 @@ end
 
 close(datafile)  # Close the file
 
-@assert prob_surv_array[1] == 1.0
+i_min = argmin(prob_surv_array)
+t_min = tau * i_min - tau
+
+t_p_Rog = a_t*log(N) + b_t * sqrt(N) + c_t
+println("t_p_Rog= ",t_p_Rog)
+println("i_min =", i_min)
+println("t_min= ", t_min)
+@assert abs(t_min - t_p_Rog) <  tau + tolerance
 
 # Plotting P_surv vs t
 plot(0.0:tau:tau*(length(prob_surv_array)-1), prob_surv_array, xlabel = "t", ylabel = "prob_surv", legend = false, size=(800, 600), aspect_ratio=:auto,margin= 10mm) 
