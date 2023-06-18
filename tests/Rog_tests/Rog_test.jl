@@ -37,15 +37,15 @@ c = div(N, 2) # c = N/2
 Sz_array = Float64[] 
 prob_surv_array = Float64[] 
 
-# Specify the directory path
-directory_path = "/home/zohalaraib/Test_rep/tests/Rog_tests"
+# # Specify the directory path
+# directory_path = "/home/zohalaraib/Test_rep/tests/Rog_tests"
 
-# Create the file path within the specified directory
-datafile_path = joinpath(directory_path, "datafiles", string(N) * "(par)_" * string(ttotal) * "(ttotal)final.txt")
+# # Create the file path within the specified directory
+# datafile_path = joinpath(directory_path, "datafiles", string(N) * "(par)_" * string(ttotal) * "(ttotal)final.txt")
 
 
-# Open the file for writing
-datafile = open(datafile_path, "w")
+# # Open the file for writing
+# datafile = open(datafile_path, "w")
 
 for t in 0.0:tau:ttotal
     sz = expect(psi, "Sz"; sites=1)
@@ -59,12 +59,12 @@ for t in 0.0:tau:ttotal
     push!(prob_surv_array, prob_surv)
     println("$t $prob_surv")
     
-    # Write the values to the data file
-    println(datafile, "$t $prob_surv")
-    flush(datafile) # Flush the buffer to write immediately
+    # # Write the values to the data file
+    # println(datafile, "$t $prob_surv")
+    # flush(datafile) # Flush the buffer to write immediately
 end
 
-close(datafile)  # Close the file
+#close(datafile)  # Close the file
 
 i_min = argmin(prob_surv_array)
 t_min = tau * i_min - tau
