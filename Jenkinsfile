@@ -28,7 +28,7 @@ pipeline {
     }
 } 
 	stage('Rog_test_file'){ steps{
-		sh 'julia tests/Rog_tests.jl'
+		sh 'julia tests/Rog_tests/Rog_test.jl'
     } 
 }
 }// stages{
