@@ -31,6 +31,10 @@ pipeline {
 		sh 'julia tests/Rog_tests/Rog_test.jl'
     } 
 }
+	stage('Rog_test_file_MPI'){ steps{
+		sh 'julia tests/Rog_tests/Rog_test_MPI.jl'
+    } 
+}
 }// stages{
 
     post {
