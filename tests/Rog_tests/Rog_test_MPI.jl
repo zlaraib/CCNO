@@ -45,10 +45,10 @@ function main(; blas_num_threads = 1, strided_num_threads = 1, use_threaded_bloc
     Sz_array = Float64[]
     prob_surv_array = Float64[]
 
-    directory_path = "/home/zohalaraib/Test_rep/tests/Rog_tests"
-    datafile_path = joinpath(directory_path, "datafiles", string(N) * "(par)_" * string(ttotal) * "(ttotal)final1E-18.txt")
+    # directory_path = "/home/zohalaraib/Test_rep/tests/Rog_tests"
+    # datafile_path = joinpath(directory_path, "datafiles", string(N) * "(par)_" * string(ttotal) * "(ttotal)final1E-18.txt")
 
-    datafile = open(datafile_path, "w")
+    # datafile = open(datafile_path, "w")
 
     for t in 0.0:tau:ttotal
         sz = expect(psi, "Sz"; sites=1)
@@ -63,11 +63,11 @@ function main(; blas_num_threads = 1, strided_num_threads = 1, use_threaded_bloc
         push!(prob_surv_array, prob_surv)
         println("$t $prob_surv")
 
-        println(datafile, "$t $prob_surv")
-        flush(datafile)
+        # println(datafile, "$t $prob_surv")
+        # flush(datafile)
     end
 
-    close(datafile)
+    #close(datafile)
     i_min = argmin(prob_surv_array)
     t_min = tau * i_min - tau
     
