@@ -5,12 +5,15 @@ using Measures
 N = 10 # number of sites NEED TO GO TILL 96
 cutoff = 1E-8 # specifies a truncation threshold for the SVD in MPS representation THE SMALLER THE BETTER BECUASE SMALL CUTOFF MEANS MORE ENTANGLEMENT
 tau = 0.05 # time step NEED TO BE 0.05
-ttotal = 25 # total time of evolution NEED TO GO TILL 50
-tolerance  = 4E-1 
+ttotal = 10 # total time of evolution NEED TO GO TILL 50
+tolerance  = 5E-1 
 s = siteinds("S=1/2", N; conserve_qns=true)  
 
 gates = ITensor[] 
-
+# Constants for the curve
+a_t = 0
+b_t = 2.105
+c_t = 0
 
 for i in 1:(N-1) 
     for j in i+1:N
@@ -75,11 +78,11 @@ println("i_min =", i_min)
 println("t_min= ", t_min)
 @assert abs(t_min - t_p_Rog) <  tau + tolerance
 
-# Plotting P_surv vs t
-plot(0.0:tau:tau*(length(prob_surv_array)-1), prob_surv_array, xlabel = "t", ylabel = "prob_surv", legend = false, size=(800, 600), aspect_ratio=:auto,margin= 10mm) 
+# # Plotting P_surv vs t
+# plot(0.0:tau:tau*(length(prob_surv_array)-1), prob_surv_array, xlabel = "t", ylabel = "prob_surv", legend = false, size=(800, 600), aspect_ratio=:auto,margin= 10mm) 
 
 
-# Save the plot in the same directory
-plot_path = joinpath(directory_path, "plots", string(N) * "(par)_" * string(ttotal) * "(ttotal)final.png")
+# # Save the plot in the same directory
+# plot_path = joinpath(directory_path, "plots", string(N) * "(par)_" * string(ttotal) * "(ttotal)final.png")
 
-savefig(plot_path)
+# savefig(plot_path)
