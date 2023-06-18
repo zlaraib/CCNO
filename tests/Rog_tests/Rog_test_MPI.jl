@@ -7,8 +7,8 @@ function main(; blas_num_threads = 1, strided_num_threads = 1, use_threaded_bloc
     N = 10
     cutoff = 1E-8
     tau = 0.05
-    ttotal = 25
-    tolerance = 0
+    ttotal = 10
+    tolerance = 5E-1
 
     # Constants for the curve
     a_t = 0
@@ -78,11 +78,11 @@ function main(; blas_num_threads = 1, strided_num_threads = 1, use_threaded_bloc
     @assert abs(t_min - t_p_Rog) <  tau + tolerance 
     
 
-    plot(0.0:tau:tau * (length(prob_surv_array) - 1), prob_surv_array,
-        xlabel = "t", ylabel = "prob_surv", legend = false, size=(800, 600), aspect_ratio=:auto, margin=10mm)
+    # plot(0.0:tau:tau * (length(prob_surv_array) - 1), prob_surv_array,
+    #     xlabel = "t", ylabel = "prob_surv", legend = false, size=(800, 600), aspect_ratio=:auto, margin=10mm)
 
-    plot_path = joinpath(directory_path, "plots", string(N) * "(par)_" * string(ttotal) * "(ttotal)final.png")
-    savefig(plot_path)
+    # plot_path = joinpath(directory_path, "plots", string(N) * "(par)_" * string(ttotal) * "(ttotal)final.png")
+    # savefig(plot_path)
 end
 
 
