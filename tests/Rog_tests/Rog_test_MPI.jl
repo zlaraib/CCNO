@@ -1,3 +1,9 @@
+
+
+# ENV["MKL_NUM_THREADS"] = "64"
+# ENV["OPENBLAS_NUM_THREADS"] = "64"
+# ENV["OMP_NUM_THREADS"] = "64"
+
 using ITensors
 using Plots
 using Measures
@@ -15,6 +21,8 @@ function main(; blas_num_threads = 1, strided_num_threads = 1, use_threaded_bloc
     b_t = 2.105
     c_t = 0
     
+    BLAS.set_num_threads(128)  # Set the number of threads to 128
+
     ITensors.Strided.set_num_threads(strided_num_threads)
     BLAS.set_num_threads(blas_num_threads)
     ITensors.enable_threaded_blocksparse(use_threaded_blocksparse)
@@ -46,7 +54,7 @@ function main(; blas_num_threads = 1, strided_num_threads = 1, use_threaded_bloc
     prob_surv_array = Float64[]
 
     # directory_path = "/home/zohalaraib/Test_rep/tests/Rog_tests"
-    # datafile_path = joinpath(directory_path, "datafiles", string(N) * "(par)_" * string(ttotal) * "(ttotal)final1E-18.txt")
+    # datafile_path = joinpath(directory_path, "datafiles", string(N) * "(par)_" * string(ttotal) * "(ttotal)MPI.txt")
 
     # datafile = open(datafile_path, "w")
 
@@ -81,7 +89,7 @@ function main(; blas_num_threads = 1, strided_num_threads = 1, use_threaded_bloc
     # plot(0.0:tau:tau * (length(prob_surv_array) - 1), prob_surv_array,
     #     xlabel = "t", ylabel = "prob_surv", legend = false, size=(800, 600), aspect_ratio=:auto, margin=10mm)
 
-    # plot_path = joinpath(directory_path, "plots", string(N) * "(par)_" * string(ttotal) * "(ttotal)final.png")
+    # plot_path = joinpath(directory_path, "plots", string(N) * "(par)_" * string(ttotal) * "(ttotal)MPI.png")
     # savefig(plot_path)
 end
 
