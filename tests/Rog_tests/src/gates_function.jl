@@ -28,6 +28,7 @@ function create_gates(s, N, tau)
     end
 
     # append! adds all the elements of a gates in reverse order (i.e. (N,N-1),(N-1,N-2),...) to the end of gates array.
+    # appending reverse gates to create a second-order Trotter-Suzuki integration
     append!(gates, reverse(gates))
     return gates
 end
