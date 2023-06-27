@@ -23,6 +23,12 @@ function calc_expect(s, tau, N, cutoff, ttotal)
         # add an element sz to the end of Sz array 
         push!(Sz_array, sz)
 
+        # survival probability for a (we took first) neutrino to be found in its initial flavor state (in this case a spin down)
+        prob_surv = 0.5 * (1 - 2 * sz)
+        # add an element prob_surv to the end of  prob_surv_array 
+        push!(prob_surv_array, prob_surv)
+        println("$t $prob_surv")
+
         # Writing an if statement in a shorthand way that checks whether the current value of t is equal to ttotal, 
         # and if so, it executes the break statement, which causes the loop to terminate early.
         t ≈ ttotal && break
@@ -35,9 +41,6 @@ function calc_expect(s, tau, N, cutoff, ttotal)
         # This is necessary to ensure that the MPS represents a valid quantum state.
         normalize!(psi)
 
-        prob_surv = 0.5 * (1 - 2 * sz)
-        push!(prob_surv_array, prob_surv)
-        println("$t $prob_surv")
 
         # Write the values to the datafile
         # println(datafile, "$t $prob_surv")
