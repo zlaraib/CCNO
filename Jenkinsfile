@@ -27,12 +27,17 @@ pipeline {
 		sh 'julia tests/time_evol.jl'
     }
 } 
-	stage('Rog_test_file'){ steps{
-		sh 'julia tests/Rog_tests/Rog_test.jl'
+	stage('Rog_main_serial'){ steps{
+		sh 'julia tests/Rog_tests/main_serial.jl'
+		archiveArtifacts artifacts: '*.pdf'
     } 
 }
-	stage('Rog_test_file_MPI'){ steps{
-		sh 'julia tests/Rog_tests/Rog_test_MPI.jl'
+	stage('Rog_expect_val'){ steps{
+		sh 'julia tests/Rog_tests/src/expect.jl'
+    } 
+}
+	stage('Rog_create_gates'){ steps{
+		sh 'julia tests/Rog_tests/src/gates_function.jl'
     } 
 }
 }// stages{
