@@ -24,20 +24,8 @@ function main()
     b_t = 2.10
     c_t = 0
     
-    # # Specify the directory path
-    # #directory_path = "/home/zohalaraib/Test_rep/tests/Rog_tests"
-    # directory_path = joinpath(@__DIR__)
-
-    # # Create the file path within the specified directory
-    # datafile_path = joinpath(directory_path, "datafiles", string(N) * "(par)_" * string(ttotal) * "(ttotal)final.txt")
-    
-    # # Open the file for writing
-    # datafile = open(datafile_path, "w")
-    
     #extract output from the expect.jl file where the survival probability values were computed at each timestep
     Sz_array, prob_surv_array = calc_expect(s, tau, N, cutoff, ttotal)
-
-    # close(datafile)  # Close the file
 
     #index of minimum of the prob_surv_array (containing survival probability values at each time step)
     i_min = argmin(prob_surv_array)
@@ -51,14 +39,9 @@ function main()
     # Check that our time of minimum survival probability compared to Rogerro(2021) remains within the timestep and tolerance.
     @assert abs(t_min - t_p_Rog) <  tau + tolerance 
 
-    # # Plotting P_surv vs t
-    # plot(0.0:tau:tau*(length(prob_surv_array)-1), prob_surv_array, xlabel = "t", ylabel = "prob_surv", legend = false, size=(800, 600), aspect_ratio=:auto,margin= 10mm) 
+    # Plotting P_surv vs t
+    plot(0.0:tau:tau*(length(prob_surv_array)-1), prob_surv_array, xlabel = "(t)", ylabel = "Survival Probabillity p(t)", legend = false, size=(800, 600), aspect_ratio=:auto,margin= 10mm) 
 
-
-    # # Save the plot in the same directory
-    # plot_path = joinpath(directory_path, "plots", string(N) * "(par)_" * string(ttotal) * "(ttotal)final.pdf")
-
-    # savefig(plot_path)
 end 
 
 @time main()
