@@ -29,17 +29,12 @@ pipeline {
 } 
 	stage('Rog_main_serial'){ steps{
 		sh 'julia tests/Rog_tests/main_serial.jl'
+		sh 'julia tests/Rog_tests/src/expect.jl'
+		sh 'julia tests/Rog_tests/src/gates_function.jl'
 		archiveArtifacts artifacts: '*.pdf'
     } 
 }
-	stage('Rog_expect_val'){ steps{
-		sh 'julia tests/Rog_tests/src/expect.jl'
-    } 
-}
-	stage('Rog_create_gates'){ steps{
-		sh 'julia tests/Rog_tests/src/gates_function.jl'
-    } 
-}
+
 }// stages{
 
     post {
