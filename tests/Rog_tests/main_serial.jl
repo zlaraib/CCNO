@@ -14,7 +14,6 @@ function main()
     ttotal = 5 # total time of evolution (NEED TO GO TILL 50 for Rog_results)
     tolerance  = 5E-1 # acceptable level of error or deviation from an exact value or solution
 
-
     # s is an array of spin 1/2 tensor indices (Index objects) which will be the site or physical indices of the MPS.
     # conserve_qns=true conserves the total spin quantum number "S" in the system as it evolves
     s = siteinds("S=1/2", N; conserve_qns=true)  
@@ -42,6 +41,8 @@ function main()
     # Plotting P_surv vs t
     plot(0.0:tau:tau*(length(prob_surv_array)-1), prob_surv_array, xlabel = "(t)", ylabel = "Survival Probabillity p(t)", legend = false, size=(800, 600), aspect_ratio=:auto,margin= 10mm) 
 
+    # Save the plot as a PDF file
+    savefig("plot.pdf")
 end 
 
 @time main()
