@@ -27,6 +27,12 @@ pipeline {
 		sh 'julia tests/time_evol.jl'
     }
 } 
+	stage('Rogerro(2021)_file'){ steps{
+		sh 'julia tests/Rog_tests/main_serial.jl'
+		archiveArtifacts artifacts: '*.pdf'
+    } 
+}
+
 }// stages{
 
     post {
