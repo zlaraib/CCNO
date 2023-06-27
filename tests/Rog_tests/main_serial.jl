@@ -1,7 +1,6 @@
 using ITensors
 using Plots
 using Measures
-#include("src/gates_function.jl")
 include("src/expect.jl")
 
 # We are simulating the time evolution of a 1D spin chain with N sites, where each site is a spin-1/2 particle. 
@@ -9,10 +8,10 @@ include("src/expect.jl")
 # which is a product state where each site alternates between up and down.
 
 function main()
-    N = 5 # number of sites (NEED TO GO TILL 96 for Rog_results)
+    N = 4 # number of sites (NEED TO GO TILL 96 for Rog_results)
     cutoff = 1E-14 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT)
     tau = 0.05 # time step (NEED TO BE 0.05 for Rog_results)
-    ttotal = 10 # total time of evolution (NEED TO GO TILL 50 for Rog_results)
+    ttotal = 5 # total time of evolution (NEED TO GO TILL 50 for Rog_results)
     tolerance  = 5E-1 # acceptable level of error or deviation from an exact value or solution
 
 
