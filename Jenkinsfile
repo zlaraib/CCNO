@@ -19,11 +19,16 @@ pipeline {
 	//=======//
 	// Tests //
 	//=======//
-
+	stage('Basic Expectation Values'){ steps{
+		sh 'julia tests/exp_file.jl'
+    } 
+}
+	stage('Time Evolution'){ steps{
+		sh 'julia tests/time_evol.jl'
+    }
+} 
 	stage('Rogerro(2021)_file'){ steps{
 		sh 'julia tests/Rog_tests/main_serial.jl'
-		sh 'julia tests/Rog_tests/src/expect.jl'
-		sh 'julia tests/Rog_tests/src/gates_function.jl'
 		archiveArtifacts artifacts: '*.pdf'
     } 
 }
