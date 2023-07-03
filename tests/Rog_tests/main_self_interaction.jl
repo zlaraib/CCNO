@@ -1,7 +1,6 @@
 using ITensors
 using Plots
 using Measures
-#using TensorOperations
 include("src/expect.jl")
 
 # We are simulating the time evolution of a 1D spin chain with N sites, where each site is a spin-1/2 particle. 
@@ -15,7 +14,7 @@ function main()
     ttotal = 5 # total time of evolution (NEED TO GO TILL 50 for Rog_results)
     tolerance  = 5E-1 # acceptable level of error or deviation from an exact value or solution
     V = 1 # occupied volume of the interacting neutrinos
-    
+
     # s is an array of spin 1/2 tensor indices (Index objects) which will be the site or physical indices of the MPS.
     # conserve_qns=true conserves the total spin quantum number "S" in the system as it evolves
     s = siteinds("S=1/2", N; conserve_qns=true)  
