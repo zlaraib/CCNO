@@ -1,7 +1,6 @@
 using ITensors
 using Plots 
 using Measures 
-using Tensorial
 using LinearAlgebra
 # We are simulating the time evolution of a 1D spin chain with N sites, where each site is a spin-1/2 particle. 
 # The simulation is done by applying a sequence of unitary gates to an initial state of the system, 
@@ -58,15 +57,21 @@ let
 
   # Create empty array to store sz values 
   Sz_array = Float64[] 
+  prob_surv_array = Float64[]
   time = 0:tau:ttotal
   # Compute and print <Sz> at each time step then apply the gates to go to the next time
   for t in 0.0:tau:ttotal
     # compute initial expectation value of Sz(inbuilt operator in ITensors library) at the center of the chain (site c)
-    sz = expect(psi, "Sz"; sites=c)
+    sz = expect(psi, "Sz"; sites=1)
     # add an element sz to the end of Sz array  
     push!(Sz_array, sz) 
 
-    println("$t $sz")
+    #println("$t $sz")
+    # survival probability for a (we took first) neutrino to be found in its initial flavor state (in this case a spin down)
+    prob_surv = 0.5 * (1 - 2 * sz)
+    # add an element prob_surv to the end of  prob_surv_array 
+    push!(prob_surv_array, prob_surv)
+    println("$t $prob_surv")
 
     # Writing an if statement in a shorthand way that checks whether the current value of t is equal to ttotal, 
     # and if so, it executes the break statement, which causes the loop to terminate early.
