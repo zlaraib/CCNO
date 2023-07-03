@@ -1,6 +1,7 @@
 using ITensors
 using Plots
 using Measures
+#using TensorOperations
 include("src/expect.jl")
 
 # We are simulating the time evolution of a 1D spin chain with N sites, where each site is a spin-1/2 particle. 
@@ -20,17 +21,23 @@ function main()
 
     # Constants for Rogerro's fit (only interaction term)
     a_t = 0
-    b_t = 2.10
+    b_t = 2.105
     c_t = 0
     
+    # Initialize an array of ones for all N particles
+    mu = ones(N)
+    
+    # Initialize psi to be a product state (alternating down and up)
+    global psi = productMPS(s, n -> isodd(n) ? "Dn" : "Up")
+
     #extract output from the expect.jl file where the survival probability values were computed at each timestep
-    Sz_array, prob_surv_array = calc_expect(s, tau, N, cutoff, ttotal)
+    Sz_array, prob_surv_array = evolve(s, tau, mu, N, cutoff, ttotal)
 
     #index of minimum of the prob_surv_array (containing survival probability values at each time step)
     i_min = argmin(prob_surv_array)
     # time at which the mimimum survival probability is reached
     t_min = tau * i_min - tau
-    # Rogerro(2021) defines his fit for the first minimum of the survival probability reached for a time t_p 
+    # Rogerro(2021)'s fit for the first minimum of the survival probability reached for a time t_p 
     t_p_Rog = a_t*log(N) + b_t * sqrt(N) + c_t
     println("t_p_Rog= ",t_p_Rog)
     println("i_min =", i_min)
@@ -39,7 +46,7 @@ function main()
     @assert abs(t_min - t_p_Rog) <  tau + tolerance 
 
     # Plotting P_surv vs t
-    plot(0.0:tau:tau*(length(prob_surv_array)-1), prob_surv_array, xlabel = "(t)", ylabel = "Survival Probabillity p(t)", legend = false, size=(800, 600), aspect_ratio=:auto,margin= 10mm) 
+    plot(0.0:tau:tau*(length(prob_surv_array)-1), prob_surv_array, xlabel = "t", ylabel = "Survival Probabillity p(t)", legend = false, size=(800, 600), aspect_ratio=:auto,margin= 10mm) 
 
     # Save the plot as a PDF file
     savefig("plot.pdf")
