@@ -13,7 +13,8 @@ function main()
     tau = 0.05 # time step (NEED TO BE 0.05 for Rog_results)
     ttotal = 5 # total time of evolution (NEED TO GO TILL 50 for Rog_results)
     tolerance  = 5E-1 # acceptable level of error or deviation from an exact value or solution
-    V = 1 # occupied volume of the interacting neutrinos
+    del_x = 1E-5 # length of the box of interacting neutrinos at a site/shape function width of neutrinos
+    G_F = 4.543E14
 
     # s is an array of spin 1/2 tensor indices (Index objects) which will be the site or physical indices of the MPS.
     # conserve_qns=true conserves the total spin quantum number "S" in the system as it evolves
@@ -25,13 +26,16 @@ function main()
     c_t = 0
     
     # Initialize an array of ones for all N particles
-    mu = ones(div(N,V))
+    mu = ones(N)
+    
+    # Create an array of dimension N and fill it with the value 1/(sqrt(2) * G_F)
+    n = fill((del_x)^3/(sqrt(2) * G_F), N)
     
     # Initialize psi to be a product state (alternating down and up)
     global psi = productMPS(s, n -> isodd(n) ? "Dn" : "Up")
 
     #extract output from the expect.jl file where the survival probability values were computed at each timestep
-    Sz_array, prob_surv_array = evolve(s, tau, mu, N, cutoff, ttotal)
+    Sz_array, prob_surv_array = evolve(s, tau, n, mu, N, del_x, G_F, cutoff, ttotal)
 
     #index of minimum of the prob_surv_array (containing survival probability values at each time step)
     i_min = argmin(prob_surv_array)
@@ -40,7 +44,7 @@ function main()
     # Rogerro(2021)'s fit for the first minimum of the survival probability reached for a time t_p 
     t_p_Rog = a_t*log(N) + b_t * sqrt(N) + c_t
     println("t_p_Rog= ",t_p_Rog)
-    println("i_min =", i_min)
+    println("i_min= ", i_min)
     println("t_min= ", t_min)
     # Check that our time of minimum survival probability compared to Rogerro(2021) remains within the timestep and tolerance.
     @assert abs(t_min - t_p_Rog) <  tau + tolerance 
