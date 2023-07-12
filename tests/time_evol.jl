@@ -30,7 +30,7 @@ let
       # "Sz" and "Id" are inbuilt ITensor operators in ITensors library and op function applies these ITensors to a set of neigboring site indices aka pairs s1, s2.
       # hj operator acts on the pair system such that h at site index j and j+1 is computed separately and then summed on this 1D chain.
 
-      hj = (
+      hj = -(
         op("Sz", s1)* op("Id", s2) 
         + op("Sz", s2)* op("Id", s1) 
       )
