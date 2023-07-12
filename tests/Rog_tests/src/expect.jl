@@ -1,6 +1,6 @@
 include("gates_function.jl")  # Include the gates_functions.jl file
 
-function evolve(s, tau, mu, N, cutoff, ttotal)
+function evolve(s, tau, n, mu, N, del_x,  G_F,  cutoff, ttotal)
 
     # Create empty array to store sz values 
     Sz_array = Float64[]
@@ -8,7 +8,7 @@ function evolve(s, tau, mu, N, cutoff, ttotal)
     prob_surv_array = Float64[]
 
     # extract the gates array generated in the gates_function file
-    gates = create_gates(s, mu, N, tau)
+    gates = create_gates(s, n, mu, N, del_x, G_F, tau)
 
     # Compute and print survival probability (found from <Sz>) at each time step then apply the gates to go to the next time
     for t in 0.0:tau:ttotal
