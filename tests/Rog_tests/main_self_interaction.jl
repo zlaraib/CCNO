@@ -14,7 +14,7 @@ function main()
     tau = 0.05 # time step (NEED TO BE 0.05 for Rog_results)
     ttotal = 5 # total time of evolution (NEED TO GO TILL 50 for Rog_results)
     tolerance  = 5E-1 # acceptable level of error or deviation from an exact value or solution
-    del_x = 1E-5 # length of the box of interacting neutrinos at a site/shape function width of neutrinos
+    del_x = 1E-5 # length of the box of interacting neutrinos at a site/shape function width of neutrinos (cm)
 
     # s is an array of spin 1/2 tensor indices (Index objects) which will be the site or physical indices of the MPS.
     # conserve_qns=true conserves the total spin quantum number "S" in the system as it evolves
@@ -35,7 +35,7 @@ function main()
     global psi = productMPS(s, n -> isodd(n) ? "Dn" : "Up")
 
     #extract output from the expect.jl file where the survival probability values were computed at each timestep
-    Sz_array, prob_surv_array = evolve(s, tau, n, mu, N, del_x, G_F, cutoff, ttotal)
+    Sz_array, prob_surv_array = evolve(s, tau, n, N, del_x, psi, cutoff, ttotal)
 
     #index of minimum of the prob_surv_array (containing survival probability values at each time step)
     i_min = argmin(prob_surv_array)

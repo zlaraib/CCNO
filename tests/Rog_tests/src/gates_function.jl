@@ -1,6 +1,7 @@
 using ITensors
+include("constants.jl")
 
-function create_gates(s, n, mu, N, del_x, G_F, tau)
+function create_gates(s, n, N, del_x, tau)
     # Make gates (1,2),(2,3),(3,4),... i.e. unitary gates which act on any (non-neighboring) pairs of sites in the chain.
     # Create an empty ITensors array that will be our Trotter gates
     gates = ITensor[]
@@ -19,10 +20,6 @@ function create_gates(s, n, mu, N, del_x, G_F, tau)
                          1/2 * op("S+", s1) * op("S-", s2) +
                          1/2 * op("S-", s1) * op("S+", s2)))
 
-            # writing in terms of mu 
-            # hj = (2.0* (mu[i]+ mu[j])/(2) * 1/N) * ((op("Sz", s1) * op("Sz", s2) +
-            # 1/2 * op("S+", s1) * op("S-", s2) +
-            # 1/2 * op("S-", s1) * op("S+", s2)))
             # make Trotter gate Gj that would correspond to each gate in the gate array of ITensors             
             Gj = exp(-im * tau/2 * hj)
 
