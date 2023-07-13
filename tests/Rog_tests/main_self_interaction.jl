@@ -2,6 +2,7 @@ using ITensors
 using Plots
 using Measures
 include("src/expect.jl")
+include("src/constants.jl")
 
 # We are simulating the time evolution of a 1D spin chain with N sites, where each site is a spin-1/2 particle. 
 # The simulation is done by applying a sequence of unitary gates to an initial state of the system, 
@@ -14,7 +15,6 @@ function main()
     ttotal = 5 # total time of evolution (NEED TO GO TILL 50 for Rog_results)
     tolerance  = 5E-1 # acceptable level of error or deviation from an exact value or solution
     del_x = 1E-5 # length of the box of interacting neutrinos at a site/shape function width of neutrinos
-    G_F = 4.543E14
 
     # s is an array of spin 1/2 tensor indices (Index objects) which will be the site or physical indices of the MPS.
     # conserve_qns=true conserves the total spin quantum number "S" in the system as it evolves
@@ -25,11 +25,11 @@ function main()
     b_t = 2.105
     c_t = 0
     
-    # Initialize an array of ones for all N particles
-    mu = ones(N)
+    # Initialize an array of ones for all N sites
+    mu = ones(N) # erg
     
-    # Create an array of dimension N and fill it with the value 1/(sqrt(2) * G_F)
-    n = fill((del_x)^3/(sqrt(2) * G_F), N)
+    # n is the total number of neutrinos contained at each site (dimensionless)
+    n = mu * fill((del_x)^3/(sqrt(2) * G_F), N)
     
     # Initialize psi to be a product state (alternating down and up)
     global psi = productMPS(s, n -> isodd(n) ? "Dn" : "Up")
