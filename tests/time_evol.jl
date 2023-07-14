@@ -3,7 +3,6 @@ using ITensors
 # We are simulating the time evolution of a 1D spin chain with N sites, where each site is a spin-1/2 particle. 
 # The simulation is done by applying a sequence of unitary gates to an initial state of the system, 
 # which is a product state where each site alternates between up and down.
-# The technique used is "time evolving block decimation" (TEBD).
 let
   N = 100 # number of sites
   cutoff = 1E-8 # specifies a truncation threshold for the SVD in MPS representation

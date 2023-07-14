@@ -28,7 +28,7 @@ pipeline {
     }
 } 
 	stage('Rogerro(2021)_file'){ steps{
-		sh 'julia tests/Rog_tests/main_serial.jl'
+		sh 'julia tests/Rog_tests/main_self_interaction.jl'
 		archiveArtifacts artifacts: '*.pdf'
     } 
 }

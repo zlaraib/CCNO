@@ -1,21 +1,24 @@
 using ITensors
+include("constants.jl")
 
-function create_gates(s, N, tau)
+function create_gates(s, n, N, del_x, tau)
     # Make gates (1,2),(2,3),(3,4),... i.e. unitary gates which act on any (non-neighboring) pairs of sites in the chain.
     # Create an empty ITensors array that will be our Trotter gates
     gates = ITensor[]
-
+    
     for i in 1:(N-1)
         for j in i+1:N
             #s1, s2 are non-neighbouring spin site/indices from the s array
             s1 = s[i]
             s2 = s[j]
+
             # Our neutrino system Hamiltonian of self-interaction term represents 1D Heisenberg model.
             # total Hamiltonian of the system is a sum of local terms hj, where hj acts on sites i and j which are paired for gates to latch onto.
             # op function returns these operators as ITensors and we tensor product and add them together to compute the operator hj.
-            hj = 2.0/N * (op("Sz", s1) * op("Sz", s2) +
+            # mu pairs divided by 2 to avoid double counting
+            hj = (2.0* √2 * G_F * (n[i]+ n[j])/(2*((del_x)^3)) * 1/N) * ((op("Sz", s1) * op("Sz", s2) +
                          1/2 * op("S+", s1) * op("S-", s2) +
-                         1/2 * op("S-", s1) * op("S+", s2))
+                         1/2 * op("S-", s1) * op("S+", s2)))
 
             # make Trotter gate Gj that would correspond to each gate in the gate array of ITensors             
             Gj = exp(-im * tau/2 * hj)
