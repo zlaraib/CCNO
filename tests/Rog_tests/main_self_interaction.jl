@@ -29,10 +29,10 @@ function main()
     mu = ones(N) # erg
     
     # n is the total number of neutrinos contained at each site (dimensionless)
-    n = mu * fill((del_x)^3/(sqrt(2) * G_F), N)
+    n = mu .* fill((del_x)^3/(sqrt(2) * G_F), N)
     
     # Initialize psi to be a product state (alternating down and up)
-    global psi = productMPS(s, n -> isodd(n) ? "Dn" : "Up")
+    psi = productMPS(s, n -> isodd(n) ? "Dn" : "Up")
 
     #extract output from the expect.jl file where the survival probability values were computed at each timestep
     Sz_array, prob_surv_array = evolve(s, tau, n, N, del_x, psi, cutoff, ttotal)
