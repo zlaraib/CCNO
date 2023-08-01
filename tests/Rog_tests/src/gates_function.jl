@@ -1,6 +1,15 @@
 using ITensors
+include("constants.jl")
 
-function create_gates(s, n, del_m2, B, E, mu, N, del_x, G_F, tau)
+# Expected units of the quantities used in gates
+# del_m2 = ergs squared
+# hbar =  erg s
+# c = cm/s
+# G_F = erg cm^3
+# del_x = cm
+# E = erg
+
+function create_gates(s, n, del_m2, B, E, N, del_x, tau)
     # Make gates (1,2),(2,3),(3,4),... i.e. unitary gates which act on any (non-neighboring) pairs of sites in the chain.
     # Create an empty ITensors array that will be our Trotter gates
     gates = ITensor[]
@@ -12,13 +21,13 @@ function create_gates(s, n, del_m2, B, E, mu, N, del_x, G_F, tau)
             s2 = s[j]
             # assert B vector to have a magnitude of 1 while preserving its direction.
             @assert norm(B[i]) == 1
-            
-            #B[i] = normalize(B[i])
+
             # Our neutrino system Hamiltonian of self-interaction term represents 1D Heisenberg model.
             # total Hamiltonian of the system is a sum of local terms hj, where hj acts on sites i and j which are paired for gates to latch onto.
             # op function returns these operators as ITensors and we tensor product and add them together to compute the operator hj.
+            # ni and nj are the neutrions at site i and j respectively.
             # mu pairs divided by 2 to avoid double counting
-            hj = -((del_m2/(2*E[i])) * B[i][3] * op("Sz", s1)* op("Id", s2)) + 
+            hj = -((del_m2/(4*E[i])) * B[i][3] * (op("Sz", s1)* op("Id", s2) +  op("Sz", s2)* op("Id", s1))) +
                     ((2.0* √2 * G_F * (n[i]+ n[j])/(2*((del_x)^3)) * 1/N) * 
                     (op("Sz", s1) * op("Sz", s2) +
                      1/2 * op("S+", s1) * op("S-", s2) +
