@@ -39,7 +39,7 @@ function main()
     E = fill(4/(del_m2),N)
 
     # Initialize psi to be a product state (alternating down and up)
-    psi = productMPS(s, n -> isodd(n) ? "Dn" : "Up")
+    global psi = productMPS(s, n -> isodd(n) ? "Dn" : "Up")
 
     #extract output from the expect.jl file where the survival probability values were computed at each timestep
     Sz_array, prob_surv_array = evolve(s, tau, n, del_m2, B, E, N, del_x, cutoff, ttotal)
