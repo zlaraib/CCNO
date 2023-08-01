@@ -2,6 +2,7 @@ using ITensors
 using Plots
 using Measures
 include("src/expect.jl")
+include("src/constants.jl") 
 
 # We are simulating the time evolution of a 1D spin chain with N sites, where each site is a spin-1/2 particle. 
 # The simulation is done by applying a sequence of unitary gates to an initial state of the system, 
@@ -14,8 +15,7 @@ function main()
     ttotal = 5 # total time of evolution (NEED TO GO TILL 50 for Rog_results)
     tolerance  = 5E-1 # acceptable level of error or deviation from an exact value or solution
     del_x = 1E-3 # length of the box of interacting neutrinos at a site/shape function width of neutrinos in cm 
-    G_F = 4.54379E14 #fermi coupling constant in inverse Joules squared
-    del_m2= 1.2064E-43 # mass difference between the second and first neutrino mass eigenstates (associated with solar neutrino oscillations)
+    del_m2= 1.2064E-14# mass difference between the second and first neutrino mass eigenstates (associated with solar neutrino oscillations) in ergs^2
 
     # s is an array of spin 1/2 tensor indices (Index objects) which will be the site or physical indices of the MPS.
     # conserve_qns=true conserves the total spin quantum number "S" in the system as it evolves
@@ -29,20 +29,20 @@ function main()
     # Initialize an array of ones for all N particles
     mu = ones(N)
     
-    # Create an array of dimension N and fill it with the value 1/(sqrt(2) * G_F)
-    n = fill((del_x)^3/(sqrt(2) * G_F), N)
+    # Create an array of dimension N and fill it with the value 1/(sqrt(2) * G_F). This is the number of neutrinos 
+    n = mu .* fill((del_x)^3/(sqrt(2) * G_F), N)
     
     # Create an array B with N elements. Each element of the array is a vector [0, 0, 1]
     B = fill([0, 0, 1], N)
-    
+
     # Create an array of neutrino vaccum energy
-    E = fill(1E43,N)
+    E = fill(4/(del_m2),N)
 
     # Initialize psi to be a product state (alternating down and up)
     global psi = productMPS(s, n -> isodd(n) ? "Dn" : "Up")
 
     #extract output from the expect.jl file where the survival probability values were computed at each timestep
-    Sz_array, prob_surv_array = evolve(s, tau, n, del_m2, B, E, mu, N, del_x, G_F, cutoff, ttotal)
+    Sz_array, prob_surv_array = evolve(s, tau, n, del_m2, B, E, N, del_x, cutoff, ttotal)
 
     #index of minimum of the prob_surv_array (containing survival probability values at each time step)
     i_min = argmin(prob_surv_array)
