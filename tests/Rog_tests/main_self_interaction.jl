@@ -13,9 +13,9 @@ function main()
     cutoff = 1E-14 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT)
     tau = 0.05 # time step (NEED TO BE 0.05 for Rog_results)
     ttotal = 5 # total time of evolution (NEED TO GO TILL 50 for Rog_results)
-    tolerance  = 5E-1 # acceptable level of error or deviation from an exact value or solution
+    tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution
     del_x = 1E-3 # length of the box of interacting neutrinos at a site/shape function width of neutrinos in cm 
-    del_m2= 1.2064E-14# mass difference between the second and first neutrino mass eigenstates (associated with solar neutrino oscillations) in ergs^2
+    del_m2= 1.2064E-14 # mass difference between the second and first neutrino mass eigenstates (associated with solar neutrino oscillations) in ergs^2
 
     # s is an array of spin 1/2 tensor indices (Index objects) which will be the site or physical indices of the MPS.
     # conserve_qns=true conserves the total spin quantum number "S" in the system as it evolves
