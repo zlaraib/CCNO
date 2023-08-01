@@ -7,7 +7,7 @@ include("Rog_tests/src/constants.jl")
 # We are simulating the time evolution of a 1D spin chain with N sites, where each site is a spin-1/2 particle. 
 # The simulation is done by applying a sequence of unitary gates to an initial state of the system, 
 # which is a product state where each site alternates between up and down.
-# Here we are trying to simlate the vaccuum oscillatoin term in the Rogerro Hamiltonian 
+# Here we are trying to simlate the vaccuum oscillation term in the Rogerro Hamiltonian 
 let
   N = 4 # number of sites
   cutoff = 1E-14 # specifies a truncation threshold for the SVD in MPS representation

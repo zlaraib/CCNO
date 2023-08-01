@@ -2,7 +2,7 @@ using ITensors
 using Plots
 using Measures
 include("src/expect.jl")
-include("src/constants.jl") 
+include("src/constants.jl")
 
 # We are simulating the time evolution of a 1D spin chain with N sites, where each site is a spin-1/2 particle. 
 # The simulation is done by applying a sequence of unitary gates to an initial state of the system, 
@@ -26,8 +26,8 @@ function main()
     b_t = 2.105
     c_t = 0
     
-    # Initialize an array of ones for all N particles
-    mu = ones(N)
+    # Initialize an array of ones for all N sites
+    mu = ones(N) # erg
     
     # Create an array of dimension N and fill it with the value 1/(sqrt(2) * G_F). This is the number of neutrinos 
     n = mu .* fill((del_x)^3/(sqrt(2) * G_F), N)
@@ -39,7 +39,7 @@ function main()
     E = fill(4/(del_m2),N)
 
     # Initialize psi to be a product state (alternating down and up)
-    global psi = productMPS(s, n -> isodd(n) ? "Dn" : "Up")
+    psi = productMPS(s, n -> isodd(n) ? "Dn" : "Up")
 
     #extract output from the expect.jl file where the survival probability values were computed at each timestep
     Sz_array, prob_surv_array = evolve(s, tau, n, del_m2, B, E, N, del_x, cutoff, ttotal)
