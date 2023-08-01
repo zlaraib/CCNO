@@ -2,6 +2,8 @@ using ITensors
 using Plots 
 using Measures 
 using LinearAlgebra
+include("Rog_tests/src/gates_function.jl")
+include("Rog_tests/src/constants.jl")
 # We are simulating the time evolution of a 1D spin chain with N sites, where each site is a spin-1/2 particle. 
 # The simulation is done by applying a sequence of unitary gates to an initial state of the system, 
 # which is a product state where each site alternates between up and down.
@@ -11,49 +13,30 @@ let
   cutoff = 1E-14 # specifies a truncation threshold for the SVD in MPS representation
   tau = 0.05 # time step 
   ttotal = 5.0 # total time of evolution 
+  del_x = 1E-3 # length of the box of interacting neutrinos at a site/shape function width of neutrinos in cm 
+  del_m2= 1.93E-23 #ergs squared
+  tolerance  = 5E-1 # acceptable level of error or deviation from an exact value or solution
 
   # Make an array of 'site' indices and label as s 
   # conserve_qns=true conserves the total spin quantum number "S"(in z direction) in the system as it evolves
   s = siteinds("S=1/2", N; conserve_qns=true)  
 
-  # Make gates (1,2),(2,3),(3,4),... i.e. unitary gates which act on neighboring pairs of sites in the chain.
-  # Create an empty ITensors array that will be our Trotter gates
-  # gates acts as a single-particle operator that does not actually entangle pairs
-  gates = ITensor[] 
+  # Initialize an array of ones for all N particles
+  mu = zeros(N)
+    
+  # Create an array of dimension N and fill it with the value 1/(sqrt(2) * G_F)
+  n = mu.* fill((del_x)^3/(sqrt(2) * G_F), N)
+    
+  # Create an array B with N elements. Each element of the array is a vector [0, 0, 1]
+  B = fill([0, 0, 1], N)
+    
+  # Create an array of neutrino vaccum energy
+  E = fill(4/(del_m2),N)
 
-  for i in 1:(N-1)
-    for j in i+1:N
-      s1 = s[i]
-      s2 = s[j]
-
-      # Hamiltonian operator oriented in the x direction of neigbouring spin sites. 
-      # "Sz" and "Id" are inbuilt ITensor operators in ITensors library and op function applies these ITensors to a set of neigboring site indices aka pairs s1, s2.
-      # hj operator acts on the pair system such that h at site index j and j+1 is computed separately and then summed on this 1D chain.
-
-      hj = -(
-        op("Sz", s1)* op("Id", s2) 
-        + op("Sz", s2)* op("Id", s1) 
-      )
-
-      # make Trotter gate Gj that would correspond to each gate in the gate array of ITensors
-      Gj = exp(-im * tau / 2 * hj)  
-
-      # The push! function adds (appends) an element to the end of an array;
-      # ! performs an operation without creating a new object, (in a way overwites the previous array in consideration); 
-      # i.e. we append a new element Gj (which is an ITensor object representing a gate) to the end of the gates array.
-      push!(gates, Gj) 
-    end
-
-  end
-
-  # append! adds all the elements of a gates in reverse order (i.e. (N,N-1),(N-1,N-2),...) to the end of gates array.
-  append!(gates, reverse(gates)) 
+  gates = create_gates(s, n, del_m2, B, E, N, del_x, tau)
 
   # Initialize psi to be a product state (alternating up and down)
   psi = productMPS(s, n -> isodd(n) ? "Dn" : "Up")
-
-  # center site because the Sz operator is arbitralily chosen to be placed at this site at each time step 
-  c = div(N, 2) # c = N/2 
 
   # Create empty array to store sz values 
   Sz_array = Float64[] 
@@ -73,6 +56,8 @@ let
     push!(prob_surv_array, prob_surv)
     println("$t $prob_surv")
 
+    # Checking that the value of survival probbability at the 1st spin remains 1 at all times
+    @assert prob_surv == 1.0
     # Writing an if statement in a shorthand way that checks whether the current value of t is equal to ttotal, 
     # and if so, it executes the break statement, which causes the loop to terminate early.
     t ≈ ttotal && break  
@@ -85,11 +70,12 @@ let
     # The normalize! function is used to ensure that the MPS is properly normalized after each application of the time evolution gates. 
     # This is necessary to ensure that the MPS represents a valid quantum state.
     normalize!(psi) 
+    
 
   end
 
-  #display(plot!(time[1;], Sz_array,xlabel = "t", ylabel = "Sz",margin=20mm))
-    # # Plotting Sz vs t
+    
+    # Plotting Survival probabilty vs t
     display(plot(0.0:tau:tau*(length(Sz_array)-1), Sz_array, xlabel = "t", ylabel = "Sz", legend = false, size=(800, 600), aspect_ratio=:auto,margin= 10mm)) 
 
 end
