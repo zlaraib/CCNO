@@ -9,7 +9,7 @@ include("constants.jl")
 # del_x = cm
 # E = erg
 
-function create_gates(s, n, del_m2, B, E, N, del_x, tau)
+function create_gates(s, n, del_m2,ω, B, E, N, del_x, tau)
     # Make gates (1,2),(2,3),(3,4),... i.e. unitary gates which act on any (non-neighboring) pairs of sites in the chain.
     # Create an empty ITensors array that will be our Trotter gates
     gates = ITensor[]                                                              
@@ -27,10 +27,10 @@ function create_gates(s, n, del_m2, B, E, N, del_x, tau)
             # op function returns these operators as ITensors and we tensor product and add them together to compute the operator hj.
             # ni and nj are the neutrions at site i and j respectively.
             # mu pairs divided by 2 to avoid double counting
- 
-            hj = pi * (
+            
+            hj = (ω * (
               op("Sx", s1)* op("Id", s2)  + op("Sx", s2) * op("Id", s1)
-            ) 
+            ) )
             +
             ((2.0* √2 * G_F * (n[i]+ n[j])/(2*((del_x)^3)) * 1/N) * 
             (op("Sz", s1) * op("Sz", s2) +
