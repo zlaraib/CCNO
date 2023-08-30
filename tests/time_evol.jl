@@ -29,11 +29,15 @@ let
       
   # Create an array B with N elements. Each element of the array is a vector [1, 0, 0]
   B = fill([1, 0, 0], N)              
-      
+  
+  # Create an array ω with N elements. Each element of the array is a const pi.
+  #ω = fill(pi, N) 
+  ω = π
+  
   # Create an array of neutrino vaccum energy
   E = fill(4/(del_m2),N)
   
-  gates = create_gates(s, n, del_m2, B, E, N, del_x, tau)
+  gates = create_gates(s, n, del_m2, ω, B, E, N, del_x, tau)
   
   
   # Initialize psi to be a product state (alternating up and down)
