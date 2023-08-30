@@ -35,6 +35,9 @@ function main()
     # Create an array B with N elements. Each element of the array is a vector [0, 0, 1]
     B = fill([0, 0, 1], N)
 
+    # Create an array ω with N elements. Each element of the array is a const pi.
+    ω = zeros(N)
+
     # Create an array of neutrino vaccum energy
     E = fill(4/(del_m2),N)
 
@@ -42,7 +45,7 @@ function main()
     global psi = productMPS(s, n -> isodd(n) ? "Dn" : "Up")
 
     #extract output from the expect.jl file where the survival probability values were computed at each timestep
-    Sz_array, prob_surv_array = evolve(s, tau, n, del_m2, B, E, N, del_x, cutoff, ttotal)
+    Sz_array, prob_surv_array = evolve(s, tau, n, del_m2, ω, B, E, N, del_x, cutoff, ttotal)
 
     #index of minimum of the prob_surv_array (containing survival probability values at each time step)
     i_min = argmin(prob_surv_array)
