@@ -36,7 +36,7 @@ function main()
     B = fill([0, 0, 1], N)
 
     # Create an array ω with N elements. Each element of the array is a const pi.
-    ω = zeros(N)
+    ω = 0
 
     # Create an array of neutrino vaccum energy
     E = fill(4/(del_m2),N)
