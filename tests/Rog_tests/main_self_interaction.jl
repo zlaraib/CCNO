@@ -15,7 +15,6 @@ function main()
     ttotal = 5 # total time of evolution (NEED TO GO TILL 50 for Rog_results)
     tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution
     del_x = 1E-3 # length of the box of interacting neutrinos at a site/shape function width of neutrinos in cm 
-    del_m2= 1.2064E-14 # mass difference between the second and first neutrino mass eigenstates (associated with solar neutrino oscillations) in ergs^2
 
     # s is an array of spin 1/2 tensor indices (Index objects) which will be the site or physical indices of the MPS.
     # conserve_qns=true conserves the total spin quantum number "S" in the system as it evolves
@@ -35,17 +34,14 @@ function main()
     # Create an array B with N elements. Each element of the array is a vector [0, 0, 1]
     B = fill([0, 0, 1], N)
 
-    # Create an array ω with N elements. Each element of the array is a const pi.
-    ω = 0
-
-    # Create an array of neutrino vaccum energy
-    E = fill(4/(del_m2),N)
+    # Create an array ω with N elements. Each element of the array is zero.
+    ω = fill(0, N) 
 
     # Initialize psi to be a product state (alternating down and up)
-    global psi = productMPS(s, n -> isodd(n) ? "Dn" : "Up")
+    psi = productMPS(s, n -> isodd(n) ? "Dn" : "Up")
 
     #extract output from the expect.jl file where the survival probability values were computed at each timestep
-    Sz_array, prob_surv_array = evolve(s, tau, n, del_m2, ω, B, E, N, del_x, cutoff, ttotal)
+    Sz_array, prob_surv_array = evolve(s, tau, n, ω, B, N, del_x, psi, cutoff, ttotal)
 
     #index of minimum of the prob_surv_array (containing survival probability values at each time step)
     i_min = argmin(prob_surv_array)
