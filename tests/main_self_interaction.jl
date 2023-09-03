@@ -1,8 +1,8 @@
 using ITensors
 using Plots
 using Measures
-include("src/expect.jl")
-include("src/constants.jl")
+include("../src/evolution.jl")
+include("../src/constants.jl")
 
 # We are simulating the time evolution of a 1D spin chain with N sites, where each site is a spin-1/2 particle. 
 # The simulation is done by applying a sequence of unitary gates to an initial state of the system, 
