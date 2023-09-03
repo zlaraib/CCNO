@@ -24,16 +24,18 @@ pipeline {
     } 
 }
 	stage('Time Evolution'){ steps{
-		sh 'julia tests/time_evol.jl'
+		sh 'julia tests/main_vac_osc.jl'
+		archiveArtifacts artifacts: '*.pdf'
     }
 } 
 	stage('Rogerro(2021)_file'){ steps{
-		sh 'julia tests/Rog_tests/main_self_interaction.jl'
+		sh 'julia tests/main_self_interaction.jl'
 		archiveArtifacts artifacts: '*.pdf'
     } 
 }
 	stage('Time Evolution(failed)'){ steps{
-		sh 'julia tests/time_evol_N=4.jl'
+		sh 'julia tests/main_vac_osc_N=4.jl'
+		archiveArtifacts artifacts: '*.pdf'
     }
 } 
 
