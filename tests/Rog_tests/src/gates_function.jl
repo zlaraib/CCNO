@@ -6,10 +6,10 @@ include("constants.jl")
 # hbar =  erg s
 # c = cm/s
 # G_F = erg cm^3           
-# del_x = cm
+# ∇x = cm
 # E = erg
 
-function create_gates(s, n, ω, B, N, del_x, tau)
+function create_gates(s, n, ω, B, N, ∇x, τ)
     # Make gates (1,2),(2,3),(3,4),... i.e. unitary gates which act on any (non-neighboring) pairs of sites in the chain.
     # Create an empty ITensors array that will be our Trotter gates
     gates = ITensor[]                                                              
@@ -29,20 +29,20 @@ function create_gates(s, n, ω, B, N, del_x, tau)
             # mu pairs divided by 2 to avoid double counting
             
             hj = 
-            ((2.0* √2 * G_F * (n[i]+ n[j])/(2*((del_x)^3)) * 1/N) * 
+            ((2.0* √2 * G_F * (n[i]+ n[j])/(2*((∇x)^3)) * 1/N) * 
             (op("Sz", s1) * op("Sz", s2) +
              1/2 * op("S+", s1) * op("S-", s2) +
              1/2 * op("S-", s1) * op("S+", s2)))
              
              if ω[i] != 0
-             hj +=  (ω[i] * B[i][1] * (
-              op("Sx", s1)* op("Id", s2)  + op("Sx", s2) * op("Id", s1)
-                ) )
+                hj +=  (ω[i] * B[i][1] * (
+                op("Sx", s1)* op("Id", s2)  + op("Sx", s2) * op("Id", s1)
+                    ) )
              end
-             # ω = ((del_m2/(4*E[i])) 
+            
             
             # make Trotter gate Gj that would correspond to each gate in the gate array of ITensors             
-            Gj = exp(-im * tau/2 * hj)
+            Gj = exp(-im * τ/2 * hj)
 
             # The push! function adds (appends) an element to the end of an array;
             # ! performs an operation without creating a new object, (in a way overwites the previous array in consideration); 

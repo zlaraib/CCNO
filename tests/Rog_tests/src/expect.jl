@@ -1,21 +1,21 @@
 include("gates_function.jl")  # Include the gates_functions.jl file
 
 
-function evolve(s, tau, n, ω, B, N, del_x, psi, cutoff, tolerance, ttotal)
-
+function evolve(s, τ, n, ω, B, N, ∇x, ψ, cutoff, tolerance, ttotal)
+    
     # Create empty array to store sz values 
     Sz_array = Float64[]
     # Create empty array to store survival probability values 
     prob_surv_array = Float64[]
 
     # extract the gates array generated in the gates_function file
-    gates = create_gates(s, n, ω, B, N, del_x, tau)
+    gates = create_gates(s, n, ω, B, N, ∇x, τ)
 
     # Compute and print survival probability (found from <Sz>) at each time step then apply the gates to go to the next time
-    for t in 0.0:tau:ttotal
+    for t in 0.0:τ:ttotal
         for i in 1:(N-1)
             # compute initial expectation value of Sz(inbuilt operator in ITensors library) at the first site on the chain
-            sz = expect(psi, "Sz"; sites=1)
+            sz = expect(ψ, "Sz"; sites=1)
             # add an element sz to the end of Sz array 
             push!(Sz_array, sz)
 
@@ -42,12 +42,13 @@ function evolve(s, tau, n, ω, B, N, del_x, psi, cutoff, tolerance, ttotal)
             # apply each gate in gates successively to the wavefunction psi (it is equivalent to time evolving psi according to the time-dependent Hamiltonian represented by gates).
             # The apply function is smart enough to determine which site indices each gate has, and then figure out where to apply it to our MPS. 
             # It automatically handles truncating the MPS and handles the non-nearest-neighbor gates in this example.
-            psi = apply(gates, psi; cutoff)
+            ψ = apply(gates, ψ; cutoff)
             # The normalize! function is used to ensure that the MPS is properly normalized after each application of the time evolution gates. 
             # This is necessary to ensure that the MPS represents a valid quantum state.
-            normalize!(psi)
+            normalize!(ψ)
         end
     end
 
     return Sz_array, prob_surv_array
 end
+
