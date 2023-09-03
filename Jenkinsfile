@@ -32,6 +32,10 @@ pipeline {
 		archiveArtifacts artifacts: '*.pdf'
     } 
 }
+	stage('Time Evolution(failed)'){ steps{
+		sh 'julia tests/time_evol_N=4.jl'
+    }
+} 
 
 }// stages{
 
