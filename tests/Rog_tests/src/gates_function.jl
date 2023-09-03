@@ -9,7 +9,7 @@ include("constants.jl")
 # del_x = cm
 # E = erg
 
-function create_gates(s, n, del_m2,ω, B, E, N, del_x, tau)
+function create_gates(s, n, ω, B, N, del_x, tau)
     # Make gates (1,2),(2,3),(3,4),... i.e. unitary gates which act on any (non-neighboring) pairs of sites in the chain.
     # Create an empty ITensors array that will be our Trotter gates
     gates = ITensor[]                                                              
@@ -34,12 +34,12 @@ function create_gates(s, n, del_m2,ω, B, E, N, del_x, tau)
              1/2 * op("S+", s1) * op("S-", s2) +
              1/2 * op("S-", s1) * op("S+", s2)))
              
-             if ω != 0
-             hj +=  (ω * (
+             if ω[i] != 0
+             hj +=  (ω[i] * B[i][1] * (
               op("Sx", s1)* op("Id", s2)  + op("Sx", s2) * op("Id", s1)
-            ) )
+                ) )
              end
-
+             # ω = ((del_m2/(4*E[i])) 
             
             # make Trotter gate Gj that would correspond to each gate in the gate array of ITensors             
             Gj = exp(-im * tau/2 * hj)
