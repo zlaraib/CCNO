@@ -40,10 +40,10 @@ function main()
   #extract output from the expect.jl file where the survival probability values were computed at each timestep
   Sz_array, prob_surv_array = evolve(s, τ, n, ω, B, N, ∇x, ψ, cutoff, tolerance, ttotal)
   # Plotting P_surv vs t
-  plot(0.0:τ:τ*(length(Sz_array)-1), Sz_array, xlabel = "t", ylabel = "<Sz>", legend = false, size=(800, 600), aspect_ratio=:auto,margin= 10mm) 
+  plot(0.0:τ:τ*(length(Sz_array)-1), Sz_array, xlabel = "t", ylabel = "<Sz>", legend = false, size=(700, 600), aspect_ratio=:auto,margin= 10mm) 
 
   # Save the plot as a PDF file
-  savefig("plot_1.pdf")
+  savefig("<Sz> vs t (only vacuum oscillation term plot).pdf")
 end
 
 @time main()
