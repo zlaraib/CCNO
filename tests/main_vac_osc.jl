@@ -43,7 +43,7 @@ function main()
   plot(0.0:τ:τ*(length(Sz_array)-1), Sz_array, xlabel = "t", ylabel = "<Sz>", legend = false, size=(700, 600), aspect_ratio=:auto,margin= 10mm) 
 
   # Save the plot as a PDF file
-  #savefig("<Sz> vs t (only vacuum oscillation term plot).pdf")
+  savefig("<Sz> vs t (only vacuum oscillation term plot).pdf")
 end
 
 @time main()
