@@ -59,7 +59,7 @@ function main()
     plot(0.0:τ:τ*(length(prob_surv_array)-1), prob_surv_array, xlabel = "t", ylabel = "Survival Probabillity p(t)", legend = false, size=(800, 600), aspect_ratio=:auto,margin= 10mm) 
 
     # Save the plot as a PDF file
-    savefig("Survival probability vs t (only self-interaction term plot).pdf")
+    #savefig("Survival probability vs t (only self-interaction term plot).pdf")
 end 
 
 @time main()
