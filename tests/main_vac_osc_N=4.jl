@@ -9,7 +9,7 @@ include("../src/constants.jl")
 # The simulation is done by applying a sequence of unitary gates to an initial state of the system, 
 # which is a product state where each site alternates between up and down.
 function main()
-  N = 4 # number of sites
+  N = 10 # number of sites
   cutoff = 1E-14 # specifies a truncation threshold for the SVD in MPS representation
   τ = 0.1 # time step 
   ttotal = 5.0 # total time of evolution 
@@ -43,7 +43,7 @@ function main()
   plot(0.0:τ:τ*(length(Sz_array)-1), Sz_array, xlabel = "t", ylabel = "<Sz>", legend = false, size=(700, 600), aspect_ratio=:auto,margin= 10mm) 
 
   # Save the plot as a PDF file
-  savefig("<Sz> vs t (only vacuum oscillation term plot).pdf")
+  savefig("<Sz> vs t (only vacuum oscillation term plot)_N=4.pdf")
 end
 
 @time main()
