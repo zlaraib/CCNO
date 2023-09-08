@@ -26,7 +26,7 @@ function main()
   # Create an array of dimension N and fill it with the value 1/(sqrt(2) * G_F)
   n = mu.* fill((∇x)^3/(sqrt(2) * G_F), N)
       
-  # Create an array B with N elements. Each element of the array is a vector [1, 0, 0]
+  # Create a B vector which would be same for all N particles 
   B = [1, 0, 0]           
   
   # Create an array ω with N elements. Each element of the array is a const pi.

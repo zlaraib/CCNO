@@ -31,8 +31,8 @@ function main()
     # Create an array of dimension N and fill it with the value 1/(sqrt(2) * G_F). This is the number of neutrinos 
     n = mu .* fill((∇x)^3/(sqrt(2) * G_F), N)
     
-    # Create an array B with N elements. Each element of the array is a vector [0, 0, 1]
-    B = fill([0, 0, 1], N)
+    # Create a B vector which would be same for all N particles 
+    B = [0, 0, 1]
 
     # Create an array ω with N elements. Each element of the array is zero.
     ω = fill(0, N) 
