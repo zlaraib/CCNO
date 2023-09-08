@@ -9,7 +9,7 @@ include("../src/constants.jl")
 # The simulation is done by applying a sequence of unitary gates to an initial state of the system, 
 # which is a product state where each site alternates between up and down.
 function main()
-  N = 2 # number of sites
+  N = 20 # number of sites
   cutoff = 1E-14 # specifies a truncation threshold for the SVD in MPS representation
   τ = 0.1 # time step 
   ttotal = 5.0 # total time of evolution 
@@ -27,7 +27,7 @@ function main()
   n = mu.* fill((∇x)^3/(sqrt(2) * G_F), N)
       
   # Create an array B with N elements. Each element of the array is a vector [1, 0, 0]
-  B = fill([1, 0, 0], N)              
+  B = [1, 0, 0]           
   
   # Create an array ω with N elements. Each element of the array is a const pi.
   ω = fill(π, N) 
