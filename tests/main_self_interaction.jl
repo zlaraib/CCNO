@@ -17,6 +17,7 @@ function main()
     Δx = 1E-3 # length of the box of interacting neutrinos at a site/shape function width of neutrinos in cm 
 
     # s is an array of spin 1/2 tensor indices (Index objects) which will be the site or physical indices of the MPS.
+    # We overload siteinds function, which generates custom Index array with Index objects having the tag of total spin quantum number for all N.
     # conserve_qns=true conserves the total spin quantum number "S" in the system as it evolves
     s = siteinds("S=1/2", N; conserve_qns=true)  
 
@@ -28,7 +29,7 @@ function main()
     # Initialize an array of ones for all N sites
     mu = ones(N) # erg
     
-    # Create an array of dimension N and fill it with the value 1/(sqrt(2) * G_F). This is the number of neutrinos 
+    # Create an array of dimension N and fill it with the value 1/(sqrt(2) * G_F). This is the number of neutrinos. 
     n = mu .* fill((Δx)^3/(sqrt(2) * G_F), N)
     
     # Create a B vector which would be same for all N particles 
