@@ -1,18 +1,14 @@
 using ITensors
 include("constants.jl")
 
-# Expected units of the quantities used in gates                                                                    
-# del_m2 = ergs squared
-# hbar =  erg s
-# c = cm/s
-# G_F = erg cm^3           
-# Δx = cm
-# E = erg
+# Expected units of the quantities defined in the test files and used in gates function.                                                                   
+# G_F = Coupling constant (erg cm^3)           
+# Δx = length of the box of interacting neutrinos at a site (cm) 
 # n = no.of neutrinos (dimensionless and unitless)
-# ω = rad/s
-# B = Gauss
+# ω = vacuum oscillation angular frequency (rad/s)
+# B = Normalized vector related to mixing angle in vacuum oscillations (dimensionless constant)
 # s = site index array (dimensionless and unitless) 
-# τ = s
+# τ = time step (sec)
 
 function create_gates(s, n, ω, B, N, Δx, τ)
     # Make gates (1,2),(2,3),(3,4),... i.e. unitary gates which act on any (non-neighboring) pairs of sites in the chain.
