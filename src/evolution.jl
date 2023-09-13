@@ -1,19 +1,15 @@
 include("gates_function.jl")  # Include the gates_functions.jl file
 
-# Expected units of the quantities used in evolve                                                                   
-# del_m2 = ergs squared
-# hbar =  erg s
-# c = cm/s
-# G_F = erg cm^3           
-# Δx = cm
-# E = erg
+# Expected units of the quantities defined in the test files and used in evolve function                                                                   
+# G_F = Coupling constant (erg cm^3)           
+# Δx = length of the box of interacting neutrinos at a site (cm) 
 # n = no.of neutrinos (dimensionless and unitless)
-# ω = rad/s
-# B = Gauss
+# ω = vacuum oscillation angular frequency (rad/s)
+# B = Normalized vector related to mixing angle in vacuum oscillations (dimensionless constant)
 # s = site index array (dimensionless and unitless) 
-# τ = s
-# ttotal = s
-# cutoff = unitless
+# τ = time step (sec)
+# ttotal = ttotal time (sec)
+# cutoff = truncation threshold for the SVD in MPS (unitless, number)
 
 function evolve(s, τ, n, ω, B, N, Δx, ψ, cutoff, tolerance, ttotal)
     
