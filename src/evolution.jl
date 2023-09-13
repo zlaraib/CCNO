@@ -1,6 +1,6 @@
 include("gates_function.jl")  # Include the gates_functions.jl file
 
-# Expected units of the quantities defined in the test files that are used in the evolve function                                                                   
+# Expected units of the quantities defined in the files in tests directory that are being used in the evolve function                                                                   
 # s = site index array (dimensionless and unitless) 
 # τ = time step (sec)      
 # n = no.of neutrinos (dimensionless and unitless)

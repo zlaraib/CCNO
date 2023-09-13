@@ -1,7 +1,7 @@
 using ITensors
 include("constants.jl")
 
-# Expected units of the quantities defined in the test files that are used in the gates function.                                                                   
+# Expected units of the quantities defined in the files in tests directory that are being used in the gates function.                                                                   
 # s = site index array (dimensionless and unitless)          
 # n = no.of neutrinos (dimensionless and unitless)
 # ω = vacuum oscillation angular frequency (rad/s)
