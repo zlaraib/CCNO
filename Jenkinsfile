@@ -20,15 +20,16 @@ pipeline {
 	// Tests //
 	//=======//
 	stage('Basic Expectation Values'){ steps{
-		sh 'julia tests/exp_file.jl'
+		sh 'julia tests/test_file.jl'
     } 
 }
 	stage('Time Evolution'){ steps{
-		sh 'julia tests/time_evol.jl'
+		sh 'julia tests/main_vac_osc.jl'
+		archiveArtifacts artifacts: '*.pdf'
     }
 } 
 	stage('Rogerro(2021)_file'){ steps{
-		sh 'julia tests/Rog_tests/main_self_interaction.jl'
+		sh 'julia tests/main_self_interaction.jl'
 		archiveArtifacts artifacts: '*.pdf'
     } 
 }
