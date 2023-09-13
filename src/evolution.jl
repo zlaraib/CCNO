@@ -1,5 +1,19 @@
 include("gates_function.jl")  # Include the gates_functions.jl file
 
+# Expected units of the quantities used in gates                                                                    
+# del_m2 = ergs squared
+# hbar =  erg s
+# c = cm/s
+# G_F = erg cm^3           
+# Δx = cm
+# E = erg
+# n = no.of neutrinos (dimensionless and unitless)
+# ω = rad/s
+# B = Gauss
+# s = site index array (dimensionless and unitless) 
+# τ = s
+# ttotal = s
+# cutoff = unitless
 
 function evolve(s, τ, n, ω, B, N, Δx, ψ, cutoff, tolerance, ttotal)
     
