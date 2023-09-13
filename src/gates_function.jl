@@ -21,7 +21,7 @@ function create_gates(s, n, ω, B, N, Δx, τ)
     
     for i in 1:(N-1)
         for j in i+1:N
-            #s1, s2 are non-neighbouring spin site/indices from the s array
+            #s_i, s_j are non-neighbouring spin site/indices from the s array
             s_i = s[i]                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
             s_j = s[j]
             # assert B vector to have a magnitude of 1 while preserving its direction.

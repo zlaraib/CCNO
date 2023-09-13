@@ -1,6 +1,6 @@
 include("gates_function.jl")  # Include the gates_functions.jl file
 
-# Expected units of the quantities used in gates                                                                    
+# Expected units of the quantities used in evolve                                                                   
 # del_m2 = ergs squared
 # hbar =  erg s
 # c = cm/s
