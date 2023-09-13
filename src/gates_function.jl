@@ -6,8 +6,13 @@ include("constants.jl")
 # hbar =  erg s
 # c = cm/s
 # G_F = erg cm^3           
-# ∇x = cm
+# Δx = cm
 # E = erg
+# n = no.of neutrinos (dimensionless and unitless)
+# ω = rad/s
+# B = Gauss
+# s = site index array (dimensionless and unitless) 
+# τ = s
 
 function create_gates(s, n, ω, B, N, Δx, τ)
     # Make gates (1,2),(2,3),(3,4),... i.e. unitary gates which act on any (non-neighboring) pairs of sites in the chain.
@@ -41,7 +46,6 @@ function create_gates(s, n, ω, B, N, Δx, τ)
                 ((ω[i] * B[3] * op("Sz", s_i)* op("Id", s_j))  + (ω[j] * op("Sz", s_j) * op("Id", s_i))) 
                      
              end
-            
             
             # make Trotter gate Gj that would correspond to each gate in the gate array of ITensors             
             Gj = exp(-im * τ/2 * hj)
