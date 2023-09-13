@@ -9,7 +9,7 @@ include("../src/constants.jl")
 # The simulation is done by applying a sequence of unitary gates to an initial state of the system, 
 # which is a product state where each site alternates between up and down.
 function main()
-  N = 20 # number of sites
+  N = 4 # number of sites
   cutoff = 1E-14 # specifies a truncation threshold for the SVD in MPS representation
   τ = 0.1 # time step 
   ttotal = 5.0 # total time of evolution 
