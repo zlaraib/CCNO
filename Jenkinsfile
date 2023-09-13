@@ -33,11 +33,6 @@ pipeline {
 		archiveArtifacts artifacts: '*.pdf'
     } 
 }
-	stage('Time Evolution(failed)'){ steps{
-		sh 'julia tests/main_vac_osc_N=4.jl'
-		archiveArtifacts artifacts: '*.pdf'
-    }
-} 
 
 }// stages{
 
