@@ -23,7 +23,7 @@ function main()
   # Initialize an array of zeros for all N particles
   mu = zeros(N)
                                 
-  # Create an array of dimension N and fill it with the value 1/(sqrt(2) * G_F)
+  # Create an array of dimension N and fill it with the value 1/(sqrt(2) * G_F). This is the number of neutrinos.
   n = mu.* fill((Δx)^3/(sqrt(2) * G_F), N)
       
   # Create a B vector which would be same for all N particles 
