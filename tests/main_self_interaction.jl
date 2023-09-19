@@ -9,10 +9,10 @@ include("../src/constants.jl")
 # which is a product state where each site alternates between up and down.
 
 function main()
-    N = 4 # number of sites (NEED TO GO TILL 96 for Rog_results)
+    N = 30 # number of sites (NEED TO GO TILL 96 for Rog_results)
     cutoff = 1E-14 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT)
     τ = 0.05 # time step (NEED TO BE 0.05 for Rog_results)
-    ttotal = 5 # total time of evolution (NEED TO GO TILL 50 for Rog_results)
+    ttotal = 20 # total time of evolution (NEED TO GO TILL 50 for Rog_results)
     tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution
     Δx = 1E-3 # length of the box of interacting neutrinos at a site/shape function width of neutrinos in cm 
 
@@ -38,8 +38,8 @@ function main()
     # Create an array ω with N elements. Each element of the array is zero.
     ω = fill(0, N) 
 
-    # Initialize psi to be a product state (alternating down and up)
-    ψ = productMPS(s, n -> isodd(n) ? "Dn" : "Up")
+    # Initialize psi to be a product state (First half to be spin down and other half to be spin up)
+    ψ = productMPS(s, n -> n <= N/2 ? "Dn" : "Up")
 
     #extract output from the expect.jl file where the survival probability values were computed at each timestep
     Sz_array, prob_surv_array = evolve(s, τ, n, ω, B, N, Δx, ψ, cutoff, tolerance, ttotal)
