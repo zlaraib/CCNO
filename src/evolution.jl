@@ -11,8 +11,8 @@ include("gates_function.jl")  # Include the gates_functions.jl file
 # cutoff = truncation threshold for the SVD in MPS (unitless, number)
 # ttotal = ttotal time (sec)
 
-# This test uses the evolve function to evolve the ψ state in time and compute the expectation values of Sz at each time step, along 
-# with their survival probabilities.The time evolution utilizes the unitary operators created as gates from the create_gates function.
+# This file generates the evolve function which evolves the ψ state in time and computes the expectation values of Sz at each time step, along 
+# with their survival probabilities. The time evolution utilizes the unitary operators created as gates from the create_gates function.
 # The <Sz> and Survival probabilities output from this function are unitless. 
 
 function evolve(s, τ, n, ω, B, N, Δx, ψ, cutoff, tolerance, ttotal)
