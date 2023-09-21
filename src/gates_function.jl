@@ -10,7 +10,7 @@ include("constants.jl")
 # Δx = length of the box of interacting neutrinos at a site (cm) 
 # τ = time step (sec)
 
-# This test runs the create_gates function that holds ITensors Trotter gates and returns the dimensionless unitary 
+# This file generates the create_gates function that holds ITensors Trotter gates and returns the dimensionless unitary 
 # operators govered by the Hamiltonian which includes effects of the vacuum and self-interaction potential for each site.
 
 function create_gates(s, n, ω, B, N, Δx, τ)
@@ -35,16 +35,15 @@ function create_gates(s, n, ω, B, N, Δx, τ)
             hj = 
             ((2.0* √2 * G_F * (n[i]+ n[j])/(2*((Δx)^3)) * 1/N) * 
             (op("Sz", s_i) * op("Sz", s_j) +
-             1/2 * op("S+", s_i) * op("S-", s_j) +
-             1/2 * op("S-", s_i) * op("S+", s_j)))
+            1/2 * op("S+", s_i) * op("S-", s_j) +
+            1/2 * op("S-", s_i) * op("S+", s_j)))
              
-             if ω[i] != 0 && ω[j] != 0
-                hj += (1/(N-1))* 
-                ((ω[i] * B[1] * op("Sx", s_i)* op("Id", s_j))  + (ω[j] * op("Sx", s_j) * op("Id", s_i))) + 
-                ((ω[i] * B[2] * op("Sy", s_i)* op("Id", s_j))  + (ω[j] * op("Sy", s_j) * op("Id", s_i))) +
-                ((ω[i] * B[3] * op("Sz", s_i)* op("Id", s_j))  + (ω[j] * op("Sz", s_j) * op("Id", s_i))) 
-                     
-             end
+            if ω[i] != 0 && ω[j] != 0
+               hj += (1/(N-1))* 
+               ((ω[i] * B[1] * op("Sx", s_i)* op("Id", s_j))  + (ω[j] * op("Sx", s_j) * op("Id", s_i))) + 
+               ((ω[i] * B[2] * op("Sy", s_i)* op("Id", s_j))  + (ω[j] * op("Sy", s_j) * op("Id", s_i))) +
+               ((ω[i] * B[3] * op("Sz", s_i)* op("Id", s_j))  + (ω[j] * op("Sz", s_j) * op("Id", s_i)))
+            end
             
             # make Trotter gate Gj that would correspond to each gate in the gate array of ITensors             
             Gj = exp(-im * τ/2 * hj)
