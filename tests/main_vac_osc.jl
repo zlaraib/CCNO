@@ -8,6 +8,7 @@ include("../src/constants.jl")
 # We are simulating the time evolution of a 1D spin chain with N sites, where each site is a spin-1/2 particle. 
 # The simulation is done by applying a sequence of unitary gates to an initial state of the system, 
 # which is a product state where each site alternates between up and down.
+
 function main()
   N = 4 # number of sites
   cutoff = 1E-14 # specifies a truncation threshold for the SVD in MPS representation
@@ -17,7 +18,7 @@ function main()
   tolerance  = 1E-5 # acceptable level of error or deviation from the exact value or solution
 
   # Make an array of 'site' indices and label as s 
-  # conserve_qns=true conserves the total spin quantum number "S"(in z direction) in the system as it evolves
+  # conserve_qns=false doesnt conserve the total spin quantum number "S"(in z direction) in the system as it evolves
   s = siteinds("S=1/2", N; conserve_qns=false)  
 
   # Initialize an array of zeros for all N particles
@@ -27,15 +28,15 @@ function main()
   n = mu.* fill((Δx)^3/(sqrt(2) * G_F), N)
       
   # Create a B vector which would be same for all N particles 
-  B = [1, 0, 0]           
+  B = [1, 0, 0]          
   
   # Create an array ω with N elements. Each element of the array is a const pi.
   ω = fill(π, N) 
 
   gates = create_gates(s, n, ω, B, N, Δx, τ)
   
-  # Initialize psi to be a product state (alternating up and down)
-  ψ = productMPS(s, n -> isodd(n) ? "Up" : "Dn")
+  # Initialize psi to be a product state (First half to be spin down and other half to be spin up)
+  ψ = productMPS(s, n -> n <= N/2 ? "Dn" : "Up")
 
   #extract output from the expect.jl file where the survival probability values were computed at each timestep
   Sz_array, prob_surv_array = evolve(s, τ, n, ω, B, N, Δx, ψ, cutoff, tolerance, ttotal)
