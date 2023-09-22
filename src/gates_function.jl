@@ -38,7 +38,7 @@ function create_gates(s, n, ω, B, N, Δx, τ)
             1/2 * op("S+", s_i) * op("S-", s_j) +
             1/2 * op("S-", s_i) * op("S+", s_j)))
              
-            if ω[i] != 0 && ω[j] != 0
+            if ω[i] != 0 || ω[j] != 0
                hj += (1/(N-1))* 
                ((ω[i] * B[1] * op("Sx", s_i)* op("Id", s_j))  + (ω[j] * op("Sx", s_j) * op("Id", s_i))) + 
                ((ω[i] * B[2] * op("Sy", s_i)* op("Id", s_j))  + (ω[j] * op("Sy", s_j) * op("Id", s_i))) +
