@@ -40,6 +40,41 @@ function main()
 
   #extract output from the expect.jl file where the survival probability values were computed at each timestep
   Sz_array, prob_surv_array = evolve(s, τ, n, ω, B, N, Δx, ψ, cutoff, tolerance, ttotal)
+  
+  expected_sz_array = Float64[]
+
+  for t in 0.0:τ:ttotal
+
+    for i in 1:(N-1)
+
+        if ω[i] != 0
+
+          if B[1] == 1
+
+            # Compute the expected value based on the derived analytic formula
+            global expected_sz = -0.5 * cos(ω[i] * t)
+
+          end
+          if B[3] == -1
+
+            # Compute the expected value based on the derived analytic formula
+            global expected_sz = -0.5
+
+          end
+
+        end
+
+    end
+
+    push!(expected_sz_array, expected_sz)
+
+  end
+
+  # Check if every element in Sz_array is less than tolerance away from the corresponding element in 
+  # for B vector in x, it checks that the value of Sz at the first spin site oscillates between -0.5 and 0.5 
+  # for B vector in -z, it checks that the value of Sz at the firstspin site never oscillates from -0.5 
+  @assert all(abs.(Sz_array .- expected_sz_array) .< tolerance)
+
   # Plotting P_surv vs t
   plot(0.0:τ:τ*(length(Sz_array)-1), Sz_array, xlabel = "t", ylabel = "<Sz>", legend = false, size=(700, 600), aspect_ratio=:auto,margin= 10mm) 
 
