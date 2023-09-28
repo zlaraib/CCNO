@@ -9,7 +9,7 @@ include("../src/constants.jl")
 # which is a product state where each site alternates between up and down.
 
 function main()
-    N = 40 # number of sites (NEED TO GO TILL 96 for Rog_results)
+    N = 4 # number of sites (NEED TO GO TILL 96 for Rog_results)
     cutoff = 1E-14 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT)
     τ = 0.05 # time step (NEED TO BE 0.05 for Rog_results)
     ttotal = 20 # total time of evolution (NEED TO GO TILL 50 for Rog_results)
