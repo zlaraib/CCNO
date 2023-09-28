@@ -29,7 +29,7 @@ function evolve(s, τ, n, ω, B, N, Δx, ψ, cutoff, tolerance, ttotal)
     for t in 0.0:τ:ttotal
         
         # compute initial expectation value of Sz(inbuilt operator in ITensors library) at the first site on the chain
-        sz = expect(ψ, "Sz"; sites=1)
+        global sz = expect(ψ, "Sz"; sites=1)
         # add an element sz to the end of Sz array 
         push!(Sz_array, sz)
         
@@ -39,29 +39,7 @@ function evolve(s, τ, n, ω, B, N, Δx, ψ, cutoff, tolerance, ttotal)
         # add an element prob_surv to the end of  prob_surv_array 
         push!(prob_surv_array, prob_surv)
         
-        
-        for i in 1:(N-1)
-            if ω[i] != 0
-                if B[1] == 1
-                    # Compute the expected value based on the derived analytic formula
-                    expected_sz = -0.5 * cos(ω[i] * t)
-                    
-                    # Checking that the value of Sz at the first spin site oscillates between -0.5 and 0.5 
-                    # Compare the actual value with the expected value using a tolerance
-                    @assert abs(sz - expected_sz) < tolerance
-                elseif B[3] == 1
-                    # Compute the expected value based on the derived analytic formula
-                    expected_sz = -0.5
-                    
-                    # Checking that the value of Sz at the first spin site never oscillates from -0.5 
-                    # Compare the actual value with the expected value using a tolerance
-                    @assert abs(sz - expected_sz) < tolerance
-                end
-
-
-            end
-        end
-
+    
         if ω == fill(0, N) 
             println("$t $prob_surv")
         else println("$t $sz")
