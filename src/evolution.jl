@@ -15,7 +15,7 @@ include("gates_function.jl")  # Include the gates_functions.jl file
 # with their survival probabilities. The time evolution utilizes the unitary operators created as gates from the create_gates function.
 # The <Sz> and Survival probabilities output from this function are unitless. 
 
-function evolve(s, τ, n, ω, B, N, Δx, ψ, cutoff, tolerance, ttotal)
+function evolve(s, τ, n, ω, ω_a, ω_b, B, N, Δx, ψ, cutoff, tolerance, ttotal)
     
     # Create empty array to store sz values 
     Sz_array = Float64[]
@@ -33,14 +33,13 @@ function evolve(s, τ, n, ω, B, N, Δx, ψ, cutoff, tolerance, ttotal)
         # add an element sz to the end of Sz array 
         push!(Sz_array, sz)
         
-        
         # survival probability for a (we took first) neutrino to be found in its initial flavor state (in this case a spin down)
         prob_surv = 0.5 * (1 - 2 * sz)
+
         # add an element prob_surv to the end of  prob_surv_array 
         push!(prob_surv_array, prob_surv)
         
-    
-        if ω == fill(0, N) 
+        if ω_a == fill(0, N) || ω_b == fill(0, N) 
             println("$t $prob_surv")
         else println("$t $sz")
         end
@@ -53,11 +52,11 @@ function evolve(s, τ, n, ω, B, N, Δx, ψ, cutoff, tolerance, ttotal)
         # The apply function is smart enough to determine which site indices each gate has, and then figure out where to apply it to our MPS. 
         # It automatically handles truncating the MPS and handles the non-nearest-neighbor gates in this example.
         ψ = apply(gates, ψ; cutoff)
+
         # The normalize! function is used to ensure that the MPS is properly normalized after each application of the time evolution gates. 
         # This is necessary to ensure that the MPS represents a valid quantum state.
         normalize!(ψ)
     end
-
     return Sz_array, prob_surv_array
 end
 
