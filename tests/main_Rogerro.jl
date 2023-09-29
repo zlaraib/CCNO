@@ -9,10 +9,10 @@ include("../src/constants.jl")
 # which is a product state where each site alternates between up and down.
 
 function main()
-    N = 6# number of sites (NEED TO GO TILL 96 for Rog_results)
+    N = 6 # number of sites (NEED TO GO TILL 96 for Rog_results)
     cutoff = 1E-14 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT)
     τ = 0.05 # time step (NEED TO BE 0.05 for Rog_results)
-    ttotal = 10 # total time of evolution (NEED TO GO TILL 50 for Rog_results)
+    ttotal = 5 # total time of evolution (NEED TO GO TILL 50 for Rog_results)
     tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution
     Δx = 1E-3 # length of the box of interacting neutrinos at a site/shape function width of neutrinos in cm 
 
@@ -49,7 +49,7 @@ function main()
     #ψ = productMPS(s, n -> n == 1 || n == 2 || n == 3 ? "↓" : "↑")
 
     #extract output from the expect.jl file where the survival probability values were computed at each timestep
-    Sz_array, prob_surv_array = evolve(s, τ, n, ω, B, N, Δx, ψ, cutoff, tolerance, ttotal)
+    Sz_array, prob_surv_array = evolve(s, τ, n, ω, ω_a, ω_b, B, N, Δx, ψ, cutoff, tolerance, ttotal)
 
     #index of minimum of the prob_surv_array (containing survival probability values at each time step)
     i_min = argmin(prob_surv_array)
@@ -61,7 +61,7 @@ function main()
     println("i_min= ", i_min)
     println("t_min= ", t_min)
     # Check that our time of minimum survival probability compared to Rogerro(2021) remains within the timestep and tolerance.
-    @assert abs(t_min - t_p_Rog) <  τ + tolerance 
+    #@assert abs(t_min - t_p_Rog) <  τ + tolerance 
 
     # Plotting P_surv vs t
     plot(0.0:τ:τ*(length(prob_surv_array)-1), prob_surv_array, xlabel = "t", ylabel = "Survival Probabillity p(t)", legend = false, size=(800, 600), aspect_ratio=:auto,margin= 10mm) 

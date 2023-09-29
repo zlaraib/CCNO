@@ -35,14 +35,20 @@ function main()
     # Create a B vector which would be same for all N particles 
     B = [0, 0, 1]
 
-    # Create an array ω with N elements. Each element of the array is zero.
-    ω = fill(0, N) 
+    # # Create an array ω with N elements. Each element of the array is zero.
+    # ω = fill(0, N) 
+    # Create arrays ω_a and ω_b
+    ω_a = fill(0, div(N, 2))
+    ω_b = fill(0, div(N, 2))
+
+    # Concatenate ω_a and ω_b to form ω with N elements. Each element of the array is a const 0.
+    ω = vcat(ω_a, ω_b)
 
     # Initialize psi to be a product state (First half to be spin down and other half to be spin up)
     ψ = productMPS(s, n -> n <= N/2 ? "Dn" : "Up")
 
     #extract output from the expect.jl file where the survival probability values were computed at each timestep
-    Sz_array, prob_surv_array = evolve(s, τ, n, ω, B, N, Δx, ψ, cutoff, tolerance, ttotal)
+    Sz_array, prob_surv_array = evolve(s, τ, n, ω, ω_a, ω_b, B, N, Δx, ψ, cutoff, tolerance, ttotal)
 
     #index of minimum of the prob_surv_array (containing survival probability values at each time step)
     i_min = argmin(prob_surv_array)
