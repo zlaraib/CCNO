@@ -43,7 +43,7 @@ function main()
   ψ = productMPS(s, n -> n <= N/2 ? "Dn" : "Up")
 
   #extract output from the expect.jl file where the survival probability values were computed at each timestep
-  Sz_array, prob_surv_array = evolve(s, τ, n, ω, B, N, Δx, ψ, cutoff, tolerance, ttotal)
+  Sz_array, prob_surv_array = evolve(s, τ, n, ω, B, N, Δx, ψ, cutoff, ttotal)
   
   expected_sz_array = Float64[]
   expected_sz= Float64[]

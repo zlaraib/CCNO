@@ -15,7 +15,7 @@ include("gates_function.jl")  # Include the gates_functions.jl file
 # with their survival probabilities. The time evolution utilizes the unitary operators created as gates from the create_gates function.
 # The <Sz> and Survival probabilities output from this function are unitless. 
 
-function evolve(s, τ, n, ω, B, N, Δx, ψ, cutoff, tolerance, ttotal)
+function evolve(s, τ, n, ω, B, N, Δx, ψ, cutoff, ttotal)
     
     # Create empty array to store sz values 
     Sz_array = Float64[]

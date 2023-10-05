@@ -48,7 +48,7 @@ function main()
     ψ = productMPS(s, n -> n <= N/2 ? "Dn" : "Up")
 
     #extract output from the expect.jl file where the survival probability values were computed at each timestep
-    Sz_array, prob_surv_array = evolve(s, τ, n, ω, B, N, Δx, ψ, cutoff, tolerance, ttotal)
+    Sz_array, prob_surv_array = evolve(s, τ, n, ω, B, N, Δx, ψ, cutoff, ttotal)
 
     #index of minimum of the prob_surv_array (containing survival probability values at each time step)
     i_min = argmin(prob_surv_array)
