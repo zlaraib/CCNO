@@ -15,7 +15,7 @@ include("gates_function.jl")  # Include the gates_functions.jl file
 # with their survival probabilities. The time evolution utilizes the unitary operators created as gates from the create_gates function.
 # The <Sz> and Survival probabilities output from this function are unitless. 
 
-function evolve(s, τ, n, ω, ω_a, ω_b, B, N, Δx, ψ, cutoff, tolerance, ttotal)
+function evolve(s, τ, n, ω, B, N, Δx, ψ, cutoff, tolerance, ttotal)
     
     # Create empty array to store sz values 
     Sz_array = Float64[]
@@ -29,7 +29,7 @@ function evolve(s, τ, n, ω, ω_a, ω_b, B, N, Δx, ψ, cutoff, tolerance, ttot
     for t in 0.0:τ:ttotal
         
         # compute initial expectation value of Sz(inbuilt operator in ITensors library) at the first site on the chain
-        global sz = expect(ψ, "Sz"; sites=1)
+        sz = expect(ψ, "Sz"; sites=1)
         # add an element sz to the end of Sz array 
         push!(Sz_array, sz)
         
@@ -38,10 +38,10 @@ function evolve(s, τ, n, ω, ω_a, ω_b, B, N, Δx, ψ, cutoff, tolerance, ttot
 
         # add an element prob_surv to the end of  prob_surv_array 
         push!(prob_surv_array, prob_surv)
-        
-        if ω_a == fill(0, N) || ω_b == fill(0, N) 
-            println("$t $prob_surv")
-        else println("$t $sz")
+
+        if n == fill(0, N)
+            println("$t $sz")
+        else println("$t $prob_surv")
         end
 
         # Writing an if statement in a shorthand way that checks whether the current value of t is equal to ttotal, 
