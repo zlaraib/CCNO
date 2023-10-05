@@ -34,7 +34,7 @@ pipeline {
     } 
 }
 	stage('Rogerro(2021)_file'){ steps{
-		sh 'julia tests/main_Rog.jl'
+		sh 'julia tests/main_Rogerro.jl'
 		archiveArtifacts artifacts: '*.pdf'
     } 
 }
