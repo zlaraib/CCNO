@@ -33,7 +33,7 @@ function create_gates(s, n, ω, B, N, Δx, τ)
             # mu pairs divided by 2 to avoid double counting
             
             hj = 
-            ((2.0* √2 * G_F * (n[i]+ n[j])/(2*((Δx)^3)) * 1/N) * 
+            (2.0/N * √2 * G_F * (n[i]+ n[j])/(2*((Δx)^3))  * 
             (op("Sz", s_i) * op("Sz", s_j) +
             1/2 * op("S+", s_i) * op("S-", s_j) +
             1/2 * op("S-", s_i) * op("S+", s_j)))
