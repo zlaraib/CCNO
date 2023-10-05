@@ -23,13 +23,18 @@ pipeline {
 		sh 'julia tests/test_file.jl'
     } 
 }
-	stage('Time Evolution'){ steps{
+	stage('Vacuum oscillation'){ steps{
 		sh 'julia tests/main_vac_osc.jl'
 		archiveArtifacts artifacts: '*.pdf'
     }
 } 
-	stage('Rogerro(2021)_file'){ steps{
+	stage('Self interaction'){ steps{
 		sh 'julia tests/main_self_interaction.jl'
+		archiveArtifacts artifacts: '*.pdf'
+    } 
+}
+	stage('Rogerro(2021)_file'){ steps{
+		sh 'julia tests/main_Rog.jl'
 		archiveArtifacts artifacts: '*.pdf'
     } 
 }
