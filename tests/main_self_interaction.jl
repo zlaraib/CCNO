@@ -35,8 +35,6 @@ function main()
     # Create a B vector which would be same for all N particles 
     B = [0, 0, 1]
 
-    # # Create an array ω with N elements. Each element of the array is zero.
-    # ω = fill(0, N) 
     # Create arrays ω_a and ω_b
     ω_a = fill(0, div(N, 2))
     ω_b = fill(0, div(N, 2))
