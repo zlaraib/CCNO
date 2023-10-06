@@ -33,17 +33,31 @@ pipeline {
 		archiveArtifacts artifacts: '*.pdf'
     } 
 }
-	stage('Rog_particle_loop_test_file'){ steps{
-		sh 'julia tests/Rog_particle_loop.jl'
-		archiveArtifacts artifacts: '*.pdf'
-    } 
-}
 	stage('Rogerro(2021)_file'){ steps{
 		sh 'julia tests/main_Rogerro.jl'
 		archiveArtifacts artifacts: '*.pdf'
     } 
 }
-
+	stage('Rog_particle_loop_test_file'){ steps{
+		sh 'julia tests/Rog_particle_loop.jl'
+		archiveArtifacts artifacts: '*.pdf'
+    } 
+}
+	stage('t_p vs del_w (N=4) test_file'){ steps{
+		sh 'julia tests/t_p_Rog_t_min_vs_delta_w(w_a=-w_b).jl'
+		archiveArtifacts artifacts: '*.pdf'
+    } 
+}
+	stage('t_p vs N(del_w=1, w_a=2, w_b=0) test_file'){ steps{
+		sh 'julia tests/t_p_Rog_t_min_vs_N(delta_w=1, w_a=2, w_b=0.jl'
+		archiveArtifacts artifacts: '*.pdf'
+    } 
+}
+	stage('t_p vs N(del_w=1, w_a=1, w_b=-1) test_file'){ steps{
+		sh 'julia tests/t_p_Rog_t_min_vs_N(delta_w=1, w, w_a=1, w_b=-1)).jl'
+		archiveArtifacts artifacts: '*.pdf'
+    } 
+}
 }// stages{
 
     post {
