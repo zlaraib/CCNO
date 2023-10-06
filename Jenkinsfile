@@ -54,7 +54,7 @@ pipeline {
     } 
 }
 	stage('t_p vs N(del_w=1, w_a=1, w_b=-1) test_file'){ steps{
-		sh 'julia tests/t_p_vs_N_for_symmetric_w_a_and_w_b_using_del_w_1.jl'
+		sh 'julia tests/t_p_vs_N_for_symmteric_w_a_and_w_b_using_del_w_1.jl'
 		archiveArtifacts artifacts: '*.pdf'
     } 
 }
