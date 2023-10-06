@@ -48,21 +48,44 @@ function main()
     #extract output from the expect.jl file where the survival probability values were computed at each timestep
     Sz_array, prob_surv_array = evolve(s, τ, n, ω, B, N, Δx, ψ, cutoff, ttotal)
 
-    #index of minimum of the prob_surv_array (containing survival probability values at each time step)
-    i_min = argmin(prob_surv_array)
-    # time at which the mimimum survival probability is reached
-    t_min = τ * i_min - τ
+    # This function scans through the array, compares each element with its neighbors, 
+    # and returns the index of the first local minimum it encounters. 
+    # If no local minimum is found, it returns -1 to indicate that.
+    function find_first_local_minima_index(arr)
+        n = length(arr)
+        for i in 2:(n-1)
+            if arr[i] < arr[i-1] && arr[i] < arr[i+1]
+                return i
+            end
+        end
+        return -1  
+    end
+    
+    # Index of first minimum of the prob_surv_array (containing survival probability values at each time step)
+    i_first_local_min = find_first_local_minima_index(prob_surv_array)
+    
+    # Writing if_else statement to communicate if local minima (not) found
+    if i_first_local_min != -1
+        println("Index of the first local minimum: ", i_first_local_min)
+    else
+        println("No local minimum found in the array.")
+    end
+
+    # Time at which the first mimimum survival probability is reached
+    t_min = τ * i_first_local_min - τ
+    println("Corresponding time of first minimum index= ", t_min)
+
     # Rogerro(2021)'s fit for the first minimum of the survival probability reached for a time t_p 
     t_p_Rog = a_t*log(N) + b_t * sqrt(N) + c_t
     println("t_p_Rog= ",t_p_Rog)
-    println("i_min= ", i_min)
-    println("t_min= ", t_min)
-    # Check that our time of minimum survival probability compared to Rogerro(2021) remains within the timestep and tolerance.
+
+    # Check that our time of first minimum survival probability compared to Rogerro(2021) remains within the timestep and tolerance.
     @assert abs(t_min - t_p_Rog) <  τ + tolerance 
 
     # Plotting P_surv vs t
-    plot(0.0:τ:τ*(length(prob_surv_array)-1), prob_surv_array, xlabel = "t", ylabel = "Survival Probabillity p(t)", legend = false, size=(800, 600), aspect_ratio=:auto,margin= 10mm) 
-
+    plot(0.0:τ:τ*(length(prob_surv_array)-1), prob_surv_array, xlabel = "t", ylabel = "Survival Probabillity p(t)",title = "Running main_self_interaction script", legend = true, size=(800, 600), aspect_ratio=:auto,margin= 10mm, label= ["My_plot_for_N$(N)"]) 
+    scatter!([t_p_Rog],[prob_surv_array[i_first_local_min]], label= ["t_p_Rog"])
+    scatter!([t_min],[prob_surv_array[i_first_local_min]], label= ["My_t_min)"], legendfontsize=5, legend=:topright)
     # Save the plot as a PDF file
     savefig("Survival probability vs t (only self-interaction term plot).pdf")
 end 
