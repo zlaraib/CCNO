@@ -44,17 +44,17 @@ pipeline {
     } 
 }
 	stage('t_p vs del_w (N=4) test_file'){ steps{
-		sh 'julia tests/t_p_Rog_t_min_vs_delta_w(w_a=-w_b).jl'
+		sh 'julia tests/t_p_vs_delta_w_for_symmetric_w_a_and_w_b_using_N_4.jl'
 		archiveArtifacts artifacts: '*.pdf'
     } 
 }
 	stage('t_p vs N(del_w=1, w_a=2, w_b=0) test_file'){ steps{
-		sh 'julia tests/t_p_Rog_t_min_vs_N(delta_w=1, w_a=2, w_b=0.jl'
+		sh 'julia tests/t_p_vs_N_for_w_a_2_w_b_0_using_del_w_1.jl'
 		archiveArtifacts artifacts: '*.pdf'
     } 
 }
 	stage('t_p vs N(del_w=1, w_a=1, w_b=-1) test_file'){ steps{
-		sh 'julia tests/t_p_Rog_t_min_vs_N(delta_w=1, w, w_a=1, w_b=-1)).jl'
+		sh 'julia tests/t_p_vs_N_for_symmetric_w_a_and_w_b_using_del_w_1.jl'
 		archiveArtifacts artifacts: '*.pdf'
     } 
 }
