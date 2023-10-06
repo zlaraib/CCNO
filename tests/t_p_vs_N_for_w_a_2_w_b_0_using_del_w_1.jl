@@ -59,6 +59,6 @@ for N in 4:4:20
 end
 
 # Create the plot
-plot(4:4:20, t_p_Rog_array, label="t_p_Rog", xlabel="N", ylabel="Minimum Time (t_p)", title = "Running t_p_Rog_t_min_vs_N(delta_w=1, w_a=2, w_b=0) script")
+plot(4:4:20, t_p_Rog_array, label="t_p_Rog", xlabel="N", ylabel="Minimum Time (t_p)", title = "Running t_p_vs_N_for_w_a_2_w_b_0_using_del_w_1 script")
 plot!(4:4:20, t_min_array, label="t_min")
-savefig("t_p_Rog_t_min_vs_N(delta_w=1, w_a=2, w_b=0).pdf")
+savefig("t_p_vs_N_for_w_a_2_w_b_0_using_del_w_1.pdf")
