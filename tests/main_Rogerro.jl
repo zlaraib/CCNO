@@ -85,7 +85,7 @@ function main()
     #@assert abs(t_min - t_p_Rog) <  τ + tolerance 
 
     # Plotting P_surv vs t
-    plot(0.0:τ:τ*(length(prob_surv_array)-1), prob_surv_array, xlabel = "t", ylabel = "Survival Probabillity p(t)",title = "Running main_Rogerro script", legend = false, size=(800, 600), aspect_ratio=:auto,margin= 10mm, label= ["My_plot_for_N$(N)"]) 
+    plot(0.0:τ:τ*(length(prob_surv_array)-1), prob_surv_array, xlabel = "t", ylabel = "Survival Probabillity p(t)",title = "Running main_Rogerro script", legend = false, size=(700, 600), aspect_ratio=:auto,margin= 10mm, label= ["My_plot_for_N$(N)"]) 
     scatter!([t_p_Rog],[prob_surv_array[i_first_local_min]], label= ["t_p_Rog"])
     scatter!([t_min],[prob_surv_array[i_first_local_min]], label= ["My_t_min)"], legendfontsize=5, legend=:topright)
     # Save the plot as a PDF file
