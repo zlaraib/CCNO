@@ -1,14 +1,16 @@
 using ITensors
 include("constants.jl")
 
-# Expected units of the quantities defined in the files in tests directory that are being used in the gates function.                                                                   
-# s = site index array (dimensionless and unitless)          
-# n = no.of neutrinos (dimensionless and unitless)
-# ω = vacuum oscillation angular frequency (rad/s)
-# B = Normalized vector related to mixing angle in vacuum oscillations (dimensionless constant)
-# N = Total no.of sites (dimensionless and unitless)
-# Δx = length of the box of interacting neutrinos at a site (cm) 
-# τ = time step (sec)
+"""
+Expected units of the quantities defined in the files in tests directory that are being used in the gates function.                                                                   
+s = site index array (dimensionless and unitless)          
+n = no.of neutrinos (dimensionless and unitless)
+ω = vacuum oscillation angular frequency (rad/s)
+B = Normalized vector related to mixing angle in vacuum oscillations (dimensionless constant)
+N = Total no.of sites (dimensionless and unitless)
+Δx = length of the box of interacting neutrinos at a site (cm) 
+τ = time step (sec)
+"""
 
 # This file generates the create_gates function that holds ITensors Trotter gates and returns the dimensionless unitary 
 # operators govered by the Hamiltonian which includes effects of the vacuum and self-interaction potential for each site.

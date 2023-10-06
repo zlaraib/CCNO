@@ -1,15 +1,17 @@
 include("gates_function.jl")  # Include the gates_functions.jl file
 
-# Expected units of the quantities defined in the files in tests directory that are being used in the evolve function                                                                   
-# s = site index array (dimensionless and unitless) 
-# τ = time step (sec)      
-# n = no.of neutrinos (dimensionless and unitless)
-# ω = vacuum oscillation angular frequency (rad/s)
-# B = Normalized vector related to mixing angle in vacuum oscillations (dimensionless constant)
-# N = Total no.of sites (dimensionless and unitless)
-# Δx = length of the box of interacting neutrinos at a site (cm) 
-# cutoff = truncation threshold for the SVD in MPS (unitless, number)
-# ttotal = ttotal time (sec)
+"""
+Expected units of the quantities defined in the files in tests directory that are being used in the evolve function                                                                   
+s = site index array (dimensionless and unitless) 
+τ = time step (sec)      
+n = no.of neutrinos (dimensionless and unitless)
+ω = vacuum oscillation angular frequency (rad/s)
+B = Normalized vector related to mixing angle in vacuum oscillations (dimensionless constant)
+N = Total no.of sites (dimensionless and unitless)
+Δx = length of the box of interacting neutrinos at a site (cm) 
+cutoff = truncation threshold for the SVD in MPS (unitless, number)
+ttotal = ttotal time (sec)
+"""
 
 # This file generates the evolve function which evolves the ψ state in time and computes the expectation values of Sz at each time step, along 
 # with their survival probabilities. The time evolution utilizes the unitary operators created as gates from the create_gates function.
