@@ -33,6 +33,11 @@ pipeline {
 		archiveArtifacts artifacts: '*.pdf'
     } 
 }
+	stage('Rog_particle_loop_test_file'){ steps{
+		sh 'julia tests/Rog_particle_loop.jl'
+		archiveArtifacts artifacts: '*.pdf'
+    } 
+}
 	stage('Rogerro(2021)_file'){ steps{
 		sh 'julia tests/main_Rogerro.jl'
 		archiveArtifacts artifacts: '*.pdf'
