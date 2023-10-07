@@ -57,8 +57,8 @@ t_min_array = Float64[]
 
 
 # Loop from 4 to 20 particles with an increment of 4 particles each time
-for N in 4:4:20
-    t_p_Rog, t_min = main(N, Δω)
+for N in 4:4:12
+    t_p_Rog, t_min = @time main(N, Δω)
     push!(t_p_Rog_array, t_p_Rog)
     push!(t_min_array, t_min)
 end
