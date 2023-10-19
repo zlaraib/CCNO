@@ -82,7 +82,7 @@ function main()
     println("t_p_Rog= ",t_p_Rog)
 
     # Check that our time of first minimum survival probability compared to Rogerro(2021) remains within the timestep and tolerance.
-    #@assert abs(t_min - t_p_Rog) <  τ + tolerance 
+    @assert abs(t_min - t_p_Rog) <  τ + tolerance 
 
     # Plotting P_surv vs t
     plot(0.0:τ:τ*(length(prob_surv_array)-1), prob_surv_array, xlabel = "t", ylabel = "Survival Probabillity p(t)",title = "Running main_Rogerro script", legend = false, size=(700, 600), aspect_ratio=:auto,margin= 10mm, label= ["My_plot_for_N$(N)"]) 
