@@ -1,22 +1,24 @@
 using ITensors
 include("constants.jl")
+include("geometric_func.jl")
+include("shape_func.jl")
 
 """
 Expected units of the quantities defined in the files in tests directory that are being used in the gates function.                                                                   
 s = site index array (dimensionless and unitless)          
-N = Total no.of neutrinos in the domain (dimensionless and unitless)
+n = no.of neutrinos (dimensionless and unitless)
 ω = vacuum oscillation angular frequency (rad/s)
 B = Normalized vector related to mixing angle in vacuum oscillations (dimensionless constant)
-N_sites = Total no.of sites (dimensionless and unitless)
+N = Total no.of sites (dimensionless and unitless)
 Δx = length of the box of interacting neutrinos at a site (cm) 
 τ = time step (sec)
-energy_sign = array of sign of the energy (1 or -1): 1 for neutrinos and -1 for anti-neutrinos (unitless)
 """
 
 # This file generates the create_gates function that holds ITensors Trotter gates and returns the dimensionless unitary 
 # operators govered by the Hamiltonian which includes effects of the vacuum and self-interaction potential for each site.
 
-function create_gates(s, N, ω, B, N_sites, Δx, ψ,τ,energy_sign)
+function create_gates(s, n, ω, B, N, Δx, p, x, Δp, τ)
+    
     # Make gates (1,2),(2,3),(3,4),... i.e. unitary gates which act on any (non-neighboring) pairs of sites in the chain.
     # Create an empty ITensors array that will be our Trotter gates
     gates = ITensor[]                                                              
@@ -35,38 +37,20 @@ function create_gates(s, N, ω, B, N_sites, Δx, ψ,τ,energy_sign)
             # ni and nj are the neutrions at site i and j respectively.
             # mu pairs divided by 2 to avoid double counting
             
-            if energy_sign[i]*energy_sign[j]>0
-
-                # # MF self int hamiltonian
-                # sz_i = expect(ψ, "Sz"; sites=i)
-                # sy_i = expect(complex(ψ), "Sy"; sites=i)
-                # sx_i = expect(ψ, "Sx"; sites=i)
-                # sz_j = expect(ψ, "Sz"; sites=j)
-                # sy_j = expect(complex(ψ), "Sy"; sites=j) 
-                # sx_j = expect(ψ, "Sx"; sites=j)
-                
-                # interaction_strength = (2.0/N_sites * √2 * G_F * (N[i]+ N[j])/(2* ((Δx)^3)))
-                # hj = interaction_strength * 
-                # (
-                # ((sx_i * op("Id", s_i) * op("Sx", s_j)) + (sy_i * op("Id", s_i) * op("Sy", s_j)) + (sz_i * op("Id", s_i) * op("Sz", s_j))) + 
-                # ( (op("Sx", s_i) * op("Id", s_j) * sx_j) + (op("Sy", s_i) * op("Id", s_j) * sy_j) + (op("Sz", s_i) * op("Id", s_j) * sz_j) ) -
-                # ((sx_i * op("Id", s_i) * op("Id", s_j) * sx_j) + (sy_i * op("Id", s_i) * op("Id", s_j) * sy_j)  + (sz_i * op("Id", s_i) * op("Id", s_j) * sz_j))
-                # )
-                # MB self int  Hamiltonian
-                interaction_strength = (2.0/N_sites * √2 * G_F * (N[i]+ N[j])/(2* ((Δx)^3)))
-                hj =  interaction_strength * 
-                (op("Sz", s_i) * op("Sz", s_j) +
-                1/2 * op("S+", s_i) * op("S-", s_j) +
-                1/2 * op("S-", s_i) * op("S+", s_j))
-            end
-            # Vacuum Oscillation Hamiltonian 
-            if ω[i] != 0 || ω[j] != 0
-                hj += (1/(N_sites-1))* energy_sign[i]*(
-                    (ω[i] * B[1] * op("Sx", s_i)* op("Id", s_j))  + (ω[i] * B[2] * op("Sy", s_i)* op("Id", s_j))  + (ω[i] * B[3] * op("Sz", s_i)* op("Id", s_j)) )
-                hj += (1/(N_sites-1))*energy_sign[j]* (
-                    (ω[j] * B[1] * op("Id", s_i) * op("Sx", s_j)) + (ω[j] * B[2]  * op("Id", s_i)* op("Sy", s_j)) + (ω[j] * B[3]  * op("Id", s_i)* op("Sz", s_j)) )
-            end
-            # has_fermion_string(hj) = true
+            hj = 
+            ((2.0* √2 * G_F * (n[i]+ n[j])/(2*((Δx)^3)) * 1/N) * shape_func(x, Δp, N)* geometric_func(N,p) *
+            (op("Sz", s_i) * op("Sz", s_j) +
+             1/2 * op("S+", s_i) * op("S-", s_j) +
+             1/2 * op("S-", s_i) * op("S+", s_j)))
+             
+             if ω[i] != 0 && ω[j] != 0
+                hj += (1/(N-1))* 
+                ((ω[i] * B[1] * op("Sx", s_i)* op("Id", s_j))  + (ω[j] * op("Sx", s_j) * op("Id", s_i))) + 
+                ((ω[i] * B[2] * op("Sy", s_i)* op("Id", s_j))  + (ω[j] * op("Sy", s_j) * op("Id", s_i))) +
+                ((ω[i] * B[3] * op("Sz", s_i)* op("Id", s_j))  + (ω[j] * op("Sz", s_j) * op("Id", s_i))) 
+                     
+             end
+            
             # make Trotter gate Gj that would correspond to each gate in the gate array of ITensors             
             Gj = exp(-im * τ/2 * hj)
             # has_fermion_string(hj) = true
