@@ -23,12 +23,17 @@ pipeline {
 		sh 'julia tests/test_file.jl'
     } 
 }
-	stage('Time Evolution'){ steps{
+	stage('Only Vacuum oscillations'){ steps{
 		sh 'julia tests/main_vac_osc.jl'
 		archiveArtifacts artifacts: '*.pdf'
     }
 } 
-	stage('Rogerro(2021)_file'){ steps{
+	stage('Rogerro(2021)_only_self_interactions'){ steps{
+		sh 'julia tests/main_self_interaction_Rog.jl'
+		archiveArtifacts artifacts: '*.pdf'
+    } 
+}
+	stage('Full_geometric_and_Shape_function'){ steps{
 		sh 'julia tests/main_self_interaction.jl'
 		archiveArtifacts artifacts: '*.pdf'
     } 
