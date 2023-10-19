@@ -1,19 +1,24 @@
 using ITensors
 include("constants.jl")
+include("geometric_func.jl")
+include("shape_func.jl")
 
-# Expected units of the quantities defined in the files in tests directory that are being used in the gates function.                                                                   
-# s = site index array (dimensionless and unitless)          
-# n = no.of neutrinos (dimensionless and unitless)
-# ω = vacuum oscillation angular frequency (rad/s)
-# B = Normalized vector related to mixing angle in vacuum oscillations (dimensionless constant)
-# N = Total no.of sites (dimensionless and unitless)
-# Δx = length of the box of interacting neutrinos at a site (cm) 
-# τ = time step (sec)
+"""
+Expected units of the quantities defined in the files in tests directory that are being used in the gates function.                                                                   
+s = site index array (dimensionless and unitless)          
+n = no.of neutrinos (dimensionless and unitless)
+ω = vacuum oscillation angular frequency (rad/s)
+B = Normalized vector related to mixing angle in vacuum oscillations (dimensionless constant)
+N = Total no.of sites (dimensionless and unitless)
+Δx = length of the box of interacting neutrinos at a site (cm) 
+τ = time step (sec)
+"""
 
-# This test runs the create_gates function that holds ITensors Trotter gates and returns the dimensionless unitary 
+# This file generates the create_gates function that holds ITensors Trotter gates and returns the dimensionless unitary 
 # operators govered by the Hamiltonian which includes effects of the vacuum and self-interaction potential for each site.
 
-function create_gates(s, n, ω, B, N, Δx, τ)
+function create_gates(s, n, ω, B, N, Δx, p, x, Δp, τ)
+    
     # Make gates (1,2),(2,3),(3,4),... i.e. unitary gates which act on any (non-neighboring) pairs of sites in the chain.
     # Create an empty ITensors array that will be our Trotter gates
     gates = ITensor[]                                                              
@@ -33,7 +38,7 @@ function create_gates(s, n, ω, B, N, Δx, τ)
             # mu pairs divided by 2 to avoid double counting
             
             hj = 
-            ((2.0* √2 * G_F * (n[i]+ n[j])/(2*((Δx)^3)) * 1/N) * 
+            ((2.0* √2 * G_F * (n[i]+ n[j])/(2*((Δx)^3)) * 1/N) * shape_func(x, Δp, N)* geometric_func(N,p) *
             (op("Sz", s_i) * op("Sz", s_j) +
              1/2 * op("S+", s_i) * op("S-", s_j) +
              1/2 * op("S-", s_i) * op("S+", s_j)))
