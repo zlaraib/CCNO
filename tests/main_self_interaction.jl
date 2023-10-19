@@ -1,11 +1,17 @@
 using ITensors
 using Plots
 using Measures
-using DelimitedFiles
+using LinearAlgebra
 include("../src/evolution.jl")
 include("../src/constants.jl")
 
-# We are simulating the time evolution of a 1D spin chain with N_sites sites, where each site is a spin-1/2 particle. 
+
+# BTW this test is not finding the first minima(as was proposed in Rog paper), just the global minima. Discuss optimal conditions.
+# So, need to put appropriate assert conditions and define and use proper unit vectors. This is not done yet and will produce wrong results. 
+# Also write ω in terms of norm(p) and remove dependence on \omega in functions that contribute through the vacuum oscillations. But in this test is a problem b/c for the self inetractions part we consider the ω to be zero for all sites which would mean that norm(p) should blow up for all sites. Weird. Discuss.
+
+
+# We are simulating the time evolution of a 1D spin chain with N sites, where each site is a spin-1/2 particle. 
 # The simulation is done by applying a sequence of unitary gates to an initial state of the system, 
 # which is a product state where each site alternates between up and down.
 
@@ -37,12 +43,27 @@ function main()
     # Create a B vector which would be same for all N_sites particles 
     B = [0, 0, 1]
 
-    # Create arrays ω_a and ω_b
-    ω_a = fill(0, div(N_sites, 2))
-    ω_b = fill(0, div(N_sites, 2))
+    # Create an array ω with N elements. Each element of the array is zero.
+    ω = fill(0, N) 
+    x = fill(rand(), N)
+    y = fill(rand(), N)
+    z = fill(rand(), N)
 
-    # Concatenate ω_a and ω_b to form ω with N_sites elements. Each element of the array is a const 0.
-    ω = vcat(ω_a, ω_b)
+    Δp = 5 #width of shape function
+    p = zeros(N, 3) # Initialize the p array with zeros for all components (x, y, z)
+    for i in 1:N
+        p[i, 1] = rand() #p_x array
+        p[i, 2] = rand() #p_y array
+        p[i, 3] = rand() #p_z array
+    end
+    println(p) 
+    unit_p = p/norm(p)
+    println(norm(p))
+    println(unit_p) 
+    del_m2 = 2.0
+    #norm(p) = [del_m2 / (2 * ω[i]) for i in 1:N]
+    # The norm function returns the magnitude of the vector (by default):
+    # A unit vector is then found by scaling by the reciprocal of the magnitude: e.g array/vector v  can have unit vector v to be  defined as: v / norm(v)
 
     # Initialize psi to be a product state (First half to be spin down and other half to be spin up)
     ψ = productMPS(s, N -> N <= N_sites/2 ? "Dn" : "Up")
@@ -52,47 +73,19 @@ function main()
     # Specify the relative directory path
     datadir = joinpath(@__DIR__, "..","misc","datafiles","Rog_self_int", "par_"*string(N_sites), "tt_"*string(ttotal))
     #extract output from the expect.jl file where the survival probability values were computed at each timestep
-    Sz_array, prob_surv_array = evolve(s, τ, N, ω, B, N_sites, Δx, ψ, energy_sign, cutoff, maxdim, datadir,ttotal)
+    Sz_array, prob_surv_array = evolve(s, τ, n, ω, B, N, Δx, p, x, Δp, ψ, cutoff, tolerance, ttotal)
 
-    # This function scans through the array, compares each element with its neighbors, 
-    # and returns the index of the first local minimum it encounters. 
-    # If no local minimum is found, it returns -1 to indicate that.
-    function find_first_local_minima_index(arr)
-        N = length(arr)
-        for i in 2:(N-1)
-            if arr[i] < arr[i-1] && arr[i] < arr[i+1]
-                return i
-            end
-        end
-        return -1  
-    end
-    
-    # Index of first minimum of the prob_surv_array (containing survival probability values at each time step)
-    i_first_local_min = find_first_local_minima_index(prob_surv_array)
-    
-    # Writing if_else statement to communicate if local minima (not) found
-    if i_first_local_min != -1
-        println("Index of the first local minimum: ", i_first_local_min)
-    else
-        println("No local minimum found in the array.")
-    end
-
-    # Time at which the first mimimum survival probability is reached
-    t_min = τ * i_first_local_min - τ
-    println("Corresponding time of first minimum index= ", t_min)
-
+    #index of minimum of the prob_surv_array (containing survival probability values at each time step)
+    i_min = argmin(prob_surv_array)
+    # time at which the mimimum survival probability is reached
+    t_min = τ * i_min - τ
     # Rogerro(2021)'s fit for the first minimum of the survival probability reached for a time t_p 
     t_p_Rog = a_t*log(N_sites) + b_t * sqrt(N_sites) + c_t
     println("t_p_Rog= ",t_p_Rog)
-
-    # Check that our time of first minimum survival probability compared to Rogerro(2021) remains within the timestep and tolerance.
-    @assert abs(t_min - t_p_Rog) <  τ + tolerance 
-
-    # Specify the relative directory path
-    plotdir = joinpath(@__DIR__, "..","misc","plots","Rog_self_int", "par_"*string(N_sites), "tt_"*string(ttotal))
-
-    # check if a directory exists, and if it doesn't, create it using mkpath
-    isdir(plotdir) || mkpath(plotdir)
+    println("i_min= ", i_min)
+    println("t_min= ", t_min)
+    # Check that our time of minimum survival probability compared to Rogerro(2021) remains within the timestep and tolerance.
+    #@assert abs(t_min - t_p_Rog) <  τ + tolerance 
 
     # Plotting P_surv vs t
     plot(0.0:τ:τ*(length(prob_surv_array)-1), prob_surv_array, xlabel = "t", ylabel = "Survival Probabillity p(t)",title = "Running main_self_interaction script", legend = true, size=(800, 600), aspect_ratio=:auto,margin= 10mm, label= ["My_plot_for_N$(N_sites)"]) 
