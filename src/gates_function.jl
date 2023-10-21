@@ -4,32 +4,43 @@ include("geometric_func.jl")
 include("shape_func.jl")
 
 """
-Expected units of the quantities defined in the files in tests directory that are being used in the gates function.                                                                   
-s = site index array (dimensionless and unitless)          
-n = no.of neutrinos (dimensionless and unitless)
-ω = vacuum oscillation angular frequency (rad/s)
-B = Normalized vector related to mixing angle in vacuum oscillations (dimensionless constant)
-N = Total no.of sites (dimensionless and unitless)
-Δx = length of the box of interacting neutrinos at a site (cm) 
-τ = time step (sec)
+    Expected units of the quantities defined in the files in tests directory that are being used in the gates function.                                                                   
+    s = site index array (dimensionless and unitless)          
+    n = no.of neutrinos (dimensionless and unitless)
+    ω = vacuum oscillation angular frequency (rad/s)
+    B = Normalized vector related to mixing angle in vacuum oscillations (dimensionless constant)
+    N = Total no.of sites (dimensionless and unitless)
+    Δx = length of the box of interacting neutrinos at a site (cm) 
+    τ = time step (sec)
 """
 
 # This file generates the create_gates function that holds ITensors Trotter gates and returns the dimensionless unitary 
 # operators govered by the Hamiltonian which includes effects of the vacuum and self-interaction potential for each site.
 
-function create_gates(s, n, ω, B, N, Δx, p, x, Δp, τ)
+function create_gates(s, n, B, N, Δx, del_m2, p, p_mod, p_hat, x, Δp, shape_name, τ)
     
     # Make gates (1,2),(2,3),(3,4),... i.e. unitary gates which act on any (non-neighboring) pairs of sites in the chain.
     # Create an empty ITensors array that will be our Trotter gates
     gates = ITensor[]                                                              
-    
-    for i in 1:(N_sites-1)
-        for j in i+1:N_sites
+    if del_m2 == 0
+        ω = zeros(N)
+    elseif del_m2 == 2 * π
+       global ω = fill(π, N) # added global so we can access and use this global variable without the need to pass them as arguments to another function
+    else
+        global ω = [del_m2 / (2 * p_i_mod) for p_i_mod in p_mod]
+    end
+    println("ω = ", ω)
+    for i in 1:(N-1)
+        for j in i+1:N
             #s_i, s_j are non-neighbouring spin site/indices from the s array
             s_i = s[i]                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
             s_j = s[j]
             # assert B vector to have a magnitude of 1 while preserving its direction.
             @assert norm(B) == 1
+            # Get the shape function result for each pair of i and j 
+            shape_result = shape_func(x, Δp, i, j, shape_name)
+            # Calculate the geometric factor for each pair of i and j within the loop
+            geometric_factor = geometric_func(p, p_hat, i, j)
 
             # Our neutrino system Hamiltonian of self-interaction term represents 1D Heisenberg model.
             # total Hamiltonian of the system is a sum of local terms hj, where hj acts on sites i and j which are paired for gates to latch onto.
@@ -38,7 +49,7 @@ function create_gates(s, n, ω, B, N, Δx, p, x, Δp, τ)
             # mu pairs divided by 2 to avoid double counting
             
             hj = 
-            ((2.0* √2 * G_F * (n[i]+ n[j])/(2*((Δx)^3)) * 1/N) * shape_func(x, Δp, N)* geometric_func(N,p) *
+            ((2.0* √2 * G_F * (n[i]+ n[j])/(2*((Δx)^3)) * 1/N) * shape_result * geometric_factor *
             (op("Sz", s_i) * op("Sz", s_j) +
              1/2 * op("S+", s_i) * op("S-", s_j) +
              1/2 * op("S-", s_i) * op("S+", s_j)))
