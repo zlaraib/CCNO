@@ -5,8 +5,8 @@ using LinearAlgebra
 using DelimitedFiles
 include("../src/evolution.jl")
 include("../src/constants.jl")
-
-#This test needs to produce consistent results when we write ω in terms of norm(p). That part is still not done. 
+include("../src/shape_func.jl")
+include("../src/momentum.jl")
 
 # We are simulating the time evolution of a 1D spin chain with N sites, where each site is a spin-1/2 particle. 
 # The simulation is done by applying a sequence of unitary gates to an initial state of the system, 
@@ -14,46 +14,48 @@ include("../src/constants.jl")
 
 
 function main()
-  N_sites = 4 # number of sites
-  cutoff = 1E-14 # specifies a truncation threshold for the SVD in MPS representation
-  τ = 0.1 # time step 
-  ttotal = 5.0 # total time of evolution 
-  Δx = 1E-3 # length of the box of interacting neutrinos at a site/shape function width of neutrinos in cm 
-  tolerance  = 1E-5 # acceptable level of error or deviation from the exact value or solution
-  maxdim = 1000 #bond dimension
+  N = 4 # number of sites, #variable
+  cutoff = 1E-14 # specifies a truncation threshold for the SVD in MPS representation #variable
+  τ = 0.1 # time step #variable
+  ttotal = 5.0 # total time of evolution #variable
+  Δx = 1E-3 # length of the box of interacting neutrinos at a site/shape function width of neutrinos in cm #variable
+  tolerance  = 1E-5 # acceptable level of error or deviation from the exact value or solution #variable
+  Δp = 1 # shape function width #variable
+  del_m2 = 2*π # Fixed for this vacuum oscillation case for omega =pi. dont change it to keep consistent results. 
+
 
   # Make an array of 'site' indices and label as s 
   # conserve_qns=false doesnt conserve the total spin quantum number "S"(in z direction) in the system as it evolves
-  s = siteinds("S=1/2", N; conserve_qns=false)  
+  s = siteinds("S=1/2", N; conserve_qns=false)  #Fixed
 
-  # Initialize an array of zeros for all N_sites particles
-  mu = zeros(N_sites)
+  # Initialize an array of zeros for all N particles
+  mu = zeros(N) #Fixed
                                 
-  # Create an array of dimension N_sites and fill it with the value 1/(sqrt(2) * G_F). This is the number of neutrinos.
-  N = mu.* fill((Δx)^3/(sqrt(2) * G_F), N_sites)
+  # Create an array of dimension N and fill it with the value 1/(sqrt(2) * G_F). This is the number of neutrinos.
+  n = mu.* fill((Δx)^3/(sqrt(2) * G_F), N) 
       
   # Create a B vector which would be same for all N particles 
-  B = [1, 0, 0]          
-  
-  # Create an array ω with N elements. Each element of the array is a const pi.
-  ω = fill(π, N)
+  B = [1, 0, 0] # variable. But only other case that can be tested from this file is B = [0,0,-1].
 
-  ###Any and all possible values work for now b/c they are not being tested in the vacuum oscillation part of hamiltonian/gates
-  x = zeros(N)
-  y = fill(rand(), N)
-  z = zeros(N)
-  p = zeros(N, 3) 
-  Δp = 1
-  ###
+  x = zeros(N) # variable.
+  y = fill(rand(), N) # variable.
+  z = zeros(N) # variable.
+ 
+  # Generate an Nx3 array for p with random values
+  p = ones(N, 3) # variable, but will need to make sure that p_vector.jl file if statment stays constsnet 
 
-  gates = create_gates(s, n, ω, B, N, Δx, p, x, Δp, τ)
-  
+  # extract output of p_hat and p_mod for the p vector defined above for all sites. 
+  p_mod, p_hat = momentum(p,N)
+
+  #Select a shape function based on the shape_name variable form the list defined in dictionary in shape_func file
+  shape_name = "none"  # variable.
+
   # Initialize psi to be a product state (First half to be spin down and other half to be spin up)
-  ψ = productMPS(s, n -> n <= N/2 ? "Dn" : "Up")
+  ψ = productMPS(s, n -> n <= N/2 ? "Dn" : "Up") # Fixed to produce consistent results for the test assert conditions 
 
   #extract output from the expect.jl file where the survival probability values were computed at each timestep
-  Sz_array, prob_surv_array = evolve(s, τ, n, ω, B, N, Δx, p, x, Δp, ψ, cutoff, tolerance, ttotal)
-  
+  Sz_array, prob_surv_array = evolve(s, τ, n, B, N, Δx,del_m2, p, p_mod, p_hat, x, Δp, ψ, shape_name, cutoff, tolerance, ttotal)
+
   expected_sz_array = Float64[]
   expected_sz= Float64[]
   
