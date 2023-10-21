@@ -5,7 +5,7 @@ using LinearAlgebra
 include("../src/evolution.jl")
 include("../src/constants.jl")
 include("../src/shape_func.jl")
-
+include("../src/momentum.jl")
 
 # BTW this test is not finding the first minima(as was proposed in Rog paper), just the global minima. Discuss optimal conditions.
 # So, need to put appropriate assert conditions.
