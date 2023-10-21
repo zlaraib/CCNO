@@ -29,7 +29,7 @@ function evolve(s, τ, n, B, N, Δx, del_m2, p, p_mod, p_hat, x, Δp, ψ, shape_
 
      # Compute and print survival probability (found from <Sz>) at each time step then apply the gates to go to the next time
      for t in 0.0:τ:ttotal
-        
+        x += x .+ t # displacing particle's position at each timestep
         # compute initial expectation value of Sz(inbuilt operator in ITensors library) at the first site on the chain
         sz = expect(ψ, "Sz"; sites=1)
         # add an element sz to the end of Sz array 
