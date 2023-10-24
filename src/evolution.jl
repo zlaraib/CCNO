@@ -1,5 +1,5 @@
 include("gates_function.jl")  # Include the gates_functions.jl file
-
+include("momentum.jl")
 """
     Expected units of the quantities defined in the files in tests directory that are being used in the evolve function                                                                   
     s = site index array (dimensionless and unitless) 
@@ -17,7 +17,7 @@ include("gates_function.jl")  # Include the gates_functions.jl file
 # with their survival probabilities. The time evolution utilizes the unitary operators created as gates from the create_gates function.
 # The <Sz> and Survival probabilities output from this function are unitless. 
 
-function evolve(s, τ, n, B, N, Δx, del_m2, p, p_mod, p_hat, x, Δp, ψ, shape_name, cutoff, tolerance, ttotal)
+function evolve(s, τ, n, B, N, Δx, del_m2, p, x, Δp, ψ, shape_name, cutoff, tolerance, ttotal)
     
     # Create empty array to store sz values 
     Sz_array = Float64[]
@@ -25,11 +25,17 @@ function evolve(s, τ, n, B, N, Δx, del_m2, p, p_mod, p_hat, x, Δp, ψ, shape_
     prob_surv_array = Float64[]
 
     # extract the gates array generated in the gates_function file
-    gates = create_gates(s, n, B, N, Δx,del_m2, p, p_mod, p_hat, x, Δp, shape_name, τ)
+    gates = create_gates(s, n, B, N, Δx,del_m2, p, x, Δp, shape_name, τ)
+
+    # extract output of p_hat and p_mod for the p vector defined above for all sites. 
+    p_mod, p_hat = momentum(p,N) 
+    p_x_hat = [sub_array[1] for sub_array in p_hat]
 
      # Compute and print survival probability (found from <Sz>) at each time step then apply the gates to go to the next time
      for t in 0.0:τ:ttotal
-        x += x .+ t # displacing particle's position at each timestep
+        
+        x .+=  (p_x_hat .* t)  # displacing particle's position at each timestep
+
         # compute initial expectation value of Sz(inbuilt operator in ITensors library) at the first site on the chain
         sz = expect(ψ, "Sz"; sites=1)
         # add an element sz to the end of Sz array 
