@@ -37,15 +37,12 @@ function main()
   # Create a B vector which would be same for all N particles 
   B = [1, 0, 0] # variable. But only other case that can be tested from this file is B = [0,0,-1].
 
-  x = zeros(N) # variable.
+  x = fill(rand(), N) # variable.
   y = fill(rand(), N) # variable.
   z = zeros(N) # variable.
  
   # Generate an Nx3 array for p with random values
   p = ones(N, 3) # variable, but will need to make sure that p_vector.jl file if statment stays constsnet 
-
-  # extract output of p_hat and p_mod for the p vector defined above for all sites. 
-  p_mod, p_hat = momentum(p,N)
 
   #Select a shape function based on the shape_name variable form the list defined in dictionary in shape_func file
   shape_name = "none"  # variable.
@@ -53,8 +50,8 @@ function main()
   # Initialize psi to be a product state (First half to be spin down and other half to be spin up)
   ψ = productMPS(s, n -> n <= N/2 ? "Dn" : "Up") # Fixed to produce consistent results for the test assert conditions 
 
-  #extract output from the expect.jl file where the survival probability values were computed at each timestep
-  Sz_array, prob_surv_array = evolve(s, τ, n, B, N, Δx,del_m2, p, p_mod, p_hat, x, Δp, ψ, shape_name, cutoff, tolerance, ttotal)
+  #extract output for the survival probability values at each timestep
+  Sz_array, prob_surv_array = evolve(s, τ, n, B, N, Δx,del_m2, p, x, Δp, ψ, shape_name, cutoff, tolerance, ttotal)
 
   expected_sz_array = Float64[]
   expected_sz= Float64[]
