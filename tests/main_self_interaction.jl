@@ -49,11 +49,8 @@ function main()
     # Initialize psi to be a product state (First half to be spin down and other half to be spin up)
     ψ = productMPS(s, N -> N <= N_sites/2 ? "Dn" : "Up")
 
-    # extract output of p_hat and p_mod for the p vector defined above for all sites. 
-    p_mod, p_hat = momentum(p,N)
-
     #extract output for the survival probability values at each timestep
-    Sz_array, prob_surv_array = evolve(s, τ, n, B, N, Δx,del_m2, p, p_mod, p_hat, x, Δp, ψ, shape_name, cutoff, tolerance, ttotal)
+    Sz_array, prob_surv_array = evolve(s, τ, n, B, N, Δx,del_m2, p, x, Δp, ψ, shape_name, cutoff, tolerance, ttotal)
 
     # Plotting P_surv vs t
     plot(0.0:τ:τ*(length(prob_surv_array)-1), prob_surv_array, xlabel = "t", ylabel = "Survival Probabillity p(t)",title = "Running main_self_interaction script", legend = true, size=(800, 600), aspect_ratio=:auto,margin= 10mm, label= ["My_plot_for_N$(N_sites)"]) 
