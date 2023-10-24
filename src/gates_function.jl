@@ -2,6 +2,8 @@ using ITensors
 include("constants.jl")
 include("geometric_func.jl")
 include("shape_func.jl")
+include("momentum.jl")
+
 
 """
     Expected units of the quantities defined in the files in tests directory that are being used in the gates function.                                                                   
@@ -17,11 +19,15 @@ include("shape_func.jl")
 # This file generates the create_gates function that holds ITensors Trotter gates and returns the dimensionless unitary 
 # operators govered by the Hamiltonian which includes effects of the vacuum and self-interaction potential for each site.
 
-function create_gates(s, n, B, N, Δx, del_m2, p, p_mod, p_hat, x, Δp, shape_name, τ)
+function create_gates(s, n, B, N, Δx, del_m2, p, x, Δp, shape_name, τ)
     
     # Make gates (1,2),(2,3),(3,4),... i.e. unitary gates which act on any (non-neighboring) pairs of sites in the chain.
     # Create an empty ITensors array that will be our Trotter gates
-    gates = ITensor[]                                                              
+    gates = ITensor[] 
+
+    # extract output of p_hat and p_mod for the p vector defined above for all sites. 
+    p_mod, p_hat = momentum(p,N)  
+                                                     
     if del_m2 == 0
         ω = zeros(N)
     elseif del_m2 == 2 * π
