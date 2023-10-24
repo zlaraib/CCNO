@@ -5,7 +5,6 @@ using LinearAlgebra
 include("../src/evolution.jl")
 include("../src/constants.jl")
 include("../src/shape_func.jl")
-include("../src/momentum.jl")
 
 # We are simulating the time evolution of a 1D spin chain with N sites, where each site is a spin-1/2 particle. 
 # The simulation is done by applying a sequence of unitary gates to an initial state of the system, 
@@ -54,11 +53,8 @@ function main()
     # array p with N rows and 3 columns, all initialized to 0.0 with colums representing components and rows representing sites
     p = zeros(N, 3) #fixed for Rogerro's case
 
-    # extract output of p_hat and p_mod for the p vector defined above for all sites. 
-    p_mod, p_hat = momentum(p,N)
-
     #extract output for the survival probability values at each timestep
-    Sz_array, prob_surv_array = evolve(s, τ, n, B, N, Δx,del_m2, p, p_mod, p_hat, x, Δp, ψ, shape_name, cutoff, tolerance, ttotal)
+    Sz_array, prob_surv_array = evolve(s, τ, n, B, N, Δx,del_m2, p, x, Δp, ψ, shape_name, cutoff, tolerance, ttotal)
 
     # This function scans through the array, compares each element with its neighbors, 
     # and returns the index of the first local minimum it encounters. 
