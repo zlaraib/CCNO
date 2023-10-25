@@ -15,7 +15,7 @@ include("../src/momentum.jl")
 # which is a product state where each site alternates between up and down.
 
 function main()
-    N = 4 # number of sites # variable
+    N = 8 # number of sites # variable
     cutoff = 1E-14 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT) #variable
     τ = 0.05 # time step # variable
     ttotal = 150 # total time of evolution #variable
