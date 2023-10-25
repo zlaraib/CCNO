@@ -16,7 +16,6 @@ include("momentum.jl")
 # This file generates the evolve function which evolves the ψ state in time and computes the expectation values of Sz at each time step, along 
 # with their survival probabilities. The time evolution utilizes the unitary operators created as gates from the create_gates function.
 # The <Sz> and Survival probabilities output from this function are unitless. 
-
 function evolve(s, τ, n, B, N, Δx, del_m2, p, x, Δp, ψ, shape_name, cutoff, tolerance, ttotal)
     
     # Create empty array to store sz values 
@@ -34,7 +33,7 @@ function evolve(s, τ, n, B, N, Δx, del_m2, p, x, Δp, ψ, shape_name, cutoff, 
      # Compute and print survival probability (found from <Sz>) at each time step then apply the gates to go to the next time
      for t in 0.0:τ:ttotal
         
-        x .+=  (p_x_hat .* t)  # displacing particle's position at each timestep
+        x .+=  (p_x_hat .* t)  # displacing particle's position at each timestep #Discuss with sherwood if this should be t ot tau or maybe initialize the x array just before this line. b/c x2-x1 = pxt means that theres uneven time diff between successive displacements of particles
 
         # compute initial expectation value of Sz(inbuilt operator in ITensors library) at the first site on the chain
         sz = expect(ψ, "Sz"; sites=1)
@@ -56,7 +55,7 @@ function evolve(s, τ, n, B, N, Δx, del_m2, p, x, Δp, ψ, shape_name, cutoff, 
         # and if so, it executes the break statement, which causes the loop to terminate early.
         t ≈ ttotal && break
 
-        # apply each gate in gates successively to the wavefunction psi (it is equivalent to time evolving psi according to the time-dependent Hamiltonian represented by gates).
+        # apply each gate in gates(ITensors array) successively to the wavefunction ψ (MPS)(it is equivalent to time evolving psi according to the time-dependent Hamiltonian represented by gates).
         # The apply function is smart enough to determine which site indices each gate has, and then figure out where to apply it to our MPS. 
         # It automatically handles truncating the MPS and handles the non-nearest-neighbor gates in this example.
         ψ = apply(gates, ψ; cutoff)
@@ -72,3 +71,5 @@ function evolve(s, τ, n, B, N, Δx, del_m2, p, x, Δp, ψ, shape_name, cutoff, 
     writedlm(fname2, [t_array prob_surv_array])
     return Sz_array, prob_surv_array
 end
+
+
