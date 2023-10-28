@@ -27,15 +27,16 @@ function main()
     shape_name = "triangular"  # Change this to the desired shape name #variable 
 
     # s is an array of spin 1/2 tensor indices (Index objects) which will be the site or physical indices of the MPS.
-    # We overload siteinds function, which generates custom Index array with Index objects having the tag of total spin quantum number for all N_sites.
-    # conserve_qns=true conserves the total spin quantum number "S" in the system as it evolves
+    # We overload siteinds function, which generates custom Index array with Index objects having the tag of total spin quantum number for all N.
+    # conserve_qns=true conserves the total spin quantum number "S" in the system as it evolves,
+    # i.e. examples of conservation of quantum numbers are the total number of neutrino particles, or the total of all S_z components of this system of spins
     s = siteinds("S=1/2", N; conserve_qns=true) #fixed
     
     # Initialize an array of ones for all N sites
     mu = ones(N) # erg #variable
     
-    # Create an array of dimension N_sites and fill it with the value 1/(sqrt(2) * G_F). This is the number of neutrinos. 
-    N = mu .* fill((Δx)^3/(sqrt(2) * G_F), N_sites)
+    # Create an array of dimension N and fill it with the value 1/(sqrt(2) * G_F). This is the number of neutrinos. 
+    n = mu .* fill((Δx)^3/(sqrt(2) * G_F), N) #fixed
     
     # Create a B vector which would be same for all N particles 
     B = [0, 0, -1] #variable
@@ -46,8 +47,8 @@ function main()
 
     p = rand(N, 3) # p array with random numbers for all components (x, y, z)
 
-    # Initialize psi to be a product state (First half to be spin down and other half to be spin up)
-    ψ = productMPS(s, N -> N <= N_sites/2 ? "Dn" : "Up")
+    # Initialize psi to be a product state (alternating down and up)
+    ψ = productMPS(s, n -> isodd(n) ? "Dn" : "Up") #variable
 
     #extract output for the survival probability values at each timestep
     Sz_array, prob_surv_array = evolve(s, τ, n, B, N, Δx,del_m2, p, x, Δp, ψ, shape_name, cutoff, tolerance, ttotal)
