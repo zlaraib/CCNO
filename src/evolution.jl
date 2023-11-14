@@ -33,7 +33,7 @@ function evolve(s, τ, n, B, N, Δx, del_m2, p, x, Δp, ψ, shape_name, cutoff, 
      # Compute and print survival probability (found from <Sz>) at each time step then apply the gates to go to the next time
      for t in 0.0:τ:ttotal
         
-        x .+=  (p_x_hat .* t)  # displacing particle's position at each timestep #Discuss with sherwood if this should be t ot tau or maybe initialize the x array just before this line. b/c x2-x1 = pxt means that theres uneven time diff between successive displacements of particles
+        x .+=  (p_x_hat .* τ)  # displacing particle's position at each timestep 
 
         # compute initial expectation value of Sz(inbuilt operator in ITensors library) at the first site on the chain
         sz = expect(ψ, "Sz"; sites=1)
