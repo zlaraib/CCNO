@@ -2,12 +2,12 @@
   This function takes in a momentum vector (for all sites) along with their directions 
   and returns its modulus (for all sites) and unit vectors (for all sites and directions)
 """
-function momentum(p, N)
+function momentum(p, N_sites)
 p_hat = []  # Initialize an empty array to collect p_i_hat vectors. This array will contain unit vector(hat) of all sites in all directions
 p_mod = [] #Initialize array that contains mod of all sites 
-  for i in 1:N
+  for i in 1:N_sites
 
-    if p ==  ones(N,3)
+    if p ==  ones(N_sites,3)
       p[i, :] /= norm(p[i, :]) # Normalize each site of p to have magnitude 1. # special addition for this omega = pi case
     end 
 

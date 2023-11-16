@@ -4,10 +4,10 @@ include("momentum.jl")
     Expected units of the quantities defined in the files in tests directory that are being used in the evolve function                                                                   
     s = site index array (dimensionless and unitless) 
     τ = time step (sec)      
-    n = no.of neutrinos (dimensionless and unitless)
+    N = no.of neutrinos (dimensionless and unitless)
     ω = vacuum oscillation angular frequency (rad/s)
     B = Normalized vector related to mixing angle in vacuum oscillations (dimensionless constant)
-    N = Total no.of sites (dimensionless and unitless)
+    N_sites = Total no.of sites (dimensionless and unitless)
     Δx = length of the box of interacting neutrinos at a site (cm) 
     cutoff = truncation threshold for the SVD in MPS (unitless, number)
     ttotal = ttotal time (sec)
@@ -16,7 +16,7 @@ include("momentum.jl")
 # This file generates the evolve function which evolves the ψ state in time and computes the expectation values of Sz at each time step, along 
 # with their survival probabilities. The time evolution utilizes the unitary operators created as gates from the create_gates function.
 # The <Sz> and Survival probabilities output from this function are unitless. 
-function evolve(s, τ, n, B, N, Δx, del_m2, p, x, Δp, ψ, shape_name, cutoff, tolerance, ttotal)
+function evolve(s, τ, N, B, N_sites, Δx, del_m2, p, x, Δp, ψ, shape_name, cutoff, tolerance, ttotal)
     
     # Create empty array to store sz values 
     Sz_array = Float64[]
@@ -24,10 +24,10 @@ function evolve(s, τ, n, B, N, Δx, del_m2, p, x, Δp, ψ, shape_name, cutoff, 
     prob_surv_array = Float64[]
 
     # extract the gates array generated in the gates_function file
-    gates = create_gates(s, n, B, N, Δx,del_m2, p, x, Δp, shape_name, τ)
+    gates = create_gates(s, N, B, N_sites, Δx,del_m2, p, x, Δp, shape_name, τ)
 
     # extract output of p_hat and p_mod for the p vector defined above for all sites. 
-    p_mod, p_hat = momentum(p,N) 
+    p_mod, p_hat = momentum(p,N_sites) 
     p_x_hat = [sub_array[1] for sub_array in p_hat]
 
      # Compute and print survival probability (found from <Sz>) at each time step then apply the gates to go to the next time
@@ -46,7 +46,7 @@ function evolve(s, τ, n, B, N, Δx, del_m2, p, x, Δp, ψ, shape_name, cutoff, 
         # add an element prob_surv to the end of  prob_surv_array 
         push!(prob_surv_array, prob_surv)
 
-        if n == fill(0, N)
+        if N == fill(0, N_sites)
             println("$t $sz")
         else println("$t $prob_surv")
         end

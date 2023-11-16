@@ -14,7 +14,7 @@ include("../src/momentum.jl")
 
 
 function main()
-  N = 4 # number of sites, #variable
+  N_sites = 4 # number of sites, #variable
   cutoff = 1E-14 # specifies a truncation threshold for the SVD in MPS representation #variable
   τ = 0.1 # time step #variable
   ttotal = 5.0 # total time of evolution #variable
@@ -26,39 +26,39 @@ function main()
 
   # Make an array of 'site' indices and label as s 
   # conserve_qns=false doesnt conserve the total spin quantum number "S"(in z direction) in the system as it evolves
-  s = siteinds("S=1/2", N; conserve_qns=false)  #Fixed
+  s = siteinds("S=1/2", N_sites; conserve_qns=false)  #Fixed
 
   # Initialize an array of zeros for all N particles
-  mu = zeros(N) #Fixed
+  mu = zeros(N_sites) #Fixed
                                 
   # Create an array of dimension N and fill it with the value 1/(sqrt(2) * G_F). This is the number of neutrinos.
-  n = mu.* fill((Δx)^3/(sqrt(2) * G_F), N) 
+  N = mu.* fill((Δx)^3/(sqrt(2) * G_F), N_sites) 
       
   # Create a B vector which would be same for all N particles 
   B = [1, 0, 0] # variable. But only other case that can be tested from this file is B = [0,0,-1].
 
-  x = fill(rand(), N) # variable.
-  y = fill(rand(), N) # variable.
-  z = zeros(N) # variable.
+  x = fill(rand(), N_sites) # variable.
+  y = fill(rand(), N_sites) # variable.
+  z = zeros(N_sites) # variable.
  
   # Generate an Nx3 array for p with random values
-  p = ones(N, 3) # variable, but will need to make sure that p_vector.jl file if statment stays constsnet 
+  p = ones(N_sites, 3) # variable, but will need to make sure that p_vector.jl file if statment stays constsnet 
 
   #Select a shape function based on the shape_name variable form the list defined in dictionary in shape_func file
   shape_name = "none"  # variable.
 
   # Initialize psi to be a product state (First half to be spin down and other half to be spin up)
-  ψ = productMPS(s, n -> n <= N/2 ? "Dn" : "Up") # Fixed to produce consistent results for the test assert conditions 
+  ψ = productMPS(s, N -> N <= N_sites/2 ? "Dn" : "Up") # Fixed to produce consistent results for the test assert conditions 
 
   #extract output for the survival probability values at each timestep
-  Sz_array, prob_surv_array = evolve(s, τ, n, B, N, Δx,del_m2, p, x, Δp, ψ, shape_name, cutoff, tolerance, ttotal)
+  Sz_array, prob_surv_array = evolve(s, τ, N, B, N_sites, Δx,del_m2, p, x, Δp, ψ, shape_name, cutoff, tolerance, ttotal)
 
   expected_sz_array = Float64[]
   expected_sz= Float64[]
   
   for t in 0.0:τ:ttotal
 
-    for i in 1:(N-1)
+    for i in 1:(N_sites-1)
 
         if ω[i] != 0
 
