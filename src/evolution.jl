@@ -11,12 +11,13 @@ include("momentum.jl")
     Δx = length of the box of interacting neutrinos at a site (cm) 
     cutoff = truncation threshold for the SVD in MPS (unitless, number)
     ttotal = ttotal time (sec)
+    energy_sign = array of sign of the energy (1 or -1): 1 for neutrinos and -1 for anti-neutrinos
 """
 
 # This file generates the evolve function which evolves the ψ state in time and computes the expectation values of Sz at each time step, along 
 # with their survival probabilities. The time evolution utilizes the unitary operators created as gates from the create_gates function.
 # The <Sz> and Survival probabilities output from this function are unitless. 
-function evolve(s, τ, N, B, N_sites, Δx, del_m2, p, x, Δp, ψ, shape_name, cutoff, tolerance, ttotal)
+function evolve(s, τ, N, B, N_sites, Δx, del_m2, p, x, Δp, ψ, shape_name, energy_sign, cutoff, tolerance, ttotal)
     
     # Create empty array to store sz values 
     Sz_array = Float64[]
@@ -24,7 +25,7 @@ function evolve(s, τ, N, B, N_sites, Δx, del_m2, p, x, Δp, ψ, shape_name, cu
     prob_surv_array = Float64[]
 
     # extract the gates array generated in the gates_function file
-    gates = create_gates(s, N, B, N_sites, Δx,del_m2, p, x, Δp, shape_name, τ)
+    gates = create_gates(s, N, B, N_sites, Δx,del_m2, p, x, Δp, shape_name, τ, energy_sign)
 
     # extract output of p_hat and p_mod for the p vector defined above for all sites. 
     p_mod, p_hat = momentum(p,N_sites) 
