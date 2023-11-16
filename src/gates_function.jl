@@ -8,11 +8,15 @@ include("momentum.jl")
 """
     Expected units of the quantities defined in the files in tests directory that are being used in the gates function.                                                                   
     s = site index array (dimensionless and unitless)          
-    N = no.of neutrinos (dimensionless and unitless)
-    ω = vacuum oscillation angular frequency (rad/s)
-    B = Normalized vector related to mixing angle in vacuum oscillations (dimensionless constant)
+    N = array of no.of neutrinos contained on each site (dimensionless and unitless)
+    B = array of normalized vector related to mixing angle in vacuum oscillations (dimensionless constant)
     N_sites = Total no.of sites (dimensionless and unitless)
-    Δx = length of the box of interacting neutrinos at a site (cm) 
+    Δx = length of the box of interacting neutrinos at a site (cm)
+    del_m2 = difference in mass squared (erg^2)
+    p = array of momentum vectors (erg)
+    x = array of positions of sites (cm)
+    Δp = width of shape function (cm)
+    shape_name = name of the shape function (string) ["none","triangular","flat_top"]
     τ = time step (sec)
 """
 
@@ -27,7 +31,8 @@ function create_gates(s, N, B, N_sites, Δx, del_m2, p, x, Δp, shape_name, τ)
 
     # extract output of p_hat and p_mod for the p vector defined above for all sites. 
     p_mod, p_hat = momentum(p,N_sites)  
-                                                     
+
+    # define an array of vacuum oscillation frequencies (units of ergs)
     if del_m2 == 0
         ω = zeros(N_sites)
     elseif del_m2 == 2 * π
@@ -36,6 +41,7 @@ function create_gates(s, N, B, N_sites, Δx, del_m2, p, x, Δp, shape_name, τ)
         global ω = [del_m2 / (2 * p_i_mod) for p_i_mod in p_mod]
     end
     println("ω = ", ω)
+
     for i in 1:(N_sites-1)
         for j in i+1:N_sites
             #s_i, s_j are non-neighbouring spin site/indices from the s array
