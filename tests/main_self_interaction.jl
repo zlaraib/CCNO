@@ -92,13 +92,14 @@ function main()
 
     # p matrix all with numbers generated from the p_array for all components (x, y, z)
     p = hcat(generate_p_array(N_sites), generate_p_array(N_sites), generate_p_array(N_sites))
+    energy_sign = fill(1, N_sites) # all of the sites are neutrinos
     #p = rand(N_sites, 3) # p array with random numbers for all components (x, y, z)
 
     # Initialize psi to be a product state (First half to be spin down and other half to be spin up)
     ψ = productMPS(s, N -> N <= N_sites/2 ? "Up" : "Dn") # Fixed to produce consistent results for the test assert conditions 
 
     #extract output for the survival probability values at each timestep
-    Sz_array, prob_surv_array = evolve(s, τ, N, B, N_sites, Δx, del_m2, p, x, Δp, ψ, shape_name, cutoff, tolerance, ttotal)
+    Sz_array, prob_surv_array = evolve(s, τ, N, B, N_sites, Δx, del_m2, p, x, Δp, ψ, shape_name, energy_sign, cutoff, tolerance, ttotal)
 
     # Plotting P_surv vs t
     plot(0.0:τ:τ*(length(prob_surv_array)-1), prob_surv_array, xlabel = "t", ylabel = "Survival Probabillity p(t)",title = "Running main_self_interaction script", legend = true, size=(800, 600), aspect_ratio=:auto,margin= 10mm, label= ["My_plot_for_N$(N_sites)"]) 
