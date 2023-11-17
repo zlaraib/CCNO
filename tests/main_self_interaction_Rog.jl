@@ -35,7 +35,7 @@ function main()
     mu = ones(N_sites) # erg #fixed
     
     # Create an array of dimension N and fill it with the value 1/(sqrt(2) * G_F). This is the total number of neutrinos. 
-    N = mu .* fill((Δx)^3/(sqrt(2) * G_F), N_sites)
+    N = mu .* fill(((Δx)^3 )/(√2 * G_F * N_sites), N_sites)
     
     # Create a B vector which would be same for all N particles 
     B = [0, 0, -1] # fixed for Rogerro's case

@@ -61,7 +61,7 @@ function create_gates(s, N, B, N_sites, Δx, del_m2, p, x, Δp, shape_name, τ, 
             # ni and nj are the neutrions at site i and j respectively.
             # mu pairs divided by 2 to avoid double counting
             
-            interaction_strength = (2.0* √2 * G_F * (N[i]+ N[j])/(2*((Δx)^3)) * 1/N_sites) * shape_result * geometric_factor
+            interaction_strength = (2.0* √2 * G_F * (N[i]+ N[j])/(2*((Δx)^3))) * shape_result * geometric_factor
             if energy_sign[i]*energy_sign[j]>0
                 hj = interaction_strength *
                 (op("Sz", s_i) * op("Sz", s_j) +
