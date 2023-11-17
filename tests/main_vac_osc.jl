@@ -22,7 +22,7 @@ function main()
   tolerance  = 1E-5 # acceptable level of error or deviation from the exact value or solution #variable
   Δp = 1 # shape function width #variable
   del_m2 = 2*π # Fixed for this vacuum oscillation case for omega =pi. dont change it to keep consistent results. 
-
+  maxdim = 1 # max bond dimension in MPS truncation
 
   # Make an array of 'site' indices and label as s 
   # conserve_qns=false doesnt conserve the total spin quantum number "S"(in z direction) in the system as it evolves
@@ -52,7 +52,7 @@ function main()
   ψ = productMPS(s, N -> N <= N_sites/2 ? "Dn" : "Up") # Fixed to produce consistent results for the test assert conditions 
 
   #extract output for the survival probability values at each timestep
-  Sz_array, prob_surv_array = evolve(s, τ, N, B, N_sites, Δx,del_m2, p, x, Δp, ψ, shape_name, energy_sign, cutoff, tolerance, ttotal)
+  Sz_array, prob_surv_array = evolve(s, τ, N, B, N_sites, Δx,del_m2, p, x, Δp, ψ, shape_name, energy_sign, cutoff, maxdim, tolerance, ttotal)
 
   expected_sz_array = Float64[]
   expected_sz= Float64[]

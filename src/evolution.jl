@@ -1,23 +1,25 @@
 include("gates_function.jl")  # Include the gates_functions.jl file
 include("momentum.jl")
 """
-    Expected units of the quantities defined in the files in tests directory that are being used in the evolve function                                                                   
-    s = site index array (dimensionless and unitless) 
-    τ = time step (sec)      
-    N = no.of neutrinos (dimensionless and unitless)
-    ω = vacuum oscillation angular frequency (rad/s)
-    B = Normalized vector related to mixing angle in vacuum oscillations (dimensionless constant)
+    Expected units of the quantities defined in the files in tests directory that are being used in the gates function.                                                                   
+    s = site index array (dimensionless and unitless)          
+    N = array of no.of neutrinos contained on each site (dimensionless and unitless)
+    B = array of normalized vector related to mixing angle in vacuum oscillations (dimensionless constant)
     N_sites = Total no.of sites (dimensionless and unitless)
-    Δx = length of the box of interacting neutrinos at a site (cm) 
-    cutoff = truncation threshold for the SVD in MPS (unitless, number)
-    ttotal = ttotal time (sec)
+    Δx = length of the box of interacting neutrinos at a site (cm)
+    del_m2 = difference in mass squared (erg^2)
+    p = array of momentum vectors (erg)
+    x = array of positions of sites (cm)
+    Δp = width of shape function (cm)
+    shape_name = name of the shape function (string) ["none","triangular","flat_top"]
+    τ = time step (sec)
     energy_sign = array of sign of the energy (1 or -1): 1 for neutrinos and -1 for anti-neutrinos
 """
 
 # This file generates the evolve function which evolves the ψ state in time and computes the expectation values of Sz at each time step, along 
 # with their survival probabilities. The time evolution utilizes the unitary operators created as gates from the create_gates function.
 # The <Sz> and Survival probabilities output from this function are unitless. 
-function evolve(s, τ, N, B, N_sites, Δx, del_m2, p, x, Δp, ψ, shape_name, energy_sign, cutoff, tolerance, ttotal)
+function evolve(s, τ, N, B, N_sites, Δx, del_m2, p, x, Δp, ψ, shape_name, energy_sign, cutoff, maxdim, tolerance, ttotal)
     
     # Create empty array to store sz values 
     Sz_array = Float64[]
@@ -59,7 +61,8 @@ function evolve(s, τ, N, B, N_sites, Δx, del_m2, p, x, Δp, ψ, shape_name, en
         # apply each gate in gates(ITensors array) successively to the wavefunction ψ (MPS)(it is equivalent to time evolving psi according to the time-dependent Hamiltonian represented by gates).
         # The apply function is smart enough to determine which site indices each gate has, and then figure out where to apply it to our MPS. 
         # It automatically handles truncating the MPS and handles the non-nearest-neighbor gates in this example.
-        ψ = apply(gates, ψ; cutoff)
+        ψ = apply(gates, ψ; cutoff, maxdim)
+        
 
         # The normalize! function is used to ensure that the MPS is properly normalized after each application of the time evolution gates. 
         # This is necessary to ensure that the MPS represents a valid quantum state.

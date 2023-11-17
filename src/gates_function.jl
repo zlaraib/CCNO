@@ -61,19 +61,19 @@ function create_gates(s, N, B, N_sites, Δx, del_m2, p, x, Δp, shape_name, τ, 
             # ni and nj are the neutrions at site i and j respectively.
             # mu pairs divided by 2 to avoid double counting
             
-            interaction_strength = ((2.0* √2 * G_F * (N[i]+ N[j])/(2*((Δx)^3)) * 1/N_sites) * shape_result * geometric_factor
+            interaction_strength = (2.0* √2 * G_F * (N[i]+ N[j])/(2*((Δx)^3)) * 1/N_sites) * shape_result * geometric_factor
             if energy_sign[i]*energy_sign[j]>0
                 hj = interaction_strength *
                 (op("Sz", s_i) * op("Sz", s_j) +
                 1/2 * op("S+", s_i) * op("S-", s_j) +
-                1/2 * op("S-", s_i) * op("S+", s_j)))
+                1/2 * op("S-", s_i) * op("S+", s_j))
             else
-                hj = interaction_strength * 
-                (-2.*op("Sz",s_i) * op("S_z",s_j) + 
+                hj = - interaction_strength * 
+                ((-2 *op("Sz",s_i) * op("Sz",s_j)) + 
                 op("S+", s_i) * op("S-", s_j) +
                 op("S-", s_i) * op("S+", s_j))
-             
-             # add vacuum oscillation term to the Hamiltonian
+            end
+            # add vacuum oscillation term to the Hamiltonian
              if ω[i] != 0 && ω[j] != 0
                 hj += (1/(N_sites-1))* 
                 ((ω[i] * B[1] * op("Sx", s_i)* op("Id", s_j))  + (ω[j] * op("Sx", s_j) * op("Id", s_i))) + 
