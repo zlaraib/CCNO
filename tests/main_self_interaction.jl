@@ -10,19 +10,25 @@ include("../src/momentum.jl")
 # BTW this test is not finding the first minima(as was proposed in Rog paper), just the global minima. Discuss optimal conditions.
 # So, need to put appropriate assert conditions.
 
+# BTW When you apply gates to an MPS, it will in general increase the bond dimension 
+# (one exception is that single-site gates don’t change the bond dimension), 
+# and if you continue applying gates without truncation the bond dimension will in general grow exponentially.
+# There isn’t a way to set the truncation when you initialize the state
+# this is all from julia itensors discourse answered by matthew fisherman
 # We are simulating the time evolution of a 1D spin chain with N sites, where each site is a spin-1/2 particle. 
 # The simulation is done by applying a sequence of unitary gates to an initial state of the system, 
 # which is a product state where each site alternates between up and down.
 
 function main()
     N_sites = 4 # number of sites # variable
-    cutoff = 1E-14 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT) #variable
+    cutoff = 1E-8 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT) #variable
     τ = 0.05 # time step # variable
     ttotal = 150 # total time of evolution #variable
     tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution #variable
     Δx = 1E-3 # length of the box of interacting neutrinos at a site/shape function width of neutrinos in cm  #variable
     Δp = 5 # width of shape function #variable
     del_m2 = 0 # fixed for 'only' self interactions
+    maxdim = 2 # max bond dimension in MPS truncation
 
     #Select a shape function based on the shape_name variable form the list defined in dictionary in shape_func file
     shape_name = "triangular"  # Change this to the desired shape name #variable 
@@ -49,7 +55,7 @@ function main()
     # # small box (for each 'site')
     # # total vol = V_i 
     # # length of each side = Δx 
-    # Δx^3 = V_i
+    #  Δx^3 = V_i
     # # N_i =  total no.of 'particles' at site i 
     # # n_i  = total no.density of 'particles' at site i 
     # N_i = n_i  * V_i  
@@ -70,9 +76,10 @@ function main()
     # Initialize an array of ones for all N sites
     mu = ones(N_sites) # erg #variable
     
-    # Create an array of dimension N and fill it with the value 1/(sqrt(2) * G_F). This is the number of neutrinos. 
-    N = mu .* fill((Δx)^3/(sqrt(2) * G_F), N_sites) #fixed
-    
+    # Create an array of dimension N and fill it with the value 1/(sqrt(2) * G_F). This is the total number of neutrinos. 
+    N = mu .* fill((L)^3/(sqrt(2) * G_F), N_sites) #fixed
+        
+    n = N/((L)^3) #number density of all neutrinos
     # Create a B vector which would be same for all N particles 
     B = [0, 0, -1] #variable
 
@@ -81,19 +88,18 @@ function main()
     end
     
     x = generate_x_array(N_sites, L)
-    #x = fill(rand(), N) #variable
     y = fill(rand(), N_sites) #variable
     z = fill(rand(), N_sites) #variable
 
     function generate_p_array(N_sites)
         half_N_sites = div(N_sites, 2)
-        return [fill(10.0, half_N_sites); fill(-10.0, half_N_sites)]
+        return [fill(10.0e6, half_N_sites); fill(-10.0e6, half_N_sites)]
     end
 
-    # p matrix all with numbers generated from the p_array for all components (x, y, z)
+    # p matrix with numbers generated from the p_array for all components (x, y, z)
     p = hcat(generate_p_array(N_sites), generate_p_array(N_sites), generate_p_array(N_sites))
-    energy_sign = fill(1, N_sites) # all of the sites are neutrinos
-    #p = rand(N_sites, 3) # p array with random numbers for all components (x, y, z)
+    # Create an array with the first half as 1 and the rest as -1
+    energy_sign = [i <= N_sites ÷ 2 ? 1 : -1 for i in 1:N_sites] # half sites are (e) neutrinos with positive 1 entry while other half is anti (e) neutrinos with negative 1 entry
 
     # Initialize psi to be a product state (First half to be spin down and other half to be spin up)
     ψ = productMPS(s, N -> N <= N_sites/2 ? "Up" : "Dn") # Fixed to produce consistent results for the test assert conditions 
@@ -109,5 +115,3 @@ function main()
 end 
 
 @time main()
-
-             

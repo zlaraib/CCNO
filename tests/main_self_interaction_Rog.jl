@@ -19,7 +19,7 @@ function main()
     Δx = 1E-3 # length of the box of interacting neutrinos at a site/shape function width of neutrinos in cm  # variable.
     Δp = rand() # shape function width # variable.
     del_m2 = 0.0 # Fixed for rog test case. Please dont play with it. 
-
+    maxdim = 4 # max bond dimension in MPS truncation
 
     # s is an array of spin 1/2 tensor indices (Index objects) which will be the site or physical indices of the MPS.
     # We overload siteinds function, which generates custom Index array with Index objects having the tag of total spin quantum number for all N.
@@ -55,7 +55,7 @@ function main()
     energy_sign = fill(1, N_sites) # all of the sites are neutrinos
 
     #extract output for the survival probability values at each timestep
-    Sz_array, prob_surv_array = evolve(s, τ, N, B, N_sites, Δx,del_m2, p, x, Δp, ψ, shape_name, energy_sign, cutoff, tolerance, ttotal)
+    Sz_array, prob_surv_array = evolve(s, τ, N, B, N_sites, Δx,del_m2, p, x, Δp, ψ, shape_name, energy_sign, cutoff, maxdim, tolerance, ttotal)
 
     # This function scans through the array, compares each element with its neighbors, 
     # and returns the index of the first local minimum it encounters. 
