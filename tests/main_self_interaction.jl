@@ -2,6 +2,8 @@ using ITensors
 using Plots
 using Measures
 using LinearAlgebra
+using NDTensors
+#using Random
 include("../src/evolution.jl")
 include("../src/constants.jl")
 include("../src/shape_func.jl")
@@ -24,12 +26,12 @@ function main()
     N_sites = 8 # number of sites # variable
     cutoff = 1E-14 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT) #variable
     τ = 0.05 # time step # sec # variable
-    ttotal = 20 # total time of evolution # sec #variable
+    ttotal = 10 # total time of evolution # sec #variable
     tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution #variable
     Δx = 1E-3 # length of the box of interacting neutrinos at a site in cm  #variable
     Δp = 5 # width of shape function  # cm #variable
     del_m2 = 0 # fixed for 'only' self interactions # (erg^2)
-    maxdim = 500 # max bond dimension in MPS truncation
+    maxdim = 5 # max bond dimension in MPS truncation
 
     #Select a shape function based on the shape_name variable form the list defined in dictionary in shape_func file
     shape_name = "triangular"  # Change this to the desired shape name #variable 
@@ -72,14 +74,14 @@ function main()
     #N_sites = 100 # total particles/sites for all neutrino and anti neutrino electron flavored
 
     V = L^3 
+
+    # Create an array of dimension N and fill it half with values of sites containing all electron neutrinos 
+    # and other half with sites conatining electron anti-neutrino. 
     N_mu_e  = n_mu_e * V 
     N_1 = fill(N_mu_e / (N_sites ÷ 2), N_sites ÷ 2)
     N_mu_e_bar  = n_mu_e_bar * V 
     N_2 = fill(N_mu_e_bar / (N_sites ÷ 2), N_sites ÷ 2)
-    # Create an array of dimension N and fill it half with values of sites containing all electron neutrinos 
-    # and other half with sites conatining electron anti-neutrino. 
-    # This is the total number of neutrinos. 
-    N = vcat(N_1, N_2)
+    N = vcat(N_1, N_2) # This is the total number of neutrinos. 
 
     # s is an array of spin 1/2 tensor indices (Index objects) which will be the site or physical indices of the MPS.
     # We overload siteinds function, which generates custom Index array with Index objects having the tag of total spin quantum number for all N.
@@ -110,9 +112,26 @@ function main()
 
     # Initialize psi to be a product state (First half to be spin down and other half to be spin up)
     ψ = productMPS(s, N -> N <= N_sites/2 ? "Up" : "Dn") # Fixed to produce consistent results for the test assert conditions 
+    
+    # # METHOD 1 to perturb initial state
+    # d = 2 # dimension for the MPS with N_site site indices
+    # # Define a small perturbation strength
+    # epsilon = randn(d^N_sites) # Adjust this as needed
+    # ϵ_MPS = MPS(epsilon,s;cutoff,maxdim) # converting array to MPS 
 
+    # METHOD 2 to perturb initial state
+    # Initialize the state array
+    state = [n <= N_sites ÷ 2 ? "Dn" : "Up" for n in 1:N_sites]
+    ϵ_MPS = randomMPS(s, state, maxdim)
+
+    # Perturb the state by adding random noise to the amplitudes
+    perturbed_ψ = ψ .+ ϵ_MPS
+    ψ = perturbed_ψ 
     #extract output for the survival probability values at each timestep
     Sz_array, prob_surv_array = evolve(s, τ, N, B, N_sites, Δx,del_m2, p, x, Δp, ψ, shape_name, energy_sign, cutoff, maxdim, tolerance, ttotal)
+
+    # rho = outer(ψ', ψ)
+    # println(rho)
 
     # Plotting P_surv vs t
     plot(0.0:τ:τ*(length(prob_surv_array)-1), prob_surv_array, xlabel = "t", ylabel = "Survival Probabillity p(t)", legend = false, size=(800, 600), aspect_ratio=:auto,margin= 10mm) 
