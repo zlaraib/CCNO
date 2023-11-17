@@ -61,8 +61,8 @@ function evolve(s, τ, N, B, N_sites, Δx, del_m2, p, x, Δp, ψ, shape_name, en
         t ≈ ttotal && break
 
         # apply each gate in gates(ITensors array) successively to the wavefunction ψ (MPS)(it is equivalent to time evolving psi according to the time-dependent Hamiltonian represented by gates).
-        # The apply function is smart enough to determine which site indices each gate has, and then figure out where to apply it to our MPS. 
-        # It automatically handles truncating the MPS and handles the non-nearest-neighbor gates in this example.
+        # The apply function is a matrix-vector multiplication operation that is smart enough to determine which site indices each gate has, and then figure out where to apply it to our MPS. 
+        # It truncates the MPS according to the set cutoff and maxdim for all the non-nearest-neighbor gates.
         ψ = apply(gates, ψ; cutoff, maxdim)
         
 
