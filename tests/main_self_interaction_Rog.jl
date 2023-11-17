@@ -13,12 +13,12 @@ include("../src/shape_func.jl")
 function main()
     N_sites = 4 # number of sites (NEED TO GO TILL 96 for Rog_results) # variable.
     cutoff = 1E-14 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT) # variable.
-    τ = 0.05 # time step #fixed for Rogerros result
-    ttotal = 5 # total time of evolution (NEED TO GO TILL 50 for Rog_results) # variable.
+    τ = 0.05 # time step #sec #fixed for Rogerros result
+    ttotal = 5 # total time of evolution #sec # variable.
     tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution # variable.
-    Δx = 1E-3 # length of the box of interacting neutrinos at a site/shape function width of neutrinos in cm  # variable.
-    Δp = rand() # shape function width # variable.
-    del_m2 = 0.0 # Fixed for rog test case. Please dont play with it. 
+    Δx = 1E-3 # length of the box of interacting neutrinos at a site in cm  # variable.
+    Δp = rand() # shape function width #cm # variable.
+    del_m2 = 0.0 # erg^2 # Fixed for rog test case. Please dont play with it. 
     maxdim = 4 # max bond dimension in MPS truncation
 
     # s is an array of spin 1/2 tensor indices (Index objects) which will be the site or physical indices of the MPS.

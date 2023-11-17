@@ -6,7 +6,7 @@ include("momentum.jl")
 
 
 """
-    Expected units of the quantities defined in the files in tests directory that are being used in the gates function.                                                                   
+    Expected (CGS) units of the quantities defined in the files in tests directory that are being used in the gates function.                                                                   
     s = site index array (dimensionless and unitless)          
     N = array of no.of neutrinos contained on each site (dimensionless and unitless)
     B = array of normalized vector related to mixing angle in vacuum oscillations (dimensionless constant)
@@ -19,6 +19,8 @@ include("momentum.jl")
     shape_name = name of the shape function (string) ["none","triangular","flat_top"]
     τ = time step (sec)
     energy_sign = array of sign of the energy (1 or -1): 1 for neutrinos and -1 for anti-neutrinos
+    maxdim = max bond dimension in MPS truncation (unitless and dimensionless)
+    cutoff = truncation threshold for the SVD in MPS representation (unitless and dimensionless)
 """
 
 # This file generates the create_gates function that holds ITensors Trotter gates and returns the dimensionless unitary 
