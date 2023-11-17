@@ -3,7 +3,7 @@ using Plots
 using Measures
 using LinearAlgebra
 using NDTensors
-#using Random
+
 include("../src/evolution.jl")
 include("../src/constants.jl")
 include("../src/shape_func.jl")
@@ -119,14 +119,15 @@ function main()
     # epsilon = randn(d^N_sites) # Adjust this as needed
     # ϵ_MPS = MPS(epsilon,s;cutoff,maxdim) # converting array to MPS 
 
-    # METHOD 2 to perturb initial state
-    # Initialize the state array
-    state = [n <= N_sites ÷ 2 ? "Dn" : "Up" for n in 1:N_sites]
-    ϵ_MPS = randomMPS(s, state, maxdim)
+    # # METHOD 2 to perturb initial state
+    # # Initialize the state array
+    # state = [n <= N_sites ÷ 2 ? "Dn" : "Up" for n in 1:N_sites]
+    # ϵ_MPS = randomMPS(s, state, maxdim)
 
-    # Perturb the state by adding random noise to the amplitudes
-    perturbed_ψ = ψ .+ ϵ_MPS
-    ψ = perturbed_ψ 
+    # # Perturb the state by adding random noise to the amplitudes
+    # perturbed_ψ = ψ .+ ϵ_MPS
+    # ψ = perturbed_ψ 
+
     #extract output for the survival probability values at each timestep
     Sz_array, prob_surv_array = evolve(s, τ, N, B, N_sites, Δx,del_m2, p, x, Δp, ψ, shape_name, energy_sign, cutoff, maxdim, tolerance, ttotal)
 
