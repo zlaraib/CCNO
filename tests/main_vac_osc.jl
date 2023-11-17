@@ -41,6 +41,7 @@ function main()
  
   # Generate an Nx3 array for p with random values
   p = ones(N_sites, 3) # variable, but will need to make sure that p_vector.jl file if statment stays constsnet 
+  energy_sign = fill(1, N_sites) # all of the sites are neutrinos
 
   #Select a shape function based on the shape_name variable form the list defined in dictionary in shape_func file
   shape_name = "none"  # variable.
@@ -49,7 +50,7 @@ function main()
   ψ = productMPS(s, N -> N <= N_sites/2 ? "Dn" : "Up") # Fixed to produce consistent results for the test assert conditions 
 
   #extract output for the survival probability values at each timestep
-  Sz_array, prob_surv_array = evolve(s, τ, N, B, N_sites, Δx,del_m2, p, x, Δp, ψ, shape_name, cutoff, tolerance, ttotal)
+  Sz_array, prob_surv_array = evolve(s, τ, N, B, N_sites, Δx,del_m2, p, x, Δp, ψ, shape_name, energy_sign, cutoff, tolerance, ttotal)
 
   expected_sz_array = Float64[]
   expected_sz= Float64[]

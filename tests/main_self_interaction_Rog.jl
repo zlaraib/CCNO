@@ -52,9 +52,10 @@ function main()
 
     # array p with N rows and 3 columns, all initialized to 0.0 with colums representing components and rows representing sites
     p = zeros(N_sites, 3) #fixed for Rogerro's case
+    energy_sign = fill(1, N_sites) # all of the sites are neutrinos
 
     #extract output for the survival probability values at each timestep
-    Sz_array, prob_surv_array = evolve(s, τ, N, B, N_sites, Δx,del_m2, p, x, Δp, ψ, shape_name, cutoff, tolerance, ttotal)
+    Sz_array, prob_surv_array = evolve(s, τ, N, B, N_sites, Δx,del_m2, p, x, Δp, ψ, shape_name, energy_sign, cutoff, tolerance, ttotal)
 
     # This function scans through the array, compares each element with its neighbors, 
     # and returns the index of the first local minimum it encounters. 

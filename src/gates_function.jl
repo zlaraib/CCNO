@@ -8,18 +8,23 @@ include("momentum.jl")
 """
     Expected units of the quantities defined in the files in tests directory that are being used in the gates function.                                                                   
     s = site index array (dimensionless and unitless)          
-    N = no.of neutrinos (dimensionless and unitless)
-    ω = vacuum oscillation angular frequency (rad/s)
-    B = Normalized vector related to mixing angle in vacuum oscillations (dimensionless constant)
+    N = array of no.of neutrinos contained on each site (dimensionless and unitless)
+    B = array of normalized vector related to mixing angle in vacuum oscillations (dimensionless constant)
     N_sites = Total no.of sites (dimensionless and unitless)
-    Δx = length of the box of interacting neutrinos at a site (cm) 
+    Δx = length of the box of interacting neutrinos at a site (cm)
+    del_m2 = difference in mass squared (erg^2)
+    p = array of momentum vectors (erg)
+    x = array of positions of sites (cm)
+    Δp = width of shape function (cm)
+    shape_name = name of the shape function (string) ["none","triangular","flat_top"]
     τ = time step (sec)
+    energy_sign = array of sign of the energy (1 or -1): 1 for neutrinos and -1 for anti-neutrinos
 """
 
 # This file generates the create_gates function that holds ITensors Trotter gates and returns the dimensionless unitary 
 # operators govered by the Hamiltonian which includes effects of the vacuum and self-interaction potential for each site.
 
-function create_gates(s, N, B, N_sites, Δx, del_m2, p, x, Δp, shape_name, τ)
+function create_gates(s, N, B, N_sites, Δx, del_m2, p, x, Δp, shape_name, τ, energy_sign)
     
     # Make gates (1,2),(2,3),(3,4),... i.e. unitary gates which act on any (non-neighboring) pairs of sites in the chain.
     # Create an empty ITensors array that will be our Trotter gates
@@ -27,7 +32,8 @@ function create_gates(s, N, B, N_sites, Δx, del_m2, p, x, Δp, shape_name, τ)
 
     # extract output of p_hat and p_mod for the p vector defined above for all sites. 
     p_mod, p_hat = momentum(p,N_sites)  
-                                                     
+
+    # define an array of vacuum oscillation frequencies (units of ergs)
     if del_m2 == 0
         ω = zeros(N_sites)
     elseif del_m2 == 2 * π
@@ -36,6 +42,7 @@ function create_gates(s, N, B, N_sites, Δx, del_m2, p, x, Δp, shape_name, τ)
         global ω = [del_m2 / (2 * p_i_mod) for p_i_mod in p_mod]
     end
     println("ω = ", ω)
+
     for i in 1:(N_sites-1)
         for j in i+1:N_sites
             #s_i, s_j are non-neighbouring spin site/indices from the s array
@@ -54,12 +61,19 @@ function create_gates(s, N, B, N_sites, Δx, del_m2, p, x, Δp, shape_name, τ)
             # ni and nj are the neutrions at site i and j respectively.
             # mu pairs divided by 2 to avoid double counting
             
-            hj = 
-            ((2.0* √2 * G_F * (N[i]+ N[j])/(2*((Δx)^3)) * 1/N_sites) * shape_result * geometric_factor *
-            (op("Sz", s_i) * op("Sz", s_j) +
-             1/2 * op("S+", s_i) * op("S-", s_j) +
-             1/2 * op("S-", s_i) * op("S+", s_j)))
+            interaction_strength = ((2.0* √2 * G_F * (N[i]+ N[j])/(2*((Δx)^3)) * 1/N_sites) * shape_result * geometric_factor
+            if energy_sign[i]*energy_sign[j]>0
+                hj = interaction_strength *
+                (op("Sz", s_i) * op("Sz", s_j) +
+                1/2 * op("S+", s_i) * op("S-", s_j) +
+                1/2 * op("S-", s_i) * op("S+", s_j)))
+            else
+                hj = interaction_strength * 
+                (-2.*op("Sz",s_i) * op("S_z",s_j) + 
+                op("S+", s_i) * op("S-", s_j) +
+                op("S-", s_i) * op("S+", s_j))
              
+             # add vacuum oscillation term to the Hamiltonian
              if ω[i] != 0 && ω[j] != 0
                 hj += (1/(N_sites-1))* 
                 ((ω[i] * B[1] * op("Sx", s_i)* op("Id", s_j))  + (ω[j] * op("Sx", s_j) * op("Id", s_i))) + 
