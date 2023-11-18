@@ -71,7 +71,7 @@ function main()
     n_mu_e =  4.891290848285061e+32 # cm^-3 # number density of electron flavor neutrino
     n_mu_e_bar =  4.891290848285061e+32 # cm^-3 # number density of electron flavor antineutrino
     # N_sites= 50 # total sites/particles that evenly spaced "for each (electron) flavor" 
-    #N_sites = 100 # total particles/sites for all neutrino and anti neutrino electron flavored
+    N_sites = 100 # total particles/sites for all neutrino and anti neutrino electron flavored
 
     V = L^3 
 
