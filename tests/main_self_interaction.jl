@@ -2,7 +2,7 @@ using ITensors
 using Plots
 using Measures
 using LinearAlgebra
-using NDTensors
+#using NDTensors
 
 include("../src/evolution.jl")
 include("../src/constants.jl")
@@ -113,7 +113,7 @@ function main()
     # Initialize psi to be a product state (First half to be spin down and other half to be spin up)
     ψ = productMPS(s, N -> N <= N_sites/2 ? "Up" : "Dn") # Fixed to produce consistent results for the test assert conditions 
     
-    # # METHOD 1 to perturb initial state
+    # # # METHOD 1 to perturb initial state
     # d = 2 # dimension for the MPS with N_site site indices
     # # Define a small perturbation strength
     # epsilon = randn(d^N_sites) # Adjust this as needed
@@ -134,11 +134,12 @@ function main()
     # rho = outer(ψ', ψ)
     # println(rho)
 
+    rho_ee = ( (2* Sz_array) + 1)/2
     # Plotting P_surv vs t
-    plot(0.0:τ:τ*(length(prob_surv_array)-1), prob_surv_array, xlabel = "t", ylabel = "Survival Probabillity p(t)", legend = false, size=(800, 600), aspect_ratio=:auto,margin= 10mm) 
+    plot(0.0:τ:τ*(length(rho_ee)-1), rho_ee, xlabel = "t", ylabel = "<rho_ee>", legend = false, size=(800, 600), aspect_ratio=:auto,margin= 10mm) 
 
     # Save the plot as a PDF file
-    savefig("Survival probability vs t (self-interactions w geo+shape).pdf")
+    savefig("<rho_ee> vs t (self-interactions w geo+shape)_MF_FFI.pdf")
 end 
 
 @time main()
