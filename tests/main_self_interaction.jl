@@ -23,15 +23,15 @@ include("../src/momentum.jl")
 # Where each site is occupied by either some neutrinos or some antineutrinos. 
 
 function main()
-    N_sites = 8 # number of sites # variable
+    # N_sites = 8 # number of sites # variable
     cutoff = 1E-14 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT) #variable
-    τ = 0.05 # time step # sec # variable
-    ttotal = 10 # total time of evolution # sec #variable
+    τ = 6.5E-13 # time step # sec # variable
+    ttotal = 1.6e-10 # total time of evolution # sec #variable
     tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution #variable
     Δx = 1E-3 # length of the box of interacting neutrinos at a site in cm  #variable
     Δp = 5 # width of shape function  # cm #variable
     del_m2 = 0 # fixed for 'only' self interactions # (erg^2)
-    maxdim = 5 # max bond dimension in MPS truncation
+    maxdim = 1 # max bond dimension in MPS truncation
 
     #Select a shape function based on the shape_name variable form the list defined in dictionary in shape_func file
     shape_name = "triangular"  # Change this to the desired shape name #variable 
@@ -102,7 +102,7 @@ function main()
 
     function generate_p_array(N_sites)
         half_N_sites = div(N_sites, 2)
-        return [fill(10.0e6, half_N_sites); fill(-10.0e6, half_N_sites)]
+        return [fill(50.0e6, half_N_sites); fill(-50.0e6, half_N_sites)]
     end
 
     # p matrix with numbers generated from the p_array for all components (x, y, z)
@@ -119,14 +119,14 @@ function main()
     # epsilon = randn(d^N_sites) # Adjust this as needed
     # ϵ_MPS = MPS(epsilon,s;cutoff,maxdim) # converting array to MPS 
 
-    # # METHOD 2 to perturb initial state
-    # # Initialize the state array
-    # state = [n <= N_sites ÷ 2 ? "Dn" : "Up" for n in 1:N_sites]
-    # ϵ_MPS = randomMPS(s, state, maxdim)
+    # METHOD 2 to perturb initial state
+    # Initialize the state array
+    state = [n <= N_sites ÷ 2 ? "Dn" : "Up" for n in 1:N_sites]
+    ϵ_MPS = 5e-5 * randomMPS(s, state, maxdim)
 
-    # # Perturb the state by adding random noise to the amplitudes
-    # perturbed_ψ = ψ .+ ϵ_MPS
-    # ψ = perturbed_ψ 
+    # Perturb the state by adding random noise to the amplitudes
+    perturbed_ψ = ψ + ϵ_MPS
+    ψ = normalize!(perturbed_ψ) 
 
     #extract output for the survival probability values at each timestep
     Sz_array, prob_surv_array = evolve(s, τ, N, B, N_sites, Δx,del_m2, p, x, Δp, ψ, shape_name, energy_sign, cutoff, maxdim, tolerance, ttotal)
@@ -134,7 +134,7 @@ function main()
     # rho = outer(ψ', ψ)
     # println(rho)
 
-    rho_ee = ( (2* Sz_array) + 1)/2
+    rho_ee = ( (2 * Sz_array) .+ 1)/2
     # Plotting P_surv vs t
     plot(0.0:τ:τ*(length(rho_ee)-1), rho_ee, xlabel = "t", ylabel = "<rho_ee>", legend = false, size=(800, 600), aspect_ratio=:auto,margin= 10mm) 
 
