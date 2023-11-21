@@ -28,6 +28,8 @@ function evolve(s, τ, N, B, N_sites, Δx, del_m2, p, x, Δp, ψ, shape_name, en
     # Create empty array to store survival probability values 
     prob_surv_array = Float64[]
 
+    x_values = []  # Store x values for plotting
+
     # extract the gates array generated in the gates_function file
     gates = create_gates(s, N, B, N_sites, Δx,del_m2, p, x, Δp, shape_name, τ, energy_sign)
 
@@ -37,8 +39,9 @@ function evolve(s, τ, N, B, N_sites, Δx, del_m2, p, x, Δp, ψ, shape_name, en
 
      # Compute and print survival probability (found from <Sz>) at each time step then apply the gates to go to the next time
      for t in 0.0:τ:ttotal
-        
+        push!(x_values, copy(x))  # Record x values at each time step
         x .+=  (p_x_hat .* τ)  # displacing particle's position at each timestep 
+
 
         # compute initial expectation value of Sz(inbuilt operator in ITensors library) at the first site on the chain
         sz = expect(ψ, "Sz"; sites=1)
@@ -71,7 +74,7 @@ function evolve(s, τ, N, B, N_sites, Δx, del_m2, p, x, Δp, ψ, shape_name, en
         normalize!(ψ)
     end
 
-    return Sz_array, prob_surv_array
+    return Sz_array, prob_surv_array, x_values
 end
 
 
