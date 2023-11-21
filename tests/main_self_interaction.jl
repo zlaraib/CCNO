@@ -8,7 +8,7 @@ include("../src/evolution.jl")
 include("../src/constants.jl")
 include("../src/shape_func.jl")
 include("../src/momentum.jl")
-
+include("../src/perturb.jl")
 """
 PIC SETUP: 
 
@@ -51,7 +51,7 @@ sum Δx_i = L # domain size
 # Where each site is occupied by either some neutrinos or some antineutrinos. 
 
 function main()
-    N_sites = 20 # number of sites # variable
+    N_sites = 2 # number of sites # variable
     cutoff = 1E-14 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT) #variable
     τ = 6.5E-13 # time step # sec # variable
     ttotal = 1.6e-10 # total time of evolution # sec #variable
@@ -89,7 +89,9 @@ function main()
     s = siteinds("S=1/2", N_sites; conserve_qns=true) #fixed
     
     # Create a B vector which would be same for all N particles 
-    B = [0, 0, -1] #variable
+    B = [0.02, -0.02, -1] #variable
+    # Normalize B to have a norm of 1
+    B = B / norm(B)
 
     # generate x_array such that the first particle is at position L/(2*N_sites) while subsequent particles are at a position incremental by L/N_sites. # grid style
     function generate_x_array(N_sites, L)
@@ -119,14 +121,17 @@ function main()
     # epsilon = randn(d^N_sites) # Adjust this as needed
     # ϵ_MPS = MPS(epsilon,s;cutoff,maxdim) # converting array to MPS 
 
-    # METHOD 2 to perturb initial state
-    # Initialize the state array
-    state = [n <= N_sites ÷ 2 ? "Dn" : "Up" for n in 1:N_sites]
-    ϵ_MPS = 5e-5 * randomMPS(s, state, maxdim)
+    # # METHOD 2 to perturb initial state
+    # # Initialize the state array
+    # state = [n <= N_sites ÷ 2 ? "Dn" : "Up" for n in 1:N_sites]
+    # ϵ_MPS = 5e-5 * randomMPS(s, state, maxdim)
 
-    # Perturb the state by adding random noise to the amplitudes
-    perturbed_ψ = ψ + ϵ_MPS
-    ψ = normalize!(perturbed_ψ) 
+    # # Perturb the state by adding random noise to the amplitudes
+    # perturbed_ψ = ψ + ϵ_MPS
+    # ψ = normalize!(perturbed_ψ) 
+
+    # # Perturb the state via one-body Hamiltonian
+    # ψ = evolve_perturbation(s, τ, B, N_sites, ψ, cutoff, maxdim, ttotal)
 
     #extract output for the survival probability values at each timestep
     Sz_array, prob_surv_array, x_values = evolve(s, τ, N, B, N_sites, Δx,del_m2, p, x, Δp, ψ, shape_name, energy_sign, cutoff, maxdim, tolerance, ttotal)
