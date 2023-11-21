@@ -9,6 +9,34 @@ include("../src/constants.jl")
 include("../src/shape_func.jl")
 include("../src/momentum.jl")
 
+"""
+PIC SETUP: 
+
+big box for all 'sites' or particles 
+total vol = V 
+length of each side = L 
+V = L^3 
+N_sites = total no.of sites or particles
+N =  total no.of neutrinos at all sites
+n = total no.density of neutrinos at all sites
+n = N / V 
+
+small box (for each 'site')
+total vol = V_i 
+length of each side = Δx 
+Δx^3 = V_i
+N_i =  total no.of neutrinos at site i 
+n_i  = total no.density of neutrinos at site i 
+N_i = n_i  * V_i  
+
+Combining 
+sum n_i = n # total no.density of neutrinos
+sum N_i = N # total no.of neutrinos
+sum V_i = V # total volume of the grid
+sum Δx_i = L # domain size
+
+"""
+
 # BTW When you apply gates to an MPS, it will in general increase the bond dimension 
 # (one exception is that single-site gates don’t change the bond dimension), 
 # and if you continue applying gates without truncation the bond dimension will in general grow exponentially.
@@ -23,12 +51,11 @@ include("../src/momentum.jl")
 # Where each site is occupied by either some neutrinos or some antineutrinos. 
 
 function main()
-    # N_sites = 8 # number of sites # variable
+    N_sites = 20 # number of sites # variable
     cutoff = 1E-14 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT) #variable
     τ = 6.5E-13 # time step # sec # variable
     ttotal = 1.6e-10 # total time of evolution # sec #variable
     tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution #variable
-    Δx = 1E-3 # length of the box of interacting neutrinos at a site in cm  #variable
     Δp = 5 # width of shape function  # cm #variable
     del_m2 = 0 # fixed for 'only' self interactions # (erg^2)
     maxdim = 1 # max bond dimension in MPS truncation
@@ -36,45 +63,17 @@ function main()
     #Select a shape function based on the shape_name variable form the list defined in dictionary in shape_func file
     shape_name = "triangular"  # Change this to the desired shape name #variable 
 
-    """
-    PIC SETUP: 
-
-    big box for all 'sites' or particles 
-    total vol = V 
-    length of each side = L 
-    V = L^3 
-    N_sites = total no.of sites or particles
-    N =  total no.of neutrinos at all sites
-    n = total no.density of neutrinos at all sites
-    n = N / V 
-
-    small box (for each 'site')
-    total vol = V_i 
-    length of each side = Δx 
-    Δx^3 = V_i
-    N_i =  total no.of neutrinos at site i 
-    n_i  = total no.density of neutrinos at site i 
-    N_i = n_i  * V_i  
-
-    Combining 
-    sum n_i = n # total no.density of neutrinos
-    sum N_i = N # total no.of neutrinos
-    sum V_i = V # total volume of the grid
-    sum Δx_i = L # domain size
-
-    """
-
     # Richers(2021) initial conditions:
     # throughout this code I am assuming each site is occupied by a particle i.e. each site contains some number of neutrinos all of same flavor 
     # so all neutrinos are electron flavored (at a site) which interact with electron flavored anti neutrinos (at a different site) in the opposing beam.
-    L = 1 # cm # domain size
+    L = 1 # cm # domain size # (aka big box length)
     n_mu_e =  4.891290848285061e+32 # cm^-3 # number density of electron flavor neutrino
     n_mu_e_bar =  4.891290848285061e+32 # cm^-3 # number density of electron flavor antineutrino
     # N_sites= 50 # total sites/particles that evenly spaced "for each (electron) flavor" 
-    N_sites = 100 # total particles/sites for all neutrino and anti neutrino electron flavored
+    # N_sites = 100 # total particles/sites for all neutrino and anti neutrino electron flavored
 
     V = L^3 
-
+    Δx = L/N_sites # length of the box of interacting neutrinos at a site in cm  #variable
     # Create an array of dimension N and fill it half with values of sites containing all electron neutrinos 
     # and other half with sites conatining electron anti-neutrino. 
     N_mu_e  = n_mu_e * V 
@@ -92,8 +91,9 @@ function main()
     # Create a B vector which would be same for all N particles 
     B = [0, 0, -1] #variable
 
+    # generate x_array such that the first particle is at position L/(2*N_sites) while subsequent particles are at a position incremental by L/N_sites. # grid style
     function generate_x_array(N_sites, L)
-        return [i * L / (2N_sites) for i in 1:N_sites]
+        return [(i - 0.5) * L / N_sites for i in 1:N_sites]
     end
     
     x = generate_x_array(N_sites, L)
@@ -129,17 +129,24 @@ function main()
     ψ = normalize!(perturbed_ψ) 
 
     #extract output for the survival probability values at each timestep
-    Sz_array, prob_surv_array = evolve(s, τ, N, B, N_sites, Δx,del_m2, p, x, Δp, ψ, shape_name, energy_sign, cutoff, maxdim, tolerance, ttotal)
+    Sz_array, prob_surv_array, x_values = evolve(s, τ, N, B, N_sites, Δx,del_m2, p, x, Δp, ψ, shape_name, energy_sign, cutoff, maxdim, tolerance, ttotal)
 
     # rho = outer(ψ', ψ)
     # println(rho)
 
     rho_ee = ( (2 * Sz_array) .+ 1)/2
-    # Plotting P_surv vs t
+    #Plotting P_surv vs t
     plot(0.0:τ:τ*(length(rho_ee)-1), rho_ee, xlabel = "t", ylabel = "<rho_ee>", legend = false, size=(800, 600), aspect_ratio=:auto,margin= 10mm) 
-
-    # Save the plot as a PDF file
+    #Save the plot as a PDF file
     savefig("<rho_ee> vs t (self-interactions w geo+shape)_MF_FFI.pdf")
+
+    plot(title="Particle Position Evolution", xlabel= "Position (x)",ylabel="Time")
+    for site in 1:N_sites
+        site_positions = [x_values[t][site] for t in 1:length(x_values)]
+        plot!(site_positions, 0.0:τ:ttotal, label="Site $site")
+    end
+
+    savefig("Particles evolution.pdf")
 end 
 
 @time main()
