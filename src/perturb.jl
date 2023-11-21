@@ -11,38 +11,25 @@ include("momentum.jl")
     N = array of no.of neutrinos contained on each site (dimensionless and unitless)
     B = array of normalized vector related to mixing angle in vacuum oscillations (dimensionless constant)
     N_sites = Total no.of sites (dimensionless and unitless)
-    Δx = length of the box of interacting neutrinos at a site (cm)
-    del_m2 = difference in mass squared (erg^2)
-    p = array of momentum vectors (erg)
-    x = array of positions of sites (cm)
-    Δp = width of shape function (cm)
-    shape_name = name of the shape function (string) ["none","triangular","flat_top"]
     τ = time step (sec)
     energy_sign = array of sign of the energy (1 or -1): 1 for neutrinos and -1 for anti-neutrinos
     maxdim = max bond dimension in MPS truncation (unitless and dimensionless)
     cutoff = truncation threshold for the SVD in MPS representation (unitless and dimensionless)
 """
 
-# This file generates the create_gates function that holds ITensors Trotter gates and returns the dimensionless unitary 
-# operators govered by the Hamiltonian which includes effects of the vacuum and self-interaction potential for each site.
+# This file generates the create_perturbation_gates function that holds ITensors Trotter gates and returns the dimensionless unitary 
+# operators that will generate the perturbation via this hamiltonian which includes effects of the vacuum one-body potential for each site 
+# Then, this file generates the evolve_perturbation function which utilizes the unitary operators created as perturb_gates from the 
+# create_perturbation_gates function to evolve the initial ψ state in time and return the normalized perturbed state after evolution.
 
-function create_gates(s, N, B, N_sites, Δx, del_m2, p, x, Δp, shape_name, τ, energy_sign)
+function create_perturbation_gates(s, B, N_sites, τ)
     
     # Make gates (1,2),(2,3),(3,4),... i.e. unitary gates which act on any (non-neighboring) pairs of sites in the chain.
     # Create an empty ITensors array that will be our Trotter gates
     gates = ITensor[] 
 
-    # extract output of p_hat and p_mod for the p vector defined above for all sites. 
-    p_mod, p_hat = momentum(p,N_sites)  
-
-    # define an array of vacuum oscillation frequencies (units of ergs)
-    if del_m2 == 0
-        ω = zeros(N_sites)
-    elseif del_m2 == 2 * π
-       global ω = fill(π, N_sites) # added global so we can access and use this global variable without the need to pass them as arguments to another function
-    else
-        global ω = [del_m2 / (2 * p_i_mod) for p_i_mod in p_mod]
-    end
+    # define an array of oscillation frequencies (units of ergs) of perturbation
+    ω = fill(π, N_sites) 
     println("ω = ", ω)
 
     for i in 1:(N_sites-1)
@@ -52,50 +39,58 @@ function create_gates(s, N, B, N_sites, Δx, del_m2, p, x, Δp, shape_name, τ, 
             s_j = s[j]
             # assert B vector to have a magnitude of 1 while preserving its direction.
             @assert norm(B) == 1
-            # Get the shape function result for each pair of i and j 
-            shape_result = shape_func(x, Δp, i, j, shape_name)
-            # Calculate the geometric factor for each pair of i and j within the loop
-            geometric_factor = geometric_func(p, p_hat, i, j)
 
             # Our neutrino system Hamiltonian of self-interaction term represents 1D Heisenberg model.
             # total Hamiltonian of the system is a sum of local terms hj, where hj acts on sites i and j which are paired for gates to latch onto.
             # op function returns these operators as ITensors and we tensor product and add them together to compute the operator hj.
-            # ni and nj are the neutrions at site i and j respectively.
-            # mu pairs divided by 2 to avoid double counting
-            
-            interaction_strength = (2.0* √2 * G_F * (N[i]+ N[j])/(2*((Δx)^3))) * shape_result * geometric_factor
-            if energy_sign[i]*energy_sign[j]>0
-                hj = interaction_strength *
-                (op("Sz", s_i) * op("Sz", s_j) +
-                1/2 * op("S+", s_i) * op("S-", s_j) +
-                1/2 * op("S-", s_i) * op("S+", s_j))
-            else
-                hj = - interaction_strength * 
-                ((-2 *op("Sz",s_i) * op("Sz",s_j)) + 
-                op("S+", s_i) * op("S-", s_j) +
-                op("S-", s_i) * op("S+", s_j))
-            end
-            # add vacuum oscillation term to the Hamiltonian
-             if ω[i] != 0 && ω[j] != 0
-                hj += (1/(N_sites-1))* 
+
+            # add perturbation via one-body oscillation term to the Hamiltonian
+                hj = (1/(N_sites-1))* 
                 ((ω[i] * B[1] * op("Sx", s_i)* op("Id", s_j))  + (ω[j] * B[1] * op("Sx", s_j) * op("Id", s_i))) + 
                 ((ω[i] * B[2] * op("Sy", s_i)* op("Id", s_j))  + (ω[j] * B[2] * op("Sy", s_j) * op("Id", s_i))) +
                 ((ω[i] * B[3] * op("Sz", s_i)* op("Id", s_j))  + (ω[j] * B[3] * op("Sz", s_j) * op("Id", s_i))) 
-                     
-             end
-            
+
             # make Trotter gate Gj that would correspond to each gate in the gate array of ITensors             
             Gj = exp(-im * τ/2 * hj)
-            # has_fermion_string(hj) = true
+
             # The push! function adds (appends) an element to the end of an array;
             # ! performs an operation without creating a new object, (in a way overwites the previous array in consideration); 
             # i.e. we append a new element Gj (which is an ITensor object representing a gate) to the end of the gates array.
             push!(gates, Gj)
-        end 
+        end
     end
 
-    # append! adds all the elements of a gates in reverse order (i.e. (N_sites,N_sites-1),(N_sites-1,N_sites-2),...) to the end of gates array.
+    # append! adds all the elements of a gates in reverse order (i.e. (N,N-1),(N-1,N-2),...) to the end of gates array.
     # appending reverse gates to create a second-order Trotter-Suzuki integration
     append!(gates, reverse(gates))
     return gates
 end
+
+
+function evolve_perturbation(s, τ, B, N_sites, ψ, cutoff, maxdim, ttotal)
+
+    # extract the gates array generated in the gates_function file
+    perturb_gates = create_perturbation_gates(s, B, N_sites, τ)
+
+     # Compute and print survival probability (found from <Sz>) at each time step then apply the gates to go to the next time
+     for t in 0.0:τ:ttotal
+
+        # Writing an if statement in a shorthand way that checks whether the current value of t is equal to ttotal, 
+        # and if so, it executes the break statement, which causes the loop to terminate early.
+        t ≈ ttotal && break
+
+        # apply each gate in gates(ITensors array) successively to the wavefunction ψ (MPS)(it is equivalent to time evolving psi according to the time-dependent Hamiltonian represented by gates).
+        # The apply function is a matrix-vector multiplication operation that is smart enough to determine which site indices each gate has, and then figure out where to apply it to our MPS. 
+        # It truncates the MPS according to the set cutoff and maxdim for all the non-nearest-neighbor gates.
+        ψ = apply(perturb_gates, ψ; cutoff, maxdim)
+        
+
+        # The normalize! function is used to ensure that the MPS is properly normalized after each application of the time evolution gates. 
+        # This is necessary to ensure that the MPS represents a valid quantum state.
+        normalize!(ψ)
+    end
+
+    return ψ
+end
+
+
