@@ -9,7 +9,7 @@ include("momentum.jl")
     Expected (CGS) units of the quantities defined in the files in tests directory that are being used in the gates function.                                                                   
     s = site index array (dimensionless and unitless)          
     N = array of no.of neutrinos contained on each site (dimensionless and unitless)
-    B = array of normalized vector related to mixing angle in vacuum oscillations (dimensionless constant)
+    B = normalized vector that allows perurbation in different directions (dimensionless constant)
     N_sites = Total no.of sites (dimensionless and unitless)
     τ = time step (sec)
     energy_sign = array of sign of the energy (1 or -1): 1 for neutrinos and -1 for anti-neutrinos
@@ -40,15 +40,23 @@ function create_perturbation_gates(s, B, N_sites, τ)
             # assert B vector to have a magnitude of 1 while preserving its direction.
             @assert norm(B) == 1
 
-            # Our neutrino system Hamiltonian of self-interaction term represents 1D Heisenberg model.
+            
             # total Hamiltonian of the system is a sum of local terms hj, where hj acts on sites i and j which are paired for gates to latch onto.
             # op function returns these operators as ITensors and we tensor product and add them together to compute the operator hj.
 
             # add perturbation via one-body oscillation term to the Hamiltonian
-                hj = (1/(N_sites-1))* 
-                ((ω[i] * B[1] * op("Sx", s_i)* op("Id", s_j))  + (ω[j] * B[1] * op("Sx", s_j) * op("Id", s_i))) + 
-                ((ω[i] * B[2] * op("Sy", s_i)* op("Id", s_j))  + (ω[j] * B[2] * op("Sy", s_j) * op("Id", s_i))) +
-                ((ω[i] * B[3] * op("Sz", s_i)* op("Id", s_j))  + (ω[j] * B[3] * op("Sz", s_j) * op("Id", s_i))) 
+            if B[3] != 0 
+                hj = (1/(N_sites-1))*
+                ((ω[i] * B[3] * op("Sz", s_i)* op("Id", s_j))  + (ω[j] * B[3] * op("Sz", s_j) * op("Id", s_i)))
+                if B[2] !=0 
+                    hj += (1/(N_sites-1))*
+                    ((ω[i] * B[2] * op("Sz", s_i)* op("Id", s_j))  + (ω[j] * B[2] * op("Sz", s_j) * op("Id", s_i)))
+                    if B[1] !=0 
+                        hj += (1/(N_sites-1))*
+                        ((ω[i] * B[1] * op("Sz", s_i)* op("Id", s_j))  + (ω[j] * B[1] * op("Sz", s_j) * op("Id", s_i)))
+                    end
+                end
+            end
 
             # make Trotter gate Gj that would correspond to each gate in the gate array of ITensors             
             Gj = exp(-im * τ/2 * hj)
