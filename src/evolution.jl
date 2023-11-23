@@ -1,3 +1,4 @@
+using DelimitedFiles
 include("gates_function.jl")  # Include the gates_functions.jl file
 include("momentum.jl")
 """
@@ -21,16 +22,19 @@ include("momentum.jl")
 # This file generates the evolve function which evolves the ψ state in time and computes the expectation values of Sz at each time step, along 
 # with their survival probabilities. The time evolution utilizes the unitary operators created as gates from the create_gates function.
 # The <Sz> and Survival probabilities output from this function are unitless. 
-function evolve(s, τ, N, B, N_sites, Δx, del_m2, p, x, Δp, ψ, shape_name, energy_sign, cutoff, maxdim, datafile, ttotal)
-    
-    # Create empty array to store sz values 
-    Sz_array = Float64[]
-    Sy_array = Float64[]
-    Sx_array = Float64[]
-    # Create empty array to store survival probability values 
-    prob_surv_array = Float64[]
+function evolve(s, τ, N, B, N_sites, Δx, del_m2, p, x, Δp, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, ttotal)
 
-    x_values = []  # Store x values for plotting
+    # check if a directory exists, and if it doesn't, create it using mkpath
+    isdir(datadir) || mkpath(datadir)
+
+    # Create empty array s to...
+    Sz_array = Float64[] # to store sz values 
+    Sy_array = Float64[] # to store sy values 
+    Sx_array = Float64[] # to store sx values 
+    t_array = [] # to store t values 
+    prob_surv_array = Float64[]   # to store survival probability values 
+    x_values = []  # to store x values for all sites 
+    px_values = [] # to store px vector values for all sites
 
     # extract the gates array generated in the gates_function file
     gates = create_gates(s, N, B, N_sites, Δx,del_m2, p, x, Δp, shape_name, τ, energy_sign)
@@ -44,19 +48,20 @@ function evolve(s, τ, N, B, N_sites, Δx, del_m2, p, x, Δp, ψ, shape_name, en
         push!(x_values, copy(x))  # Record x values at each time step
         x .+=  (p_x_hat .* τ)  # displacing particle's position at each timestep 
 
+        px = p[:, 1]  # Extracting the first column (which corresponds to px values)
+        push!(px_values, copy(px)) # Record px values at each time step
 
-        # compute initial expectation value of Sz(inbuilt operator in ITensors library) at the first site on the chain
-
+        # compute expectation value of Sz (inbuilt operator in ITensors library) at the first site on the chain
         sz = expect(ψ, "Sz"; sites=1)
 
-        sy = expect(complex(ψ), "Sy"; sites=1)
-        #sy =  inner(complex(ψ), apply(op("Sy",s,1), complex(ψ)))
-        sx = expect(ψ, "Sx"; sites=1)
+        # compute expectation value of sy and sx using S+ and S- (inbuilt operator in ITensors library) at the first site on the chain
+        sy = -0.5 *im * (expect(complex(ψ), "S+"; sites=1) - expect(complex(ψ), "S-"; sites=1)) #re-check
+        sx = 0.5 * (expect(ψ, "S+"; sites=1) + expect(ψ, "S-"; sites=1)) #recheck
 
-        # add an element sz to the end of Sz array 
-        push!(Sz_array, sz)
-        push!(Sy_array, sy)
-        push!(Sx_array, sx)
+        # add an element sz to ... 
+        push!(Sz_array, sz) # .. the end of Sz array 
+        push!(Sy_array, sy) # .. the end of Sy array 
+        push!(Sx_array, sx) # .. the end of Sx array 
         
         # survival probability for a (we took first) neutrino to be found in its initial flavor state (in this case a spin down)
         prob_surv = 0.5 * (1 - 2 * sz)
@@ -65,13 +70,9 @@ function evolve(s, τ, N, B, N_sites, Δx, del_m2, p, x, Δp, ψ, shape_name, en
         push!(prob_surv_array, prob_surv)
 
         if B[1] != 0
-            # Write the values to the data file
-            println(datafile, "$t $sz $sy $sx")
-            flush(datafile) # Flush the buffer to write immediately
-            # println("$t $sz")
+            println("$t $sz")
         else 
-            println(datafile, "$t $prob_surv")
-            flush(datafile) # Flush the buffer to write immediately
+            println("$t $prob_surv")
         end
 
         # Writing an if statement in a shorthand way that checks whether the current value of t is equal to ttotal, 
@@ -88,8 +89,19 @@ function evolve(s, τ, N, B, N_sites, Δx, del_m2, p, x, Δp, ψ, shape_name, en
         # This is necessary to ensure that the MPS represents a valid quantum state.
         normalize!(ψ)
     end
+    t_array = 0.0:τ:ttotal
+    ρ_ee_array = ( (2 * Sz_array) .+ 1)/2
 
-    return Sz_array, Sy_array, Sx_array, prob_surv_array, x_values
+    # Writing data to files with corresponding headers
+    fname1 = joinpath(datadir, "t_<Sz>_<Sy>_<Sx>.dat")
+    writedlm(fname1, [t_array Sz_array Sy_array Sx_array])
+    fname2 = joinpath(datadir, "t_probsurv.dat")
+    writedlm(fname2, [t_array prob_surv_array])
+    fname3 = joinpath(datadir, "t_xsiteval.dat")
+    writedlm(fname3, [t_array x_values])
+    fname4 = joinpath(datadir, "t_pxsiteval.dat")
+    writedlm(fname4, [t_array px_values])
+    return Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, px_values, ρ_ee_array
 end
 
 
