@@ -94,7 +94,7 @@ function main()
     # The reasoning behind this design choice is that S+ and S- have a definite QN flux: an S+/S- operator on a site 
     # always increases/decreases the total Sz by 1. In contrast, Sx and Sy don't have this property: an Sx/Sy operator
     # on a site has a component that increase total Sz by 1 and a component that decreases total Sz by 1.
-    s = siteinds("S=1/2", N_sites; conserve_qns=true) #fixed #switched conserve_qns to false to avoid fluxes error in expect function
+    s = siteinds("S=1/2", N_sites; conserve_qns=false) #fixed #switched conserve_qns to false to avoid fluxes error in expect function
     
     # Create a B vector that allows for perturbation to inital state in different directions
     B = [0.02, -0.02, -1] #variable
@@ -126,8 +126,10 @@ function main()
     # Perturb the state via one-body Hamiltonian
     ψ_0 = evolve_perturbation(s, τ, B, N_sites, ψ, cutoff, maxdim, ttotal)
 
+    # Get the current working directory
+    current_dir = pwd()
     # Specify the directory path
-    directory_path = "/home/zohalaraib/Oscillatrino/misc"
+    directory_path = joinpath(current_dir, "misc")
 
     # Create the file path within the specified directory
     datafile_path = joinpath(directory_path, "datafiles/FFI", string(N_sites) * "(par)_" * string(ttotal) * "(tt_<Sz>_<Sy>_<Sx>).dat")
