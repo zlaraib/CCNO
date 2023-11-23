@@ -53,9 +53,11 @@ function main()
     # array p with N rows and 3 columns, all initialized to 0.0 with colums representing components and rows representing sites
     p = zeros(N_sites, 3) #fixed for Rogerro's case
     energy_sign = fill(1, N_sites) # all of the sites are neutrinos
-
+    
+    # Get the current working directory
+    current_dir = pwd()
     # Specify the directory path
-    directory_path = "/home/zohalaraib/Oscillatrino/misc"
+    directory_path = joinpath(current_dir, "misc")
 
     # Create the file path within the specified directory
     datafile_path = joinpath(directory_path, "datafiles/Rog_self_int", string(N_sites) * "(par)_" * string(ttotal) * "(tt_survprob).dat")
