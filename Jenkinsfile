@@ -25,17 +25,17 @@ pipeline {
 }
 	stage('Only Vacuum oscillations'){ steps{
 		sh 'julia tests/main_vac_osc.jl'
-		archiveArtifacts artifacts: '*.pdf'
+		archiveArtifacts artifacts: 'misc/plots/vac_osc/*/*/*.pdf'
     }
 } 
 	stage('Rogerro(2021)_only_self_interactions'){ steps{
 		sh 'julia tests/main_self_interaction_Rog.jl'
-		archiveArtifacts artifacts: '*.pdf'
+		archiveArtifacts artifacts: 'misc/plots/Rog_self_int/*/*/*.pdf'
     } 
 }
 	stage('Full_geometric_and_Shape_function'){ steps{
 		sh 'julia tests/main_self_interaction.jl'
-		archiveArtifacts artifacts: '*.pdf'
+		archiveArtifacts artifacts: 'misc/plots/FFI/*/*/*.pdf'
     } 
 }
 
