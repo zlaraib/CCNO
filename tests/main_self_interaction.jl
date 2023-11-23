@@ -126,22 +126,27 @@ function main()
     #extract output for the survival probability values at each timestep
     Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, px_values, ρ_ee_array= evolve(s, τ, N, B, N_sites, Δx,del_m2, p, x, Δp, ψ_0, shape_name, energy_sign, cutoff, maxdim, datadir, ttotal)
 
+    # Specify the relative directory path
+    plotdir = joinpath(@__DIR__, "..","misc","plots","FFI", "par_"*string(N_sites), "tt_"*string(ttotal))
+    
+    # check if a directory exists, and if it doesn't, create it using mkpath
+    isdir(plotdir) || mkpath(plotdir)
     #Plotting ρ_ee vs t
     plot(0.0:τ:τ*(length(ρ_ee_array)-1), ρ_ee_array, xlabel = "t", ylabel = "<ρ_ee>", legend = false, size=(800, 600), aspect_ratio=:auto,margin= 10mm) 
     #Save the plot as a PDF file
-    savefig("<ρ_ee> vs t (self-interactions w geo+shape)_MF_FFI.pdf")
+    savefig(joinpath(plotdir, "<ρ_ee>_vs_t_self-interactions_w_geo+shape_MF_FFI.pdf"))
 
     plot(0.0:τ:τ*(length(Sz_array)-1), Sz_array, xlabel = "t", ylabel = "<Sz>", legend = false, size=(800, 600), aspect_ratio=:auto,margin= 10mm) 
     #Save the plot as a PDF file
-    savefig("<Sz> vs t (self-interactions w geo+shape)_MF_FFI.pdf")
+    savefig(joinpath(plotdir,"<Sz> vs t (self-interactions w geo+shape)_MF_FFI.pdf"))
 
     plot(0.0:τ:τ*(length(Sy_array)-1), Sy_array, xlabel = "t", ylabel = "<Sy_array>", legend = false, size=(800, 600), aspect_ratio=:auto,margin= 10mm) 
     #Save the plot as a PDF file
-    savefig("<Sy> vs t (self-interactions w geo+shape)_MF_FFI.pdf")
+    savefig(joinpath(plotdir,"<Sy> vs t (self-interactions w geo+shape)_MF_FFI.pdf"))
 
     plot(0.0:τ:τ*(length(Sx_array)-1), Sx_array, xlabel = "t", ylabel = "<Sx_array>", legend = false, size=(800, 600), aspect_ratio=:auto,margin= 10mm) 
     #Save the plot as a PDF file
-    savefig("<Sx> vs t (self-interactions w geo+shape)_MF_FFI.pdf")
+    savefig(joinpath(plotdir,"<Sx> vs t (self-interactions w geo+shape)_MF_FFI.pdf"))
 
     plot(title="Particle Position Evolution", xlabel= "Position (x)",ylabel="Time")
     for site in 1:N_sites
@@ -149,10 +154,7 @@ function main()
         plot!(site_positions, 0.0:τ:ttotal, label="Site $site")
     end
 
-    savefig("Particles evolution.pdf")
-    # Save the plot in the same directory
-    # plot_path = joinpath(directory_path, "plots", string(N) * "(par)_" * string(ttotal) * "(ttotal)final.png")
-    # savefig(plot_path)
+    savefig(joinpath(plotdir,"Particles evolution.pdf"))
 
 end 
 

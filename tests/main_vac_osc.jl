@@ -91,19 +91,23 @@ function main()
   # for B vector in -z, it checks that the value of Sz at the firstspin site never oscillates from -0.5 
   @assert all(abs.(Sz_array .- expected_sz_array) .< tolerance)
 
-  # Plotting P_surv vs t
+  # Specify the relative directory path
+  plotdir = joinpath(@__DIR__, "..","misc","plots","vac_osc", "par_"*string(N_sites), "tt_"*string(ttotal))
+    
+  # check if a directory exists, and if it doesn't, create it using mkpath
+  isdir(plotdir) || mkpath(plotdir)
   plot(0.0:τ:τ*(length(Sz_array)-1), Sz_array, xlabel = "t", ylabel = "<Sz>", title = "Running main_vac_osc script",legend = true, size=(700, 600), aspect_ratio=:auto,margin= 10mm, label = "My_sz") 
   plot!(0.0:τ:τ*(length(Sz_array)-1), expected_sz_array, xlabel = "t", ylabel = "<Sz>", title = "Running main_vac_osc script", legendfontsize=8, legend=:topright, label = "Expected_sz from Sakurai") 
   # Save the plot as a PDF file
-  savefig("<Sz> vs t(vac_osc).pdf")
+  savefig(joinpath(plotdir,"<Sz> vs t(vac_osc).pdf"))
 
   plot(0.0:τ:τ*(length(Sy_array)-1), Sy_array, xlabel = "t", ylabel = "<Sy_array>", legend = false, size=(800, 600), aspect_ratio=:auto,margin= 10mm) 
   #Save the plot as a PDF file
-  savefig("<Sy> vs t(vac_osc).pdf")
+  savefig(joinpath(plotdir,"<Sy> vs t(vac_osc).pdf"))
 
   plot(0.0:τ:τ*(length(Sx_array)-1), Sx_array, xlabel = "t", ylabel = "<Sx_array>", legend = false, size=(800, 600), aspect_ratio=:auto,margin= 10mm) 
   #Save the plot as a PDF file
-  savefig("<Sx> vs t(vac_osc).pdf")
+  savefig(joinpath(plotdir,"<Sx> vs t(vac_osc).pdf"))
 end
 
 @time main()
