@@ -54,11 +54,8 @@ function main()
     p = zeros(N_sites, 3) #fixed for Rogerro's case
     energy_sign = fill(1, N_sites) # all of the sites are neutrinos
 
-    # Get the directory of the current script
-    script_directory = dirname(@__FILE__)
-
     # Specify the relative directory path
-    directory_path = joinpath(script_directory, "../misc")
+    directory_path = joinpath(@__DIR__, "../misc")
 
     # Create the file path within the specified directory
     datafile_path = joinpath(directory_path, "datafiles/Rog_self_int", string(N_sites) * "(par)_" * string(ttotal) * "(tt_survprob).dat")

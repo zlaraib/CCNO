@@ -51,11 +51,11 @@ sum Δx_i = L # domain size
 # Where each site is occupied by either some neutrinos or some antineutrinos. 
 
 function main()
-    N_sites = 2 # number of sites # variable
+    N_sites = 4 # number of sites # variable
     cutoff = 1E-14 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT) #variable
     # τ = 6.5E-13 # time step # sec # variable
     # ttotal = 1.6e-10 # total time of evolution # sec #variable
-    τ = 6.5E-1 # time step # sec # variable
+    τ = 0.05 # time step # sec # variable
     ttotal = 10 # total time of evolution # sec #variable
     tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution #variable
     Δp = 5 # width of shape function  # cm #variable
@@ -126,11 +126,8 @@ function main()
     # Perturb the state via one-body Hamiltonian
     ψ_0 = evolve_perturbation(s, τ, B, N_sites, ψ, cutoff, maxdim, ttotal)
 
-    # Get the directory of the current script
-    script_directory = dirname(@__FILE__)
-
     # Specify the relative directory path
-    directory_path = joinpath(script_directory, "../misc")
+    directory_path = joinpath(@__DIR__, "../misc")
 
     # Create the file path within the specified directory
     datafile_path = joinpath(directory_path, "datafiles/FFI", string(N_sites) * "(par)_" * string(ttotal) * "(tt_<Sz>_<Sy>_<Sx>).dat")
