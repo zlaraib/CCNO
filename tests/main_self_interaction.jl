@@ -126,10 +126,11 @@ function main()
     # Perturb the state via one-body Hamiltonian
     ψ_0 = evolve_perturbation(s, τ, B, N_sites, ψ, cutoff, maxdim, ttotal)
 
-    # Get the current working directory
-    current_dir = pwd()
-    # Specify the directory path
-    directory_path = joinpath(current_dir, "misc")
+    # Get the directory of the current script
+    script_directory = dirname(@__FILE__)
+
+    # Specify the relative directory path
+    directory_path = joinpath(script_directory, "../misc")
 
     # Create the file path within the specified directory
     datafile_path = joinpath(directory_path, "datafiles/FFI", string(N_sites) * "(par)_" * string(ttotal) * "(tt_<Sz>_<Sy>_<Sx>).dat")
