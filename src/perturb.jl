@@ -30,7 +30,7 @@ function create_perturbation_gates(s, B, N_sites, τ)
 
     # define an array of oscillation frequencies (units of ergs) of perturbation
     ω = fill(π, N_sites) 
-    println("ω = ", ω)
+    println("perturb_ω = ", ω)
 
     for i in 1:(N_sites-1)
         for j in i+1:N_sites

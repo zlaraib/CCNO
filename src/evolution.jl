@@ -21,10 +21,12 @@ include("momentum.jl")
 # This file generates the evolve function which evolves the ψ state in time and computes the expectation values of Sz at each time step, along 
 # with their survival probabilities. The time evolution utilizes the unitary operators created as gates from the create_gates function.
 # The <Sz> and Survival probabilities output from this function are unitless. 
-function evolve(s, τ, N, B, N_sites, Δx, del_m2, p, x, Δp, ψ, shape_name, energy_sign, cutoff, maxdim, tolerance, ttotal)
+function evolve(s, τ, N, B, N_sites, Δx, del_m2, p, x, Δp, ψ, shape_name, energy_sign, cutoff, maxdim, datafile, ttotal)
     
     # Create empty array to store sz values 
     Sz_array = Float64[]
+    Sy_array = Float64[]
+    Sx_array = Float64[]
     # Create empty array to store survival probability values 
     prob_surv_array = Float64[]
 
@@ -44,9 +46,17 @@ function evolve(s, τ, N, B, N_sites, Δx, del_m2, p, x, Δp, ψ, shape_name, en
 
 
         # compute initial expectation value of Sz(inbuilt operator in ITensors library) at the first site on the chain
+
         sz = expect(ψ, "Sz"; sites=1)
+
+        sy = expect(complex(ψ), "Sy"; sites=1)
+        #sy =  inner(complex(ψ), apply(op("Sy",s,1), complex(ψ)))
+        sx = expect(ψ, "Sx"; sites=1)
+
         # add an element sz to the end of Sz array 
         push!(Sz_array, sz)
+        push!(Sy_array, sy)
+        push!(Sx_array, sx)
         
         # survival probability for a (we took first) neutrino to be found in its initial flavor state (in this case a spin down)
         prob_surv = 0.5 * (1 - 2 * sz)
@@ -54,9 +64,14 @@ function evolve(s, τ, N, B, N_sites, Δx, del_m2, p, x, Δp, ψ, shape_name, en
         # add an element prob_surv to the end of  prob_surv_array 
         push!(prob_surv_array, prob_surv)
 
-        if N == fill(0, N_sites)
-            println("$t $sz")
-        else println("$t $prob_surv")
+        if B[1] != 0
+            # Write the values to the data file
+            println(datafile, "$t $sz $sy $sx")
+            flush(datafile) # Flush the buffer to write immediately
+            # println("$t $sz")
+        else 
+            println(datafile, "$t $prob_surv")
+            flush(datafile) # Flush the buffer to write immediately
         end
 
         # Writing an if statement in a shorthand way that checks whether the current value of t is equal to ttotal, 
@@ -74,7 +89,7 @@ function evolve(s, τ, N, B, N_sites, Δx, del_m2, p, x, Δp, ψ, shape_name, en
         normalize!(ψ)
     end
 
-    return Sz_array, prob_surv_array, x_values
+    return Sz_array, Sy_array, Sx_array, prob_surv_array, x_values
 end
 
 
