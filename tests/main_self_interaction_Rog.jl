@@ -95,24 +95,30 @@ function main()
     # Check that our time of first minimum survival probability compared to Rogerro(2021) remains within the timestep and tolerance.
     @assert abs(t_min - t_p_Rog) <  τ + tolerance 
 
+    # Specify the relative directory path
+    plotdir = joinpath(@__DIR__, "..","misc","plots","Rog_self_int", "par_"*string(N_sites), "tt_"*string(ttotal))
+    
+    # check if a directory exists, and if it doesn't, create it using mkpath
+    isdir(plotdir) || mkpath(plotdir)
+
     # Plotting P_surv vs t
     plot(0.0:τ:τ*(length(prob_surv_array)-1), prob_surv_array, xlabel = "t", ylabel = "Survival Probabillity p(t)",title = "Running main_self_interaction_Rog script", legend = true, size=(800, 600), aspect_ratio=:auto,margin= 10mm, label= ["My_plot_for_N_sites$(N_sites)"]) 
     scatter!([t_p_Rog],[prob_surv_array[i_first_local_min]], label= ["t_p_Rog"])
     scatter!([t_min],[prob_surv_array[i_first_local_min]], label= ["My_t_min)"], legendfontsize=5, legend=:topright)
     # Save the plot as a PDF file
-    savefig("Survival probability vs t (only self-interaction term plot)_Rog.pdf")
+    savefig(joinpath(plotdir,"Survival probability vs t (only self-interaction term plot)_Rog.pdf"))
 
     plot(0.0:τ:τ*(length(Sz_array)-1), Sz_array, xlabel = "t", ylabel = "<Sz>", legend = false, size=(800, 600), aspect_ratio=:auto,margin= 10mm) 
     #Save the plot as a PDF file
-    savefig("<Sz> vs t (Rog_self-int).pdf")
+    savefig(joinpath(plotdir,"<Sz> vs t (Rog_self-int).pdf"))
 
     plot(0.0:τ:τ*(length(Sy_array)-1), Sy_array, xlabel = "t", ylabel = "<Sy_array>", legend = false, size=(800, 600), aspect_ratio=:auto,margin= 10mm) 
     #Save the plot as a PDF file
-    savefig("<Sy> vs t (Rog_self_int).pdf")
+    savefig(joinpath(plotdir,"<Sy> vs t (Rog_self_int).pdf"))
 
     plot(0.0:τ:τ*(length(Sx_array)-1), Sx_array, xlabel = "t", ylabel = "<Sx_array>", legend = false, size=(800, 600), aspect_ratio=:auto,margin= 10mm) 
     #Save the plot as a PDF file
-    savefig("<Sx> vs t (Rog_self_int).pdf")
+    savefig(joinpath(plotdir,"<Sx> vs t (Rog_self_int).pdf"))
 end 
 
 @time main()
