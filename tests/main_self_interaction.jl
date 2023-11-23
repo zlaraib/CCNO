@@ -2,8 +2,7 @@ using ITensors
 using Plots
 using Measures
 using LinearAlgebra
-#using NDTensors
-
+using DelimitedFiles
 include("../src/evolution.jl")
 include("../src/constants.jl")
 include("../src/shape_func.jl")
@@ -88,13 +87,8 @@ function main()
     # We overload siteinds function, which generates custom Index array with Index objects having the tag of total spin quantum number for all N.
     # conserve_qns=true conserves the total spin quantum number "Sz" in the system as it evolves,
     # i.e. examples of conservation of quantum numbers are the total number of neutrino particles, or the total of all S_z components of this system of spins
-    
-    #if you want to conserve total Sz, then you need to avoid the use of Sx and Sy operators directly in your code 
-    # and express everything that requires Sx and Sy in terms of S+ and S-.
-    # The reasoning behind this design choice is that S+ and S- have a definite QN flux: an S+/S- operator on a site 
-    # always increases/decreases the total Sz by 1. In contrast, Sx and Sy don't have this property: an Sx/Sy operator
-    # on a site has a component that increase total Sz by 1 and a component that decreases total Sz by 1.
-    s = siteinds("S=1/2", N_sites; conserve_qns=false) #fixed #switched conserve_qns to false to avoid fluxes error in expect function
+    # conserving total Sz requires Sx and Sy in terms of S+ and S- by design choice.
+    s = siteinds("S=1/2", N_sites; conserve_qns=true) #fixed #switched conserve_qns to false to avoid fluxes error in expect function
     
     # Create a B vector that allows for perturbation to inital state in different directions
     B = [0.02, -0.02, -1] #variable
@@ -127,25 +121,13 @@ function main()
     ψ_0 = evolve_perturbation(s, τ, B, N_sites, ψ, cutoff, maxdim, ttotal)
 
     # Specify the relative directory path
-    directory_path = joinpath(@__DIR__, "../misc")
+    datadir = joinpath(@__DIR__, "..","misc","datafiles","FFI", "par_"*string(N_sites), "tt_"*string(ttotal))
 
-    # Create the file path within the specified directory
-    datafile_path = joinpath(directory_path, "datafiles/FFI", string(N_sites) * "(par)_" * string(ttotal) * "(tt_<Sz>_<Sy>_<Sx>).dat")
-
-
-    # Open the file for writing
-    datafile = open(datafile_path, "w")
-    
     #extract output for the survival probability values at each timestep
-    Sz_array, Sy_array, Sx_array, prob_surv_array, x_values = evolve(s, τ, N, B, N_sites, Δx,del_m2, p, x, Δp, ψ_0, shape_name, energy_sign, cutoff, maxdim, datafile, ttotal)
+    Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, px_values, ρ_ee_array= evolve(s, τ, N, B, N_sites, Δx,del_m2, p, x, Δp, ψ_0, shape_name, energy_sign, cutoff, maxdim, datadir, ttotal)
 
-    close(datafile)  # Close the file
-    # rho = outer(ψ', ψ)
-    # println(rho)
-
-    ρ_ee = ( (2 * Sz_array) .+ 1)/2
     #Plotting ρ_ee vs t
-    plot(0.0:τ:τ*(length(ρ_ee)-1), ρ_ee, xlabel = "t", ylabel = "<ρ_ee>", legend = false, size=(800, 600), aspect_ratio=:auto,margin= 10mm) 
+    plot(0.0:τ:τ*(length(ρ_ee_array)-1), ρ_ee_array, xlabel = "t", ylabel = "<ρ_ee>", legend = false, size=(800, 600), aspect_ratio=:auto,margin= 10mm) 
     #Save the plot as a PDF file
     savefig("<ρ_ee> vs t (self-interactions w geo+shape)_MF_FFI.pdf")
 
@@ -160,7 +142,6 @@ function main()
     plot(0.0:τ:τ*(length(Sx_array)-1), Sx_array, xlabel = "t", ylabel = "<Sx_array>", legend = false, size=(800, 600), aspect_ratio=:auto,margin= 10mm) 
     #Save the plot as a PDF file
     savefig("<Sx> vs t (self-interactions w geo+shape)_MF_FFI.pdf")
-
 
     plot(title="Particle Position Evolution", xlabel= "Position (x)",ylabel="Time")
     for site in 1:N_sites

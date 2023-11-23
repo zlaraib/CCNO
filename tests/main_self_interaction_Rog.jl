@@ -24,7 +24,7 @@ function main()
     # s is an array of spin 1/2 tensor indices (Index objects) which will be the site or physical indices of the MPS.
     # We overload siteinds function, which generates custom Index array with Index objects having the tag of total spin quantum number for all N.
     # conserve_qns=true conserves the total spin quantum number "S" in the system as it evolves
-    s = siteinds("S=1/2", N_sites; conserve_qns=false)  #fixed
+    s = siteinds("S=1/2", N_sites; conserve_qns=true)  #fixed
 
     # Fixed Constants for Rogerro's fit (only self-interaction term)
     a_t = 0
@@ -55,16 +55,10 @@ function main()
     energy_sign = fill(1, N_sites) # all of the sites are neutrinos
 
     # Specify the relative directory path
-    directory_path = joinpath(@__DIR__, "../misc")
-
-    # Create the file path within the specified directory
-    datafile_path = joinpath(directory_path, "datafiles/Rog_self_int", string(N_sites) * "(par)_" * string(ttotal) * "(tt_survprob).dat")
-
-    # Open the file for writing
-    datafile = open(datafile_path, "w")
+    datadir = joinpath(@__DIR__, "..","misc","datafiles","Rog_self_int", "par_"*string(N_sites), "tt_"*string(ttotal))
 
     #extract output for the survival probability values at each timestep
-    Sz_array, Sy_array, Sx_array, prob_surv_array, x_values = evolve(s, τ, N, B, N_sites, Δx,del_m2, p, x, Δp, ψ, shape_name, energy_sign, cutoff, maxdim, datafile, ttotal)
+    Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, px_values, ρ_ee_array= evolve(s, τ, N, B, N_sites, Δx,del_m2, p, x, Δp, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, ttotal)
 
 
     # This function scans through the array, compares each element with its neighbors, 
@@ -100,7 +94,7 @@ function main()
 
     # Check that our time of first minimum survival probability compared to Rogerro(2021) remains within the timestep and tolerance.
     @assert abs(t_min - t_p_Rog) <  τ + tolerance 
-    close(datafile)
+
     # Plotting P_surv vs t
     plot(0.0:τ:τ*(length(prob_surv_array)-1), prob_surv_array, xlabel = "t", ylabel = "Survival Probabillity p(t)",title = "Running main_self_interaction_Rog script", legend = true, size=(800, 600), aspect_ratio=:auto,margin= 10mm, label= ["My_plot_for_N_sites$(N_sites)"]) 
     scatter!([t_p_Rog],[prob_surv_array[i_first_local_min]], label= ["t_p_Rog"])
