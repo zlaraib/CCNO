@@ -49,10 +49,9 @@ function main()
   # Initialize psi to be a product state (First half to be spin down and other half to be spin up)
   ψ = productMPS(s, N -> N <= N_sites/2 ? "Dn" : "Up") # Fixed to produce consistent results for the test assert conditions 
 
-  # Get the current working directory
-  current_dir = pwd()
+
   # Specify the directory path
-  directory_path = joinpath(current_dir, "misc")
+  directory_path = joinpath("..","misc")
 
   # Create the file path within the specified directory
   datafile_path = joinpath(directory_path, "datafiles/vac_osc", string(N_sites) * "(par)_" * string(ttotal) * "(tt_<Sz>_<Sy>_<Sx>).dat")
