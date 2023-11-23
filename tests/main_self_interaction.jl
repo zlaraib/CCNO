@@ -12,7 +12,7 @@ include("../src/perturb.jl")
 """
 PIC SETUP: 
 
-big box for all 'sites' or particles 
+big box (for 'all' sites/particles)
 total vol = V 
 length of each side = L 
 V = L^3 
@@ -21,7 +21,7 @@ N =  total no.of neutrinos at all sites
 n = total no.density of neutrinos at all sites
 n = N / V 
 
-small box (for each 'site')
+small box (for 'each' site/particle)
 total vol = V_i 
 length of each side = Δx 
 Δx^3 = V_i
@@ -29,7 +29,7 @@ N_i =  total no.of neutrinos at site i
 n_i  = total no.density of neutrinos at site i 
 N_i = n_i  * V_i  
 
-Combining 
+Combining (where index i represent a site and runs from 1:N_sites)
 sum n_i = n # total no.density of neutrinos
 sum N_i = N # total no.of neutrinos
 sum V_i = V # total volume of the grid
@@ -53,8 +53,10 @@ sum Δx_i = L # domain size
 function main()
     N_sites = 2 # number of sites # variable
     cutoff = 1E-14 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT) #variable
-    τ = 6.5E-13 # time step # sec # variable
-    ttotal = 1.6e-10 # total time of evolution # sec #variable
+    # τ = 6.5E-13 # time step # sec # variable
+    # ttotal = 1.6e-10 # total time of evolution # sec #variable
+    τ = 6.5E-1 # time step # sec # variable
+    ttotal = 10 # total time of evolution # sec #variable
     tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution #variable
     Δp = 5 # width of shape function  # cm #variable
     del_m2 = 0 # fixed for 'only' self interactions # (erg^2)
@@ -84,11 +86,17 @@ function main()
 
     # s is an array of spin 1/2 tensor indices (Index objects) which will be the site or physical indices of the MPS.
     # We overload siteinds function, which generates custom Index array with Index objects having the tag of total spin quantum number for all N.
-    # conserve_qns=true conserves the total spin quantum number "S" in the system as it evolves,
+    # conserve_qns=true conserves the total spin quantum number "Sz" in the system as it evolves,
     # i.e. examples of conservation of quantum numbers are the total number of neutrino particles, or the total of all S_z components of this system of spins
-    s = siteinds("S=1/2", N_sites; conserve_qns=true) #fixed
     
-    # Create a B vector which would be same for all N particles 
+    #if you want to conserve total Sz, then you need to avoid the use of Sx and Sy operators directly in your code 
+    # and express everything that requires Sx and Sy in terms of S+ and S-.
+    # The reasoning behind this design choice is that S+ and S- have a definite QN flux: an S+/S- operator on a site 
+    # always increases/decreases the total Sz by 1. In contrast, Sx and Sy don't have this property: an Sx/Sy operator
+    # on a site has a component that increase total Sz by 1 and a component that decreases total Sz by 1.
+    s = siteinds("S=1/2", N_sites; conserve_qns=true) #fixed #switched conserve_qns to false to avoid fluxes error in expect function
+    
+    # Create a B vector that allows for perturbation to inital state in different directions
     B = [0.02, -0.02, -1] #variable
     # Normalize B to have a norm of 1
     B = B / norm(B)
@@ -115,35 +123,44 @@ function main()
     # Initialize psi to be a product state (First half to be spin down and other half to be spin up)
     ψ = productMPS(s, N -> N <= N_sites/2 ? "Up" : "Dn") # Fixed to produce consistent results for the test assert conditions 
     
-    # # # METHOD 1 to perturb initial state
-    # d = 2 # dimension for the MPS with N_site site indices
-    # # Define a small perturbation strength
-    # epsilon = randn(d^N_sites) # Adjust this as needed
-    # ϵ_MPS = MPS(epsilon,s;cutoff,maxdim) # converting array to MPS 
+    # Perturb the state via one-body Hamiltonian
+    ψ_0 = evolve_perturbation(s, τ, B, N_sites, ψ, cutoff, maxdim, ttotal)
 
-    # # METHOD 2 to perturb initial state
-    # # Initialize the state array
-    # state = [n <= N_sites ÷ 2 ? "Dn" : "Up" for n in 1:N_sites]
-    # ϵ_MPS = 5e-5 * randomMPS(s, state, maxdim)
+    # Specify the directory path
+    directory_path = "/home/zohalaraib/Oscillatrino/misc"
 
-    # # Perturb the state by adding random noise to the amplitudes
-    # perturbed_ψ = ψ + ϵ_MPS
-    # ψ = normalize!(perturbed_ψ) 
+    # Create the file path within the specified directory
+    datafile_path = joinpath(directory_path, "datafiles/FFI", string(N_sites) * "(par)_" * string(ttotal) * "(tt_<Sz>_<Sy>_<Sx>).dat")
 
-    # # Perturb the state via one-body Hamiltonian
-    # ψ = evolve_perturbation(s, τ, B, N_sites, ψ, cutoff, maxdim, ttotal)
 
+    # Open the file for writing
+    datafile = open(datafile_path, "w")
+    
     #extract output for the survival probability values at each timestep
-    Sz_array, prob_surv_array, x_values = evolve(s, τ, N, B, N_sites, Δx,del_m2, p, x, Δp, ψ, shape_name, energy_sign, cutoff, maxdim, tolerance, ttotal)
+    Sz_array, Sy_array, Sx_array, prob_surv_array, x_values = evolve(s, τ, N, B, N_sites, Δx,del_m2, p, x, Δp, ψ_0, shape_name, energy_sign, cutoff, maxdim, datafile, ttotal)
 
+    close(datafile)  # Close the file
     # rho = outer(ψ', ψ)
     # println(rho)
 
-    rho_ee = ( (2 * Sz_array) .+ 1)/2
-    #Plotting P_surv vs t
-    plot(0.0:τ:τ*(length(rho_ee)-1), rho_ee, xlabel = "t", ylabel = "<rho_ee>", legend = false, size=(800, 600), aspect_ratio=:auto,margin= 10mm) 
+    ρ_ee = ( (2 * Sz_array) .+ 1)/2
+    #Plotting ρ_ee vs t
+    plot(0.0:τ:τ*(length(ρ_ee)-1), ρ_ee, xlabel = "t", ylabel = "<ρ_ee>", legend = false, size=(800, 600), aspect_ratio=:auto,margin= 10mm) 
     #Save the plot as a PDF file
-    savefig("<rho_ee> vs t (self-interactions w geo+shape)_MF_FFI.pdf")
+    savefig("<ρ_ee> vs t (self-interactions w geo+shape)_MF_FFI.pdf")
+
+    plot(0.0:τ:τ*(length(Sz_array)-1), Sz_array, xlabel = "t", ylabel = "<Sz>", legend = false, size=(800, 600), aspect_ratio=:auto,margin= 10mm) 
+    #Save the plot as a PDF file
+    savefig("<Sz> vs t (self-interactions w geo+shape)_MF_FFI.pdf")
+
+    plot(0.0:τ:τ*(length(Sy_array)-1), Sy_array, xlabel = "t", ylabel = "<Sy_array>", legend = false, size=(800, 600), aspect_ratio=:auto,margin= 10mm) 
+    #Save the plot as a PDF file
+    savefig("<Sy> vs t (self-interactions w geo+shape)_MF_FFI.pdf")
+
+    plot(0.0:τ:τ*(length(Sx_array)-1), Sx_array, xlabel = "t", ylabel = "<Sx_array>", legend = false, size=(800, 600), aspect_ratio=:auto,margin= 10mm) 
+    #Save the plot as a PDF file
+    savefig("<Sx> vs t (self-interactions w geo+shape)_MF_FFI.pdf")
+
 
     plot(title="Particle Position Evolution", xlabel= "Position (x)",ylabel="Time")
     for site in 1:N_sites
@@ -152,6 +169,10 @@ function main()
     end
 
     savefig("Particles evolution.pdf")
+    # Save the plot in the same directory
+    # plot_path = joinpath(directory_path, "plots", string(N) * "(par)_" * string(ttotal) * "(ttotal)final.png")
+    # savefig(plot_path)
+
 end 
 
 @time main()

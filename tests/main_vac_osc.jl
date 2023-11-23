@@ -49,8 +49,18 @@ function main()
   # Initialize psi to be a product state (First half to be spin down and other half to be spin up)
   ψ = productMPS(s, N -> N <= N_sites/2 ? "Dn" : "Up") # Fixed to produce consistent results for the test assert conditions 
 
+  # Specify the directory path
+  directory_path = "/home/zohalaraib/Oscillatrino/misc"
+
+  # Create the file path within the specified directory
+  datafile_path = joinpath(directory_path, "datafiles/vac_osc", string(N_sites) * "(par)_" * string(ttotal) * "(tt_<Sz>_<Sy>_<Sx>).dat")
+
+  # Open the file for writing
+  datafile = open(datafile_path, "w")
+    
+
   #extract output for the survival probability values at each timestep
-  Sz_array, prob_surv_array = evolve(s, τ, N, B, N_sites, Δx,del_m2, p, x, Δp, ψ, shape_name, energy_sign, cutoff, maxdim, tolerance, ttotal)
+  Sz_array, Sy_array, Sx_array, prob_surv_array, x_values = evolve(s, τ, N, B, N_sites, Δx,del_m2, p, x, Δp, ψ, shape_name, energy_sign, cutoff, maxdim, datafile, ttotal)
 
   expected_sz_array = Float64[]
   expected_sz= Float64[]
@@ -86,12 +96,20 @@ function main()
   # for B vector in x, it checks that the value of Sz at the first spin site oscillates between -0.5 and 0.5 
   # for B vector in -z, it checks that the value of Sz at the firstspin site never oscillates from -0.5 
   @assert all(abs.(Sz_array .- expected_sz_array) .< tolerance)
-
+  close(datafile)  # Close the file
   # Plotting P_surv vs t
   plot(0.0:τ:τ*(length(Sz_array)-1), Sz_array, xlabel = "t", ylabel = "<Sz>", title = "Running main_vac_osc script",legend = true, size=(700, 600), aspect_ratio=:auto,margin= 10mm, label = "My_sz") 
   plot!(0.0:τ:τ*(length(Sz_array)-1), expected_sz_array, xlabel = "t", ylabel = "<Sz>", title = "Running main_vac_osc script", legendfontsize=8, legend=:topright, label = "Expected_sz from Sakurai") 
   # Save the plot as a PDF file
-  savefig("<Sz> vs t (only vacuum oscillation term plot).pdf")
+  savefig("<Sz> vs t(vac_osc).pdf")
+
+  plot(0.0:τ:τ*(length(Sy_array)-1), Sy_array, xlabel = "t", ylabel = "<Sy_array>", legend = false, size=(800, 600), aspect_ratio=:auto,margin= 10mm) 
+  #Save the plot as a PDF file
+  savefig("<Sy> vs t(vac_osc).pdf")
+
+  plot(0.0:τ:τ*(length(Sx_array)-1), Sx_array, xlabel = "t", ylabel = "<Sx_array>", legend = false, size=(800, 600), aspect_ratio=:auto,margin= 10mm) 
+  #Save the plot as a PDF file
+  savefig("<Sx> vs t(vac_osc).pdf")
 end
 
 @time main()
