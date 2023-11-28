@@ -60,10 +60,43 @@ function evolve(s, τ, n, ω, B, N, Δx, ψ, cutoff, tolerance, ttotal)
         # and if so, it executes the break statement, which causes the loop to terminate early.
         t ≈ ttotal && break
 
+
+
+                    # function apply(gates, ψ;cutoff)
+            #     temp = zeros(Int, Threads.nthreads())
+            #     Threads.@threads for i in eachindex(ψ)
+            #         temp[Threads.threadid()] = ψ[i]
+            #     end
+            #     return temp
+            # end
+            function apply_gate(mat, vec)
+                num_rows, num_cols = size(mat)
+                res = zeros(ComplexF64, num_rows)
+                
+                for i in 1:num_rows
+                    for j in 1:num_cols
+                        res[i] += mat[(i - 1) * num_cols + j] * vec[j]
+                    end
+                end
+                
+                return res
+            end
+            function apply_g(gates, ψ; cutoff)
+                temp = Vector{ComplexF64}(undef, length(ψ))
+                Threads.@threads for i in eachindex(ψ)
+                    local_state = ψ[i]
+                    for gate in gates
+                        local_state = apply_gate(gate, local_state)
+                    end
+                    temp[i] = local_state
+                end
+                return temp
+            end
         # apply each gate in gates successively to the wavefunction psi (it is equivalent to time evolving psi according to the time-dependent Hamiltonian represented by gates).
         # The apply function is smart enough to determine which site indices each gate has, and then figure out where to apply it to our MPS. 
         # It automatically handles truncating the MPS and handles the non-nearest-neighbor gates in this example.
-        ψ = apply(gates, ψ; cutoff)
+        #ψ = apply(gates, ψ; cutoff)
+        ψ = apply_g(gates, ψ; cutoff)
         # The normalize! function is used to ensure that the MPS is properly normalized after each application of the time evolution gates. 
         # This is necessary to ensure that the MPS represents a valid quantum state.
         normalize!(ψ)
@@ -71,4 +104,3 @@ function evolve(s, τ, n, ω, B, N, Δx, ψ, cutoff, tolerance, ttotal)
 
     return Sz_array, prob_surv_array
 end
-

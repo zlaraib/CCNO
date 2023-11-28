@@ -1,6 +1,8 @@
 using ITensors
 using Plots
 using Measures
+using Base.Threads
+using LinearAlgebra
 include("../src/evolution.jl")
 include("../src/constants.jl")
 
@@ -15,6 +17,12 @@ function main()
     ttotal = 5 # total time of evolution (NEED TO GO TILL 50 for Rog_results)
     tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution
     Δx = 1E-3 # length of the box of interacting neutrinos at a site/shape function width of neutrinos in cm 
+
+    BLAS.set_num_threads(1)
+    ITensors.Strided.disable_threads()
+    ITensors.disable_threaded_blocksparse()
+    
+    @show Threads.nthreads() # could be 1, 2, 4 or 8     
 
     # s is an array of spin 1/2 tensor indices (Index objects) which will be the site or physical indices of the MPS.
     # We overload siteinds function, which generates custom Index array with Index objects having the tag of total spin quantum number for all N.
