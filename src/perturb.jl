@@ -29,7 +29,7 @@ function create_perturbation_gates(s, B, N_sites, τ)
     gates = ITensor[] 
 
     # define an array of oscillation frequencies (units of ergs) of perturbation
-    ω = fill(π, N_sites) 
+    ω = fill(π/8, N_sites) 
     println("perturb_ω = ", ω)
 
     for i in 1:(N_sites-1)
@@ -45,18 +45,10 @@ function create_perturbation_gates(s, B, N_sites, τ)
             # op function returns these operators as ITensors and we tensor product and add them together to compute the operator hj.
 
             # add perturbation via one-body oscillation term to the Hamiltonian
-            if B[3] != 0 
-                hj = (1/(N_sites-1))*
-                ((ω[i] * B[3] * op("Sz", s_i)* op("Id", s_j))  + (ω[j] * B[3] * op("Sz", s_j) * op("Id", s_i)))
-                if B[2] !=0 
-                    hj += (1/(N_sites-1))*
-                    ((ω[i] * B[2] * op("Sz", s_i)* op("Id", s_j))  + (ω[j] * B[2] * op("Sz", s_j) * op("Id", s_i)))
-                    if B[1] !=0 
-                        hj += (1/(N_sites-1))*
-                        ((ω[i] * B[1] * op("Sz", s_i)* op("Id", s_j))  + (ω[j] * B[1] * op("Sz", s_j) * op("Id", s_i)))
-                    end
-                end
-            end
+            hj = (1/(N_sites-1))* 
+            ((ω[i] * B[1] * op("Sx", s_i)* op("Id", s_j))  + (ω[j] * B[1] * op("Sx", s_j) * op("Id", s_i))) + 
+            ((ω[i] * B[2] * op("Sy", s_i)* op("Id", s_j))  + (ω[j] * B[2] * op("Sy", s_j) * op("Id", s_i))) +
+            ((ω[i] * B[3] * op("Sz", s_i)* op("Id", s_j))  + (ω[j] * B[3] * op("Sz", s_j) * op("Id", s_i))) 
 
             # make Trotter gate Gj that would correspond to each gate in the gate array of ITensors             
             Gj = exp(-im * τ/2 * hj)
