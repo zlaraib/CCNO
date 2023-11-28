@@ -50,12 +50,12 @@ sum Δx_i = L # domain size
 # Where each site is occupied by either some neutrinos or some antineutrinos. 
 
 function main()
-    N_sites = 4 # number of sites # variable
+    # N_sites =4 # number of sites # variable
     cutoff = 1E-14 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT) #variable
-    # τ = 6.5E-13 # time step # sec # variable
-    # ttotal = 1.6e-10 # total time of evolution # sec #variable
-    τ = 0.05 # time step # sec # variable
-    ttotal = 10 # total time of evolution # sec #variable
+    τ = 6.5E-13 # time step # sec # variable
+    ttotal = 1.6e-10 # total time of evolution # sec #variable
+    # τ = 0.5 # time step # sec # variable
+    # ttotal = 500 # total time of evolution # sec #variable
     tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution #variable
     Δp = 5 # width of shape function  # cm #variable
     del_m2 = 0 # fixed for 'only' self interactions # (erg^2)
@@ -71,7 +71,7 @@ function main()
     n_mu_e =  4.891290848285061e+32 # cm^-3 # number density of electron flavor neutrino
     n_mu_e_bar =  4.891290848285061e+32 # cm^-3 # number density of electron flavor antineutrino
     # N_sites= 50 # total sites/particles that evenly spaced "for each (electron) flavor" 
-    # N_sites = 100 # total particles/sites for all neutrino and anti neutrino electron flavored
+    N_sites = 100 # total particles/sites for all neutrino and anti neutrino electron flavored
 
     V = L^3 
     Δx = L/N_sites # length of the box of interacting neutrinos at a site in cm  #variable
@@ -88,10 +88,10 @@ function main()
     # conserve_qns=true conserves the total spin quantum number "Sz" in the system as it evolves,
     # i.e. examples of conservation of quantum numbers are the total number of neutrino particles, or the total of all S_z components of this system of spins
     # conserving total Sz requires Sx and Sy in terms of S+ and S- by design choice.
-    s = siteinds("S=1/2", N_sites; conserve_qns=true) #fixed #switched conserve_qns to false to avoid fluxes error in expect function
+    s = siteinds("S=1/2", N_sites; conserve_qns=false) #fixed #switched conserve_qns to false to avoid fluxes error in expect function
     
     # Create a B vector that allows for perturbation to inital state in different directions
-    B = [0.02, -0.02, -1] #variable
+    B = [0.02, -0.02, 1] #variable
     # Normalize B to have a norm of 1
     B = B / norm(B)
 
@@ -131,20 +131,28 @@ function main()
     
     # check if a directory exists, and if it doesn't, create it using mkpath
     isdir(plotdir) || mkpath(plotdir)
-    #Plotting ρ_ee vs t
-    plot(0.0:τ:τ*(length(ρ_ee_array)-1), ρ_ee_array, xlabel = "t", ylabel = "<ρ_ee>", legend = false, size=(800, 600), aspect_ratio=:auto,margin= 10mm) 
-    #Save the plot as a PDF file
+    # Plotting ρ_ee vs t
+    plot(0.0:τ:τ*(length(ρ_ee_array)-1), ρ_ee_array, xlabel = "t", ylabel = "<ρ_ee>", legend = false, left_margin = 10mm, right_margin = 10mm, top_margin = 5mm, bottom_margin = 10mm) 
+
+    # Save the plot as a PDF file
     savefig(joinpath(plotdir, "<ρ_ee>_vs_t_self-interactions_w_geo+shape_MF_FFI.pdf"))
 
-    plot(0.0:τ:τ*(length(Sz_array)-1), Sz_array, xlabel = "t", ylabel = "<Sz>", legend = false, size=(800, 600), aspect_ratio=:auto,margin= 10mm) 
-    #Save the plot as a PDF file
-    savefig(joinpath(plotdir,"<Sz> vs t (self-interactions w geo+shape)_MF_FFI.pdf"))
+    # Plotting Sz vs t
+    plot(0.0:τ:τ*(length(Sz_array)-1), Sz_array,
+        xlabel = "t", ylabel = "<Sz>", legend = false,
+        left_margin = 10mm, right_margin = 10mm,
+        top_margin = 5mm, bottom_margin = 5mm,
+        ylims = (minimum(Sz_array), maximum(Sz_array) + 0.1 * abs(maximum(Sz_array) - minimum(Sz_array)))
+    )
 
-    plot(0.0:τ:τ*(length(Sy_array)-1), Sy_array, xlabel = "t", ylabel = "<Sy_array>", legend = false, size=(800, 600), aspect_ratio=:auto,margin= 10mm) 
+    # Save the plot as a PDF file
+    savefig(joinpath(plotdir, "<Sz>_vs_t_self-interactions_w_geo+shape_MF_FFI.pdf"))
+
+    plot(0.0:τ:τ*(length(Sy_array)-1), Sy_array, xlabel = "t", ylabel = "<Sy_array>", legend = false) 
     #Save the plot as a PDF file
     savefig(joinpath(plotdir,"<Sy> vs t (self-interactions w geo+shape)_MF_FFI.pdf"))
 
-    plot(0.0:τ:τ*(length(Sx_array)-1), Sx_array, xlabel = "t", ylabel = "<Sx_array>", legend = false, size=(800, 600), aspect_ratio=:auto,margin= 10mm) 
+    plot(0.0:τ:τ*(length(Sx_array)-1), Sx_array, xlabel = "t", ylabel = "<Sx_array>", legend = false) 
     #Save the plot as a PDF file
     savefig(joinpath(plotdir,"<Sx> vs t (self-interactions w geo+shape)_MF_FFI.pdf"))
 

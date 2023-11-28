@@ -54,10 +54,12 @@ function evolve(s, τ, N, B, N_sites, Δx, del_m2, p, x, Δp, ψ, shape_name, en
         # compute expectation value of Sz (inbuilt operator in ITensors library) at the first site on the chain
         sz = expect(ψ, "Sz"; sites=1)
 
-        # compute expectation value of sy and sx using S+ and S- (inbuilt operator in ITensors library) at the first site on the chain
-        sy = -0.5 *im * (expect(complex(ψ), "S+"; sites=1) - expect(complex(ψ), "S-"; sites=1)) #re-check
-        sx = 0.5 * (expect(ψ, "S+"; sites=1) + expect(ψ, "S-"; sites=1)) #recheck
+        # # compute expectation value of sy and sx using S+ and S- (inbuilt operator in ITensors library) at the first site on the chain
+        # sy = -0.5 *im * (expect(complex(ψ), "S+"; sites=1) - expect(complex(ψ), "S-"; sites=1)) #re-check
+        # sx = 0.5 * (expect(ψ, "S+"; sites=1) + expect(ψ, "S-"; sites=1)) #recheck
 
+        sy = expect(ψ, "Sy"; sites=1)
+        sx = expect(ψ, "Sx"; sites=1)
         # add an element sz to ... 
         push!(Sz_array, sz) # .. the end of Sz array 
         push!(Sy_array, sy) # .. the end of Sy array 
