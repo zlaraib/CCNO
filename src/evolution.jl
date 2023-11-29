@@ -69,34 +69,69 @@ function evolve(s, τ, n, ω, B, N, Δx, ψ, cutoff, tolerance, ttotal)
             #     end
             #     return temp
             # end
-            function apply_gate(mat, vec)
-                num_rows, num_cols = size(mat)
-                res = zeros(ComplexF64, num_rows)
+            # function apply_gate(mat, vec)
+            #     num_rows, num_cols = size(mat)
+            #     res = zeros(ComplexF64, num_rows)
                 
-                for i in 1:num_rows
-                    for j in 1:num_cols
-                        res[i] += mat[(i - 1) * num_cols + j] * vec[j]
-                    end
-                end
+            #     for i in 1:num_rows
+            #         for j in 1:num_cols
+            #             res[i] += mat[(i - 1) * num_cols + j] * vec[j]
+            #         end
+            #     end
                 
-                return res
-            end
-            function apply_g(gates, ψ; cutoff)
-                temp = Vector{ComplexF64}(undef, length(ψ))
-                Threads.@threads for i in eachindex(ψ)
-                    local_state = ψ[i]
-                    for gate in gates
-                        local_state = apply_gate(gate, local_state)
-                    end
-                    temp[i] = local_state
+            #     return res
+            # end
+            # function apply_g(gates, ψ; cutoff)
+            #     temp = Vector{ComplexF64}(undef, length(ψ))
+            #     Threads.@threads for i in eachindex(ψ)
+            #         local_state = ψ[i]
+            #         for gate in gates
+            #             local_state = apply_gate(gate, local_state)
+            #         end
+            #         temp[i] = local_state
+            #     end
+            #     return temp
+            # end
+
+            function product(
+                o::ITensor,
+                ψ::MPS,
+                ns=findsites(ψ, o);
+                move_sites_back::Bool=true,
+                apply_dag::Bool=false,
+                kwargs...,
+              )
+                N = length(ns)
+                ns = sort(ns)
+              
+                # TODO: make this smarter by minimizing
+                # distance to orthogonalization.
+                # For example, if ITensors.orthocenter(ψ) > ns[end],
+                # set to ns[end].
+                ψ = orthogonalize(ψ, ns[1])
+                diff_ns = diff(ns)
+                ns′ = ns
+                if any(!=(1), diff_ns)
+                  ns′ = [ns[1] + n - 1 for n in 1:N]
+                  ψ = movesites(ψ, ns .=> ns′; kwargs...)
                 end
-                return temp
-            end
+                ϕ = ψ[ns′[1]]
+                for n in 2:N
+                  ϕ *= ψ[ns′[n]]
+                end
+                ϕ = product(o, ϕ; apply_dag=apply_dag)
+                ψ[ns′[1]:ns′[end], kwargs...] = ϕ
+                if move_sites_back
+                  # Move the sites back to their original positions
+                  ψ = movesites(ψ, ns′ .=> ns; kwargs...)
+                end
+                return ψ
+              end
         # apply each gate in gates successively to the wavefunction psi (it is equivalent to time evolving psi according to the time-dependent Hamiltonian represented by gates).
         # The apply function is smart enough to determine which site indices each gate has, and then figure out where to apply it to our MPS. 
         # It automatically handles truncating the MPS and handles the non-nearest-neighbor gates in this example.
         #ψ = apply(gates, ψ; cutoff)
-        ψ = apply_g(gates, ψ; cutoff)
+        ψ = product(gates, ψ; cutoff)
         # The normalize! function is used to ensure that the MPS is properly normalized after each application of the time evolution gates. 
         # This is necessary to ensure that the MPS represents a valid quantum state.
         normalize!(ψ)
