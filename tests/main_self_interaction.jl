@@ -50,12 +50,12 @@ sum Δx_i = L # domain size
 # Where each site is occupied by either some neutrinos or some antineutrinos. 
 
 function main()
-    # N_sites =4 # number of sites # variable
+    #N_sites =4  # number of sites # variable
     cutoff = 1E-14 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT) #variable
     τ = 6.5E-13 # time step # sec # variable
-    ttotal = 1.6e-10 # total time of evolution # sec #variable
-    # τ = 0.5 # time step # sec # variable
-    # ttotal = 500 # total time of evolution # sec #variable
+    ttotal = 9E-11 # total time of evolution # sec #variable
+    τ = 0.05 # time step # sec # variable
+    ttotal = 5 # total time of evolution # sec #variable
     tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution #variable
     Δp = 5 # width of shape function  # cm #variable
     del_m2 = 0 # fixed for 'only' self interactions # (erg^2)
@@ -124,7 +124,7 @@ function main()
     datadir = joinpath(@__DIR__, "..","misc","datafiles","FFI", "par_"*string(N_sites), "tt_"*string(ttotal))
 
     #extract output for the survival probability values at each timestep
-    Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, px_values, ρ_ee_array= evolve(s, τ, N, B, N_sites, Δx,del_m2, p, x, Δp, ψ_0, shape_name, energy_sign, cutoff, maxdim, datadir, ttotal)
+    Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, px_values, ρ_ee_array= evolve(s, τ, N, B,L, N_sites, Δx,del_m2, p, x, Δp, ψ_0, shape_name, energy_sign, cutoff, maxdim, datadir, ttotal)
 
     # Specify the relative directory path
     plotdir = joinpath(@__DIR__, "..","misc","plots","FFI", "par_"*string(N_sites), "tt_"*string(ttotal))
@@ -158,7 +158,7 @@ function main()
 
     plot(title="Particle Position Evolution", xlabel= "Position (x)",ylabel="Time")
     for site in 1:N_sites
-        site_positions = [x_values[t][site] for t in 1:length(x_values)]
+        site_positions = ([x_values[t][site] for t in 1:length(x_values)])/ c
         plot!(site_positions, 0.0:τ:ttotal, label="Site $site")
     end
 
