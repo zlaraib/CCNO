@@ -22,7 +22,7 @@ include("momentum.jl")
 # This file generates the evolve function which evolves the ψ state in time and computes the expectation values of Sz at each time step, along 
 # with their survival probabilities. The time evolution utilizes the unitary operators created as gates from the create_gates function.
 # The <Sz> and Survival probabilities output from this function are unitless. 
-function evolve(s, τ, N, B, N_sites, Δx, del_m2, p, x, Δp, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, ttotal)
+function evolve(s, τ, N, B,L, N_sites, Δx, del_m2, p, x, Δp, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, ttotal)
 
     # check if a directory exists, and if it doesn't, create it using mkpath
     isdir(datadir) || mkpath(datadir)
@@ -46,8 +46,24 @@ function evolve(s, τ, N, B, N_sites, Δx, del_m2, p, x, Δp, ψ, shape_name, en
      # Compute and print survival probability (found from <Sz>) at each time step then apply the gates to go to the next time
      for t in 0.0:τ:ttotal
         push!(x_values, copy(x))  # Record x values at each time step
-        x .+=  (p_x_hat .* τ)  # displacing particle's position at each timestep 
+        x .+=  ((p_x_hat*c) .* τ)  # displacing particle's position at each timestep 
 
+        # for i in eachindex(x)
+        #     x[i] += (p_x_hat[i] * c * τ)
+        #     if x[i] > L
+        #         x[i] -= L
+        #     end
+        #     if x[i] < 0
+        #         x[i] += L
+        #     end
+        #             # Check if each index satisfies the boundary condition
+        # @assert (x[i] >= 0 && x[i] <= L)
+        # end
+        # #x .= ifelse.(x .> L, x .- L, ifelse.(x .< 0, x .+ L, x))
+        # #@assert all((x .>= 0) .& (x .<= L))
+        # push!(x_values, copy(x)) 
+    
+        #@assert (x>=0 || x<=L)
         px = p[:, 1]  # Extracting the first column (which corresponds to px values)
         push!(px_values, copy(px)) # Record px values at each time step
 
