@@ -93,45 +93,63 @@ function evolve(s, τ, n, ω, B, N, Δx, ψ, cutoff, tolerance, ttotal)
             #     return temp
             # end
 
-            function product(
-                o::ITensor,
-                ψ::MPS,
-                ns=findsites(ψ, o);
-                move_sites_back::Bool=true,
-                apply_dag::Bool=false,
-                kwargs...,
-              )
-                N = length(ns)
-                ns = sort(ns)
+            # function product(
+            #     o::ITensor,
+            #     ψ::MPS,
+            #     ns=findsites(ψ, o);
+            #     move_sites_back::Bool=true,
+            #     apply_dag::Bool=false,
+            #     kwargs...,
+            #   )
+            #     N = length(ns)
+            #     ns = sort(ns)
               
-                # TODO: make this smarter by minimizing
-                # distance to orthogonalization.
-                # For example, if ITensors.orthocenter(ψ) > ns[end],
-                # set to ns[end].
-                ψ = orthogonalize(ψ, ns[1])
-                diff_ns = diff(ns)
-                ns′ = ns
-                if any(!=(1), diff_ns)
-                  ns′ = [ns[1] + n - 1 for n in 1:N]
-                  ψ = movesites(ψ, ns .=> ns′; kwargs...)
-                end
-                ϕ = ψ[ns′[1]]
-                for n in 2:N
-                  ϕ *= ψ[ns′[n]]
-                end
-                ϕ = product(o, ϕ; apply_dag=apply_dag)
-                ψ[ns′[1]:ns′[end], kwargs...] = ϕ
-                if move_sites_back
-                  # Move the sites back to their original positions
-                  ψ = movesites(ψ, ns′ .=> ns; kwargs...)
-                end
-                return ψ
+            #     # TODO: make this smarter by minimizing
+            #     # distance to orthogonalization.
+            #     # For example, if ITensors.orthocenter(ψ) > ns[end],
+            #     # set to ns[end].
+            #     ψ = orthogonalize(ψ, ns[1])
+            #     diff_ns = diff(ns)
+            #     ns′ = ns
+            #     if any(!=(1), diff_ns)
+            #       ns′ = [ns[1] + n - 1 for n in 1:N]
+            #       ψ = movesites(ψ, ns .=> ns′; kwargs...)
+            #     end
+            #     ϕ = ψ[ns′[1]]
+            #     for n in 2:N
+            #       ϕ *= ψ[ns′[n]]
+            #     end
+            #     ϕ = product(o, ϕ; apply_dag=apply_dag)
+            #     ψ[ns′[1]:ns′[end], kwargs...] = ϕ
+            #     if move_sites_back
+            #       # Move the sites back to their original positions
+            #       ψ = movesites(ψ, ns′ .=> ns; kwargs...)
+            #     end
+            #     return ψ
+            #   end
+
+
+            Threads.@threads for z in 1:N
+
+              psi = ψ(z)
+    
+             apply_time = 0
+    
+              for s in 1:t_steps
+                         apply_time += @elapsed rho = ψ = apply(gates, psi; cutoff)
+                         
+                        # some more things (writing psi to disc, ...)
+    
               end
+    
+              @show apply_time
+    
+    end
         # apply each gate in gates successively to the wavefunction psi (it is equivalent to time evolving psi according to the time-dependent Hamiltonian represented by gates).
         # The apply function is smart enough to determine which site indices each gate has, and then figure out where to apply it to our MPS. 
         # It automatically handles truncating the MPS and handles the non-nearest-neighbor gates in this example.
-        #ψ = apply(gates, ψ; cutoff)
-        ψ = product(gates, ψ; cutoff)
+        ψ = apply(gates, ψ; cutoff)
+        #ψ = product(gates, ψ; cutoff)
         # The normalize! function is used to ensure that the MPS is properly normalized after each application of the time evolution gates. 
         # This is necessary to ensure that the MPS represents a valid quantum state.
         normalize!(ψ)
