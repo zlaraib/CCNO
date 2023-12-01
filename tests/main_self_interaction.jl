@@ -54,10 +54,10 @@ function main()
     cutoff = 1E-14 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT) #variable
     τ = 6.5E-13 # time step # sec # variable
     ttotal = 9E-11 # total time of evolution # sec #variable
-    τ = 0.05 # time step # sec # variable
-    ttotal = 5 # total time of evolution # sec #variable
+    # τ = 0.05 # time step # sec # variable
+    # ttotal = 5 # total time of evolution # sec #variable
     tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution #variable
-    Δp = 5 # width of shape function  # cm #variable
+    Δp = 1/4 # width of shape function  # cm #variable
     del_m2 = 0 # fixed for 'only' self interactions # (erg^2)
     maxdim = 1 # max bond dimension in MPS truncation
 
