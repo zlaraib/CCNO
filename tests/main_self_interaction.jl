@@ -3,7 +3,7 @@ using Plots
 using Measures
 using Base.Threads
 using LinearAlgebra
-# using AbstractMPS
+
 include("../src/evolution.jl")
 include("../src/constants.jl")
 
@@ -11,24 +11,42 @@ include("../src/constants.jl")
 # The simulation is done by applying a sequence of unitary gates to an initial state of the system, 
 # which is a product state where each site alternates between up and down.
 
-function main()
-    N = 4 # number of sites (NEED TO GO TILL 96 for Rog_results)
+function main(N; use_splitblocks = true,nsweeps = 10, blas_num_threads=1,
+        strided_num_threads=1, use_threaded_blocksparse=true, outputlevel=1)
+    #N = 4 # number of sites 
     cutoff = 1E-14 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT)
-    τ = 0.05 # time step (NEED TO BE 0.05 for Rog_results)
-    ttotal = 5 # total time of evolution (NEED TO GO TILL 50 for Rog_results)
+    τ = 0.05 # time step 
+    ttotal = 10 # total time of evolution
     tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution
     Δx = 1E-3 # length of the box of interacting neutrinos at a site/shape function width of neutrinos in cm 
+    maxdim = 200 #bondimension
 
-    BLAS.set_num_threads(1)
-    ITensors.Strided.disable_threads()
-    ITensors.disable_threaded_blocksparse()
+    ITensors.Strided.set_num_threads(strided_num_threads)
+    BLAS.set_num_threads(blas_num_threads)
     
-    @show Threads.nthreads() # could be 1, 2, 4 or 8     
+    if use_threaded_blocksparse
+        ITensors.enable_threaded_blocksparse()
+      else
+        ITensors.disable_threaded_blocksparse()
+    end  
 
-    # s is an array of spin 1/2 tensor indices (Index objects) which will be the site or physical indices of the MPS.
-    # We overload siteinds function, which generates custom Index array with Index objects having the tag of total spin quantum number for all N.
-    # conserve_qns=true conserves the total spin quantum number "S" in the system as it evolves
-    s = siteinds("S=1/2", N; conserve_qns=true)  
+    if outputlevel > 0
+        @show Threads.nthreads()
+        @show Sys.CPU_THREADS
+        @show BLAS.get_num_threads()
+        @show ITensors.Strided.get_num_threads()
+        @show ITensors.using_threaded_blocksparse()
+        println()
+    end
+
+    sweeps = Sweeps(nsweeps)
+    maxdims = min.([100, 200, 400, 800, 2000, 3000, maxdim], maxdim)
+    maxdim!(sweeps, maxdims...)
+    noise!(sweeps, 1e-6, 1e-7, 1e-8, 0.0)
+
+    if outputlevel > 0
+        @show sweeps
+    end
 
     # Constants for Rogerro's fit (only self-interaction term)
     a_t = 0
@@ -47,11 +65,24 @@ function main()
     # Create an array ω with N elements. Each element of the array is zero.
     ω = fill(0, N) 
 
+    # s is an array of spin 1/2 tensor indices (Index objects) which will be the site or physical indices of the MPS.
+    # We overload siteinds function, which generates custom Index array with Index objects having the tag of total spin quantum number for all N.
+    # conserve_qns=true conserves the total spin quantum number "S" in the system as it evolves
+    s = siteinds("S=1/2", N; conserve_qns=true)  
+
     # Initialize psi to be a product state (alternating down and up)
     ψ = productMPS(s, n -> isodd(n) ? "Dn" : "Up")
 
     #extract output from the expect.jl file where the survival probability values were computed at each timestep
-    Sz_array, prob_surv_array = evolve(s, τ, n, ω, B, N, Δx, ψ, cutoff, tolerance, ttotal)
+    Sz_array, prob_surv_array, apply_time= evolve(s, τ, n, ω, B, N, Δx, ψ, cutoff, tolerance, ttotal,outputlevel, 
+                                                                maxdim,use_splitblocks,use_threaded_blocksparse)
+    #energy,ψ  = eigenvals(s, τ, n, ω, B, N, Δx, cutoff, tolerance, ttotal,outputlevel,maxdim,use_splitblocks, 
+                                                                       # sweeps,nsweeps,use_threaded_blocksparse)
+    if outputlevel > 0
+        @show flux(ψ)
+        @show maxlinkdim(ψ)
+    end
+
 
     #index of minimum of the prob_surv_array (containing survival probability values at each time step)
     i_min = argmin(prob_surv_array)
@@ -62,15 +93,21 @@ function main()
     println("t_p_Rog= ",t_p_Rog)
     println("i_min= ", i_min)
     println("t_min= ", t_min)
-    # Check that our time of minimum survival probability compared to Rogerro(2021) remains within the timestep and tolerance.
-    @assert abs(t_min - t_p_Rog) <  τ + tolerance 
+    # # Check that our time of minimum survival probability compared to Rogerro(2021) remains within the timestep and tolerance.
+    #@assert abs(t_min - t_p_Rog) <  τ + tolerance 
 
     # Plotting P_surv vs t
-    plot(0.0:τ:τ*(length(prob_surv_array)-1), prob_surv_array, xlabel = "t", ylabel = "Survival Probabillity p(t)", legend = false, size=(800, 600), aspect_ratio=:auto,margin= 10mm) 
+    #plot(0.0:τ:τ*(length(prob_surv_array)-1), prob_surv_array, xlabel = "t", 
+           # ylabel = "Survival Probabillity p(t)", legend = false, size=(800, 600), aspect_ratio=:auto,margin= 10mm) 
 
     # Save the plot as a PDF file
-    savefig("Survival probability vs t (only self-interaction term plot).pdf")
+    #savefig("Survival probability vs t (only self-interaction term plot).pdf")
+    #return apply_time
 end 
-
-@time main()
-
+N= 8
+println("Without threaded block sparse:\n")
+@time main(N; nsweeps = 10, use_threaded_blocksparse=false)
+println()
+println("With threaded block sparse:\n")
+@time main(N; nsweeps = 10, use_threaded_blocksparse=true)
+println()

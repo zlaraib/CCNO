@@ -13,7 +13,7 @@ include("constants.jl")
 # This test runs the create_gates function that holds ITensors Trotter gates and returns the dimensionless unitary 
 # operators govered by the Hamiltonian which includes effects of the vacuum and self-interaction potential for each site.
 
-function create_gates(s, n, ω, B, N, Δx, τ)
+function create_gates(s, n, ω, B, N, Δx, τ,outputlevel, use_splitblocks)
     # Make gates (1,2),(2,3),(3,4),... i.e. unitary gates which act on any (non-neighboring) pairs of sites in the chain.
     # Create an empty ITensors array that will be our Trotter gates
     gates = ITensor[]                                                              
@@ -22,7 +22,7 @@ function create_gates(s, n, ω, B, N, Δx, τ)
         for j in i+1:N
             #s_i, s_j are non-neighbouring spin site/indices from the s array
             s_i = s[i]                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
-            s_j = s[j]
+            s_j = s[j]       
             # assert B vector to have a magnitude of 1 while preserving its direction.
             @assert norm(B) == 1
 
@@ -59,7 +59,74 @@ function create_gates(s, n, ω, B, N, Δx, τ)
     # append! adds all the elements of a gates in reverse order (i.e. (N,N-1),(N-1,N-2),...) to the end of gates array.
     # appending reverse gates to create a second-order Trotter-Suzuki integration
     append!(gates, reverse(gates))
+    if outputlevel > 0
+        @show use_splitblocks
+    end
+
+    # Number of structural nonzero elements in a bulk
+    # Hamiltonian MPO tensor
+    if outputlevel > 0
+        @show nnz(gates[end÷2])
+        @show nnzblocks(gates[end÷2])
+    end
     return gates
 end
 
+
+
+
+function Hamiltonian_mpo(s, n, ω, B, N, Δx, τ,outputlevel, use_splitblocks)
+    #input the operator terms
+    os = OpSum()                                                            
+    
+    for i in 1:(N-1)
+        for j in i+1:N
+            # assert B vector to have a magnitude of 1 while preserving its direction.
+            @assert norm(B) == 1
+
+            # Our neutrino system Hamiltonian of self-interaction term represents 1D Heisenberg model.
+            # ni and nj are the neutrions at site i and j respectively.
+            # mu pairs divided by 2 to avoid double counting
+            interaction_strength = (2.0* √2 * G_F * (n[i]+ n[j])/(2*((Δx)^3)) * 1/N) 
+            numerical_factor=(1/(N-1))
+            os+= interaction_strength,"Sz",i,"Sz", j 
+            os+= 1/2,interaction_strength,"S+",i,"S-",j
+            os+=  1/2,interaction_strength,"S-",i,"S+",j
+             
+            if ω[i] != 0 && ω[j] != 0
+
+                os+= numerical_factor,ω[i],B[1],"Sx",i,"Id",j  
+                os+= numerical_factor,ω[j],B[1],"Sx",j,"Id",i 
+                os+= numerical_factor,ω[i],B[2],"Sy",i,"Id",j  
+                os+= numerical_factor,ω[j],B[2],"Sy",j,"Id",i
+                os+= numerical_factor,ω[i],B[3],"Sz",i,"Id",j 
+                os+= numerical_factor,ω[j],B[3],"Sz",j,"Id",i
+                  
+            end
+            
+        end
+    end
+
+
+    #Convert these terms to an MPO
+    H = MPO(os,s; splitblocks=true)
+
+    if outputlevel > 0
+        @show use_splitblocks
+    end
+    #    # This step makes the MPO more sparse but also
+    #    # introduces more blocks.
+    #   #  It generally improves DMRG performance
+    #    # at large bond dimensions.
+    if use_splitblocks
+        H = splitblocks(linkinds, H)
+    end
+    # Number of structural nonzero elements in a bulk
+    # Hamiltonian MPO tensor
+    if outputlevel > 0
+        @show nnz(H[end÷2])
+        @show nnzblocks(H[end÷2])
+    end
+    return H
+end
 
