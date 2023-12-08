@@ -23,6 +23,11 @@ pipeline {
 		sh 'julia tests/test_file.jl'
     } 
 }
+	stage('Particles evolution'){ steps{
+		sh 'julia tests/par_evolution.jl'
+		archiveArtifacts artifacts: 'misc/plots/evol/*/*/*.pdf'
+    } 
+}
 	stage('Only Vacuum oscillations'){ steps{
 		sh 'julia tests/main_vac_osc.jl'
 		archiveArtifacts artifacts: 'misc/plots/vac_osc/*/*/*.pdf'
