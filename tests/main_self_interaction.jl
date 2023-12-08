@@ -49,19 +49,22 @@ sum Δx_i = L # domain size
 # throughout this code the words particle and sites are used interchangeably.
 # Where each site is occupied by either some neutrinos or some antineutrinos. 
 
+# throughout this code I am assuming each site is occupied by a particle i.e. each site contains some number of neutrinos all of same flavor 
+# so all neutrinos are electron flavored (at a site) which interact with electron flavored anti neutrinos (at a different site) in the opposing beam.
 function main()
+ 
+    # my initial conditions 
+    N_sites =2  # number of sites # variable
+    cutoff = 1E-14 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT) #variable
+    τ = 1e-10 # time step # sec # variable
+    ttotal = 1e-9 # total time of evolution # sec #variable
     tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution #variable
     Δp = 1/4 # width of shape function  # cm #variable
     del_m2 = 0 # fixed for 'only' self interactions # (erg^2)
     maxdim = 1 # max bond dimension in MPS truncation
-    cutoff = 1E-14 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT) #variable
-    periodic = true
-    #my initial conditions 
-    N_sites =2  # number of sites # variable
-    τ = 1e-10 # time step # sec # variable
-    ttotal = 1e-9 # total time of evolution # sec #variable
     #Select a shape function based on the shape_name variable form the list defined in dictionary in shape_func file
     shape_name = "triangular"  # Change this to the desired shape name #variable 
+    periodic = true  # true = imposes periodic boundary conditions while false doesn't
     function generate_p_array(N_sites)
         half_N_sites = div(N_sites, 2)
         return [fill(50.0e6, half_N_sites); fill(-50.0e6, half_N_sites)]
@@ -70,9 +73,7 @@ function main()
     n_mu_e =  4.891290848285061e+32 # cm^-3 # number density of electron flavor neutrino
     n_mu_e_bar =  4.891290848285061e+32 # cm^-3 # number density of electron flavor antineutrino
 
-    # Richers(2021) initial conditions:
-    # throughout this code I am assuming each site is occupied by a particle i.e. each site contains some number of neutrinos all of same flavor 
-    # so all neutrinos are electron flavored (at a site) which interact with electron flavored anti neutrinos (at a different site) in the opposing beam.
+    # #Richers(2021) initial conditions:
     # L = 1 # cm # domain size # (aka big box length)
     # n_mu_e =  4.891290848285061e+32 # cm^-3 # number density of electron flavor neutrino
     # n_mu_e_bar =  4.891290848285061e+32 # cm^-3 # number density of electron flavor antineutrino
@@ -132,7 +133,8 @@ function main()
     datadir = joinpath(@__DIR__, "..","misc","datafiles","FFI", "par_"*string(N_sites), "tt_"*string(ttotal))
 
     #extract output for the survival probability values at each timestep
-    Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, px_values, ρ_ee_array= evolve(s, τ, N, B,L, N_sites, Δx,del_m2, p, x, Δp, ψ_0, shape_name, energy_sign, cutoff, maxdim, datadir, ttotal,periodic)
+    Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, px_values, ρ_ee_array= evolve(s, τ, N, B,L, N_sites, 
+                    Δx,del_m2, p, x, Δp, ψ_0, shape_name, energy_sign, cutoff, maxdim, datadir, ttotal,periodic)
 
     # Specify the relative directory path
     plotdir = joinpath(@__DIR__, "..","misc","plots","FFI", "par_"*string(N_sites), "tt_"*string(ttotal))
@@ -140,34 +142,36 @@ function main()
     # check if a directory exists, and if it doesn't, create it using mkpath
     isdir(plotdir) || mkpath(plotdir)
     # Plotting ρ_ee vs t
-    plot(0.0:τ:τ*(length(ρ_ee_array)-1), ρ_ee_array, xlabel = "t", ylabel = "<ρ_ee>", legend = false, left_margin = 10mm, right_margin = 10mm, top_margin = 5mm, bottom_margin = 10mm) 
+    plot(0.0:τ:τ*(length(ρ_ee_array)-1), ρ_ee_array, xlabel = "t", ylabel = "<ρ_ee>", legend = false, 
+    left_margin = 20mm, right_margin = 10mm, top_margin = 5mm, bottom_margin = 10mm) 
 
     # Save the plot as a PDF file
     savefig(joinpath(plotdir, "<ρ_ee>_vs_t_self-interactions_w_geo+shape_MF_FFI.pdf"))
 
     # Plotting Sz vs t
-    plot(0.0:τ:τ*(length(Sz_array)-1), Sz_array,
-        xlabel = "t", ylabel = "<Sz>", legend = false,
-        left_margin = 10mm, right_margin = 10mm,
-        top_margin = 5mm, bottom_margin = 5mm,
+    plot(0.0:τ:τ*(length(Sz_array)-1), Sz_array, xlabel = "t", ylabel = "<Sz>", legend = false,
+        left_margin = 25mm, right_margin = 5mm, top_margin = 5mm, bottom_margin = 20mm,margin= 10mm,
         ylims = (minimum(Sz_array), maximum(Sz_array) + 0.1 * abs(maximum(Sz_array) - minimum(Sz_array)))
     )
 
     # Save the plot as a PDF file
     savefig(joinpath(plotdir, "<Sz>_vs_t_self-interactions_w_geo+shape_MF_FFI.pdf"))
 
-    plot(0.0:τ:τ*(length(Sy_array)-1), Sy_array, xlabel = "t", ylabel = "<Sy_array>", legend = false) 
+    plot(0.0:τ:τ*(length(Sy_array)-1), Sy_array, xlabel = "t", ylabel = "<Sy_array>", legend = false,
+    left_margin = 40mm, right_margin = 5mm, top_margin = 5mm, bottom_margin = 10mm, margin= 10mm) 
     #Save the plot as a PDF file
     savefig(joinpath(plotdir,"<Sy> vs t (self-interactions w geo+shape)_MF_FFI.pdf"))
 
-    plot(0.0:τ:τ*(length(Sx_array)-1), Sx_array, xlabel = "t", ylabel = "<Sx_array>", legend = false) 
+    plot(0.0:τ:τ*(length(Sx_array)-1), Sx_array, xlabel = "t", ylabel = "<Sx_array>", legend = false,
+    left_margin = 40mm, right_margin = 5mm, top_margin = 5mm, bottom_margin = 10mm, margin= 10mm) 
     #Save the plot as a PDF file
     savefig(joinpath(plotdir,"<Sx> vs t (self-interactions w geo+shape)_MF_FFI.pdf"))
 
     plot(title="Particle Position Evolution", xlabel= "Position (x)",ylabel="Time")
     for site in 1:N_sites
         site_positions = [(x_values[t][site]) for t in 1:length(x_values)]
-        plot!(site_positions, 0.0:τ:ttotal, label="Site $site")
+        plot!(site_positions, 0.0:τ:ttotal, label="Site $site",
+        left_margin = 30mm, right_margin = 5mm, top_margin = 5mm, bottom_margin = 20mm, margin= 10mm)
     end
 
     savefig(joinpath(plotdir,"Particles evolution.pdf"))
