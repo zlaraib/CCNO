@@ -17,10 +17,11 @@ function main()
     ttotal = 5 # total time of evolution #sec # variable.
     tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution # variable.
     Δx = 1E-3 # length of the box of interacting neutrinos at a site in cm  # variable.
-    Δp = rand() # shape function width #cm # variable.
+    Δp = 1/4 # shape function width #cm # fixed to be between 0-0-5 to stay cinsistent with all test files.
     del_m2 = 0.0 # erg^2 # Fixed for rog test case. Please dont play with it. 
     maxdim = 4 # max bond dimension in MPS truncation
-
+    L = 1 # cm # domain size # (aka big box length)
+    periodic = false  # true = imposes periodic boundary conditions while false doesn't
     # s is an array of spin 1/2 tensor indices (Index objects) which will be the site or physical indices of the MPS.
     # We overload siteinds function, which generates custom Index array with Index objects having the tag of total spin quantum number for all N.
     # conserve_qns=true conserves the total spin quantum number "S" in the system as it evolves
@@ -58,7 +59,7 @@ function main()
     datadir = joinpath(@__DIR__, "..","misc","datafiles","Rog_self_int", "par_"*string(N_sites), "tt_"*string(ttotal))
 
     #extract output for the survival probability values at each timestep
-    Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, px_values, ρ_ee_array= evolve(s, τ, N, B, N_sites, Δx,del_m2, p, x, Δp, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, ttotal)
+    Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, px_values, ρ_ee_array= evolve(s, τ, N, B,L, N_sites, Δx,del_m2, p, x, Δp, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, ttotal,periodic)
 
 
     # This function scans through the array, compares each element with its neighbors, 
@@ -108,15 +109,15 @@ function main()
     # Save the plot as a PDF file
     savefig(joinpath(plotdir,"Survival probability vs t (only self-interaction term plot)_Rog.pdf"))
 
-    plot(0.0:τ:τ*(length(Sz_array)-1), Sz_array, xlabel = "t", ylabel = "<Sz>", legend = false, size=(800, 600), aspect_ratio=:auto,margin= 10mm) 
+    plot(0.0:τ:τ*(length(Sz_array)-1), Sz_array, xlabel = "t", ylabel = "<Sz>", legend = false, size=(800, 600), left_margin = 20mm, right_margin = 5mm, top_margin = 5mm, bottom_margin = 10mm, aspect_ratio=:auto,margin= 10mm) 
     #Save the plot as a PDF file
     savefig(joinpath(plotdir,"<Sz> vs t (Rog_self-int).pdf"))
 
-    plot(0.0:τ:τ*(length(Sy_array)-1), Sy_array, xlabel = "t", ylabel = "<Sy_array>", legend = false, size=(800, 600), aspect_ratio=:auto,margin= 10mm) 
+    plot(0.0:τ:τ*(length(Sy_array)-1), Sy_array, xlabel = "t", ylabel = "<Sy>", legend = false, size=(800, 600), left_margin = 20mm, right_margin = 5mm, top_margin = 5mm, bottom_margin = 10mm, aspect_ratio=:auto,margin= 10mm) 
     #Save the plot as a PDF file
     savefig(joinpath(plotdir,"<Sy> vs t (Rog_self_int).pdf"))
 
-    plot(0.0:τ:τ*(length(Sx_array)-1), Sx_array, xlabel = "t", ylabel = "<Sx_array>", legend = false, size=(800, 600), aspect_ratio=:auto,margin= 10mm) 
+    plot(0.0:τ:τ*(length(Sx_array)-1), Sx_array, xlabel = "t", ylabel = "<Sx>", legend = false, size=(800, 600), left_margin = 20mm, right_margin = 5mm, top_margin = 5mm, bottom_margin = 10mm, aspect_ratio=:auto,margin= 10mm) 
     #Save the plot as a PDF file
     savefig(joinpath(plotdir,"<Sx> vs t (Rog_self_int).pdf"))
 end 

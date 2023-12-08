@@ -50,28 +50,40 @@ sum Δx_i = L # domain size
 # Where each site is occupied by either some neutrinos or some antineutrinos. 
 
 function main()
-    #N_sites =4  # number of sites # variable
-    cutoff = 1E-14 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT) #variable
-    τ = 6.5E-13 # time step # sec # variable
-    ttotal = 9E-11 # total time of evolution # sec #variable
-    # τ = 0.05 # time step # sec # variable
-    # ttotal = 5 # total time of evolution # sec #variable
     tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution #variable
     Δp = 1/4 # width of shape function  # cm #variable
     del_m2 = 0 # fixed for 'only' self interactions # (erg^2)
     maxdim = 1 # max bond dimension in MPS truncation
-
+    cutoff = 1E-14 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT) #variable
+    periodic = true
+    #my initial conditions 
+    N_sites =2  # number of sites # variable
+    τ = 1e-10 # time step # sec # variable
+    ttotal = 1e-9 # total time of evolution # sec #variable
     #Select a shape function based on the shape_name variable form the list defined in dictionary in shape_func file
     shape_name = "triangular"  # Change this to the desired shape name #variable 
+    function generate_p_array(N_sites)
+        half_N_sites = div(N_sites, 2)
+        return [fill(50.0e6, half_N_sites); fill(-50.0e6, half_N_sites)]
+    end
+    L = 1 # cm # domain size # (aka big box length)
+    n_mu_e =  4.891290848285061e+32 # cm^-3 # number density of electron flavor neutrino
+    n_mu_e_bar =  4.891290848285061e+32 # cm^-3 # number density of electron flavor antineutrino
 
     # Richers(2021) initial conditions:
     # throughout this code I am assuming each site is occupied by a particle i.e. each site contains some number of neutrinos all of same flavor 
     # so all neutrinos are electron flavored (at a site) which interact with electron flavored anti neutrinos (at a different site) in the opposing beam.
-    L = 1 # cm # domain size # (aka big box length)
-    n_mu_e =  4.891290848285061e+32 # cm^-3 # number density of electron flavor neutrino
-    n_mu_e_bar =  4.891290848285061e+32 # cm^-3 # number density of electron flavor antineutrino
-    # N_sites= 50 # total sites/particles that evenly spaced "for each (electron) flavor" 
-    N_sites = 100 # total particles/sites for all neutrino and anti neutrino electron flavored
+    # L = 1 # cm # domain size # (aka big box length)
+    # n_mu_e =  4.891290848285061e+32 # cm^-3 # number density of electron flavor neutrino
+    # n_mu_e_bar =  4.891290848285061e+32 # cm^-3 # number density of electron flavor antineutrino
+    # N_sites_eachflavor= 50 # total sites/particles that evenly spaced "for each (electron) flavor" 
+    # N_sites = 100 #(2* N_sites_eachflavor) # total particles/sites for all neutrino and anti neutrino electron flavored
+    # τ = 6.5E-13 # time step # sec # variable
+    # ttotal = 9E-11 # total time of evolution # sec #variable
+    # function generate_p_array(N_sites)
+    #     half_N_sites = div(N_sites, 2)
+    #     return [fill(50.0e6, half_N_sites); fill(-50.0e6, half_N_sites)]
+    # end
 
     V = L^3 
     Δx = L/N_sites # length of the box of interacting neutrinos at a site in cm  #variable
@@ -104,10 +116,6 @@ function main()
     y = fill(rand(), N_sites) #variable
     z = fill(rand(), N_sites) #variable
 
-    function generate_p_array(N_sites)
-        half_N_sites = div(N_sites, 2)
-        return [fill(50.0e6, half_N_sites); fill(-50.0e6, half_N_sites)]
-    end
 
     # p matrix with numbers generated from the p_array for all components (x, y, z)
     p = hcat(generate_p_array(N_sites), generate_p_array(N_sites), generate_p_array(N_sites))
@@ -124,7 +132,7 @@ function main()
     datadir = joinpath(@__DIR__, "..","misc","datafiles","FFI", "par_"*string(N_sites), "tt_"*string(ttotal))
 
     #extract output for the survival probability values at each timestep
-    Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, px_values, ρ_ee_array= evolve(s, τ, N, B,L, N_sites, Δx,del_m2, p, x, Δp, ψ_0, shape_name, energy_sign, cutoff, maxdim, datadir, ttotal)
+    Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, px_values, ρ_ee_array= evolve(s, τ, N, B,L, N_sites, Δx,del_m2, p, x, Δp, ψ_0, shape_name, energy_sign, cutoff, maxdim, datadir, ttotal,periodic)
 
     # Specify the relative directory path
     plotdir = joinpath(@__DIR__, "..","misc","plots","FFI", "par_"*string(N_sites), "tt_"*string(ttotal))
@@ -158,7 +166,7 @@ function main()
 
     plot(title="Particle Position Evolution", xlabel= "Position (x)",ylabel="Time")
     for site in 1:N_sites
-        site_positions = ([x_values[t][site] for t in 1:length(x_values)])/ c
+        site_positions = [(x_values[t][site]) for t in 1:length(x_values)]
         plot!(site_positions, 0.0:τ:ttotal, label="Site $site")
     end
 

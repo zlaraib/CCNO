@@ -21,12 +21,13 @@ include("momentum.jl")
     energy_sign = array of sign of the energy (1 or -1): 1 for neutrinos and -1 for anti-neutrinos
     maxdim = max bond dimension in MPS truncation (unitless and dimensionless)
     cutoff = truncation threshold for the SVD in MPS representation (unitless and dimensionless)
+    periodic = boolean indicating whether boundary conditions should be periodic
 """
 
 # This file generates the create_gates function that holds ITensors Trotter gates and returns the dimensionless unitary 
 # operators govered by the Hamiltonian which includes effects of the vacuum and self-interaction potential for each site.
 
-function create_gates(s, N, B, N_sites, Δx, del_m2, p, x, Δp, shape_name, τ, energy_sign)
+function create_gates(s, N, B, N_sites, Δx, del_m2, p, x, Δp, shape_name,L, τ, energy_sign, periodic)
     
     # Make gates (1,2),(2,3),(3,4),... i.e. unitary gates which act on any (non-neighboring) pairs of sites in the chain.
     # Create an empty ITensors array that will be our Trotter gates
@@ -53,7 +54,7 @@ function create_gates(s, N, B, N_sites, Δx, del_m2, p, x, Δp, shape_name, τ, 
             # assert B vector to have a magnitude of 1 while preserving its direction.
             @assert norm(B) == 1
             # Get the shape function result for each pair of i and j 
-            shape_result = shape_func(x, Δp, i, j, shape_name)
+            shape_result = shape_func(x, Δp, i, j,L, shape_name, periodic)
             # Calculate the geometric factor for each pair of i and j within the loop
             geometric_factor = geometric_func(p, p_hat, i, j)
 

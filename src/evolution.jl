@@ -1,8 +1,9 @@
 using DelimitedFiles
 include("gates_function.jl")  # Include the gates_functions.jl file
 include("momentum.jl")
+include("constants.jl")
 """
-    Expected (CGS) units of the quantities defined in the files in tests directory that are being used in the gates function.                                                                   
+    Expected (CGS) units of the quantities defined in the files in tests directory that are being used in the evolve function.                                                                   
     s = site index array (dimensionless and unitless)          
     N = array of no.of neutrinos contained on each site (dimensionless and unitless)
     B = array of normalized vector related to mixing angle in vacuum oscillations (dimensionless constant)
@@ -17,12 +18,13 @@ include("momentum.jl")
     energy_sign = array of sign of the energy (1 or -1): 1 for neutrinos and -1 for anti-neutrinos
     maxdim = max bond dimension in MPS truncation (unitless and dimensionless)
     cutoff = truncation threshold for the SVD in MPS representation (unitless and dimensionless)
+    periodic = boolean indicating whether boundary conditions should be periodic
 """
 
 # This file generates the evolve function which evolves the ψ state in time and computes the expectation values of Sz at each time step, along 
 # with their survival probabilities. The time evolution utilizes the unitary operators created as gates from the create_gates function.
 # The <Sz> and Survival probabilities output from this function are unitless. 
-function evolve(s, τ, N, B,L, N_sites, Δx, del_m2, p, x, Δp, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, ttotal)
+function evolve(s, τ, N, B,L, N_sites, Δx, del_m2, p, x, Δp, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, ttotal, periodic= true)
 
     # check if a directory exists, and if it doesn't, create it using mkpath
     isdir(datadir) || mkpath(datadir)
@@ -37,7 +39,7 @@ function evolve(s, τ, N, B,L, N_sites, Δx, del_m2, p, x, Δp, ψ, shape_name, 
     px_values = [] # to store px vector values for all sites
 
     # extract the gates array generated in the gates_function file
-    gates = create_gates(s, N, B, N_sites, Δx,del_m2, p, x, Δp, shape_name, τ, energy_sign)
+    gates = create_gates(s, N, B, N_sites, Δx, del_m2, p, x, Δp, shape_name,L, τ, energy_sign,periodic)
 
     # extract output of p_hat and p_mod for the p vector defined above for all sites. 
     p_mod, p_hat = momentum(p,N_sites) 
@@ -46,22 +48,24 @@ function evolve(s, τ, N, B,L, N_sites, Δx, del_m2, p, x, Δp, ψ, shape_name, 
      # Compute and print survival probability (found from <Sz>) at each time step then apply the gates to go to the next time
      for t in 0.0:τ:ttotal
         push!(x_values, copy(x))  # Record x values at each time step
-        x .+=  ((p_x_hat*c) .* τ)  # displacing particle's position at each timestep 
+        #x .+=  ((p_x_hat.*c) .* τ)  # displacing particle's position at each timestep 
+        println(x_values)
+        
+        for i in eachindex(x)
+            x[i] += p_x_hat[i] * c * τ
+ 
+            if periodic
+                # wrap around position from 0 to domain size L
+                x[i] = mod(x[i],L)
 
-        # for i in eachindex(x)
-        #     x[i] += (p_x_hat[i] * c * τ)
-        #     if x[i] > L
-        #         x[i] -= L
-        #     end
-        #     if x[i] < 0
-        #         x[i] += L
-        #     end
-        #             # Check if each index satisfies the boundary condition
-        # @assert (x[i] >= 0 && x[i] <= L)
-        # end
-        # #x .= ifelse.(x .> L, x .- L, ifelse.(x .< 0, x .+ L, x))
-        # #@assert all((x .>= 0) .& (x .<= L))
-        # push!(x_values, copy(x)) 
+                # Checking if the updated x[i] satisfies the boundary conditions
+                @assert (x[i] >= 0 && x[i] <= L)
+            end
+                
+        end
+        # x[t] .= ifelse.(x[t] .> L, x[t] .- L, ifelse.(x[t] .< 0, x[t] .+ L, x[t]))
+        # @assert all((x .>= 0) .& (x .<= L))
+        
     
         #@assert (x>=0 || x<=L)
         px = p[:, 1]  # Extracting the first column (which corresponds to px values)
@@ -70,12 +74,15 @@ function evolve(s, τ, N, B,L, N_sites, Δx, del_m2, p, x, Δp, ψ, shape_name, 
         # compute expectation value of Sz (inbuilt operator in ITensors library) at the first site on the chain
         sz = expect(ψ, "Sz"; sites=1)
 
-        # # compute expectation value of sy and sx using S+ and S- (inbuilt operator in ITensors library) at the first site on the chain
-        # sy = -0.5 *im * (expect(complex(ψ), "S+"; sites=1) - expect(complex(ψ), "S-"; sites=1)) #re-check
-        # sx = 0.5 * (expect(ψ, "S+"; sites=1) + expect(ψ, "S-"; sites=1)) #recheck
+        # compute expectation value of sy and sx using S+ and S- (inbuilt operator in ITensors library) at the first site on the chain
+        if p == zeros(N_sites, 3) #for rogerro's case only
+            sy = -0.5 *im * (expect(complex(ψ), "S+"; sites=1) - expect(complex(ψ), "S-"; sites=1)) #re-check
+            sx = 0.5 * (expect(ψ, "S+"; sites=1) + expect(ψ, "S-"; sites=1)) #recheck
+        else 
+            sy = expect(complex(ψ), "Sy"; sites=1)
+            sx = expect(ψ, "Sx"; sites=1)
+        end
 
-        sy = expect(ψ, "Sy"; sites=1)
-        sx = expect(ψ, "Sx"; sites=1)
         # add an element sz to ... 
         push!(Sz_array, sz) # .. the end of Sz array 
         push!(Sy_array, sy) # .. the end of Sy array 

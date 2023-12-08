@@ -19,9 +19,10 @@ function main()
   ttotal = 5.0 # total time of evolution #sec #variable
   Δx = 1E-3 # length of the box of interacting neutrinos at a site in cm #variable
   tolerance  = 1E-5 # acceptable level of error or deviation from the exact value or solution #variable
-  Δp = 1 # shape function width # cm #variable
+  Δp = 1/4 # shape function width # cm #variable
   del_m2 = 2*π # Fixed for this vacuum oscillation case for omega =pi. dont change it to keep consistent results. 
   maxdim = 1 # max bond dimension in MPS truncation
+  L = 1 # cm # domain size # (aka big box length)
 
   # Make an array of 'site' indices and label as s 
   # conserve_qns=false doesnt conserve the total spin quantum number "S"(in z direction) in the system as it evolves
@@ -54,7 +55,7 @@ function main()
   datadir = joinpath(@__DIR__, "..","misc","datafiles","vac_osc", "par_"*string(N_sites), "tt_"*string(ttotal))
 
   #extract output for the survival probability values at each timestep
-  Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, px_values, ρ_ee_array= evolve(s, τ, N, B, N_sites, Δx,del_m2, p, x, Δp, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, ttotal)
+  Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, px_values, ρ_ee_array= evolve(s, τ, N, B, L, N_sites, Δx,del_m2, p, x, Δp, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, ttotal)
 
   expected_sz_array = Float64[]
   expected_sz= Float64[]
@@ -96,16 +97,16 @@ function main()
     
   # check if a directory exists, and if it doesn't, create it using mkpath
   isdir(plotdir) || mkpath(plotdir)
-  plot(0.0:τ:τ*(length(Sz_array)-1), Sz_array, xlabel = "t", ylabel = "<Sz>", title = "Running main_vac_osc script",legend = true, size=(700, 600), aspect_ratio=:auto,margin= 10mm, label = "My_sz") 
+  plot(0.0:τ:τ*(length(Sz_array)-1), Sz_array, xlabel = "t", ylabel = "<Sz>", title = "Running main_vac_osc script",legend = true, size=(700, 600), aspect_ratio=:auto,left_margin = 20mm, right_margin = 5mm, top_margin = 5mm, bottom_margin = 10mm, label = "My_sz") 
   plot!(0.0:τ:τ*(length(Sz_array)-1), expected_sz_array, xlabel = "t", ylabel = "<Sz>", title = "Running main_vac_osc script", legendfontsize=8, legend=:topright, label = "Expected_sz from Sakurai") 
   # Save the plot as a PDF file
   savefig(joinpath(plotdir,"<Sz> vs t(vac_osc).pdf"))
 
-  plot(0.0:τ:τ*(length(Sy_array)-1), Sy_array, xlabel = "t", ylabel = "<Sy_array>", legend = false, size=(800, 600), aspect_ratio=:auto,margin= 10mm) 
+  plot(0.0:τ:τ*(length(Sy_array)-1), Sy_array, xlabel = "t", ylabel = "<Sy>", legend = false, size=(800, 600),left_margin = 20mm, right_margin = 5mm, top_margin = 5mm, bottom_margin = 10mm, aspect_ratio=:auto,margin= 10mm) 
   #Save the plot as a PDF file
   savefig(joinpath(plotdir,"<Sy> vs t(vac_osc).pdf"))
 
-  plot(0.0:τ:τ*(length(Sx_array)-1), Sx_array, xlabel = "t", ylabel = "<Sx_array>", legend = false, size=(800, 600), aspect_ratio=:auto,margin= 10mm) 
+  plot(0.0:τ:τ*(length(Sx_array)-1), Sx_array, xlabel = "t", ylabel = "<Sx>", legend = false, size=(800, 600),left_margin = 20mm, right_margin = 5mm, top_margin = 5mm, bottom_margin = 10mm, aspect_ratio=:auto,margin= 10mm) 
   #Save the plot as a PDF file
   savefig(joinpath(plotdir,"<Sx> vs t(vac_osc).pdf"))
 end
