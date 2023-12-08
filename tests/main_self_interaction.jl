@@ -53,7 +53,7 @@ sum Δx_i = L # domain size
 # so all neutrinos are electron flavored (at a site) which interact with electron flavored anti neutrinos (at a different site) in the opposing beam.
 function main()
  
-    # my initial conditions 
+    # # My initial conditions 
     N_sites =2  # number of sites # variable
     cutoff = 1E-14 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT) #variable
     τ = 1e-10 # time step # sec # variable
@@ -79,8 +79,16 @@ function main()
     # n_mu_e_bar =  4.891290848285061e+32 # cm^-3 # number density of electron flavor antineutrino
     # N_sites_eachflavor= 50 # total sites/particles that evenly spaced "for each (electron) flavor" 
     # N_sites = 100 #(2* N_sites_eachflavor) # total particles/sites for all neutrino and anti neutrino electron flavored
+    # cutoff = 1E-14 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT) #variable
     # τ = 6.5E-13 # time step # sec # variable
     # ttotal = 9E-11 # total time of evolution # sec #variable
+    # tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution #variable
+    # Δp = 1/4 # width of shape function  # cm #variable
+    # del_m2 = 0 # fixed for 'only' self interactions # (erg^2)
+    # maxdim = 1 # max bond dimension in MPS truncation
+    # #Select a shape function based on the shape_name variable form the list defined in dictionary in shape_func file
+    # shape_name = "triangular"  # Change this to the desired shape name #variable 
+    # periodic = true  # true = imposes periodic boundary conditions while false doesn't
     # function generate_p_array(N_sites)
     #     half_N_sites = div(N_sites, 2)
     #     return [fill(50.0e6, half_N_sites); fill(-50.0e6, half_N_sites)]
