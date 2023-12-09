@@ -54,7 +54,8 @@ sum Δx_i = L # domain size
 function main()
  
     # """ My initial conditions""" 
-    # N_sites = 6 # number of sites # variable
+    # N_sites_eachflavor= 3 # total sites/particles that evenly spaced "for each (electron) flavor" 
+    # N_sites = 2* (N_sites_eachflavor) # total particles/sites for all neutrino and anti neutrino electron flavored
     # τ = 5e-12 # time step # sec # variable
     # ttotal = 1e-9 # total time of evolution # sec #variable
     # tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution #variable
@@ -92,7 +93,53 @@ function main()
     periodic = true  # true = imposes periodic boundary conditions while false doesn't
 
 
-    V = L^3 
+    function generate_inputs_file(directory, filename, data)
+        filepath = joinpath(directory, filename)
+        
+        # Open the file in write mode
+        open(filepath, "w") do file
+            # Write data to the file
+            for line in data
+                println(file, line)
+            end
+        end
+    end
+    
+    function extract_initial_conditions()
+        # Putting all my initial conditions into a dictionary
+        initial_conditions = Dict(
+            "N_sites" => N_sites,
+            "N_sites_eachflavor" => N_sites_eachflavor,
+            "τ" => τ,
+            "ttotal" => ttotal,
+            "tolerance" => tolerance,
+            "del_m2" => del_m2,
+            "maxdim" => maxdim,
+            "cutoff" => cutoff,
+            "L" => L,
+            "n_nu_e" => n_nu_e,
+            "n_nu_e_bar" => n_nu_e_bar,
+            "neutrino_energy" => neutrino_energy,
+            "antineutrino_energy" => antineutrino_energy,
+            "shape_name" => shape_name,
+            "Δp" => Δp,
+            "periodic" => periodic
+        )
+
+        # Convert the dictionary to a string and write it into the input file
+        input_data = []
+        for (key, value) in initial_conditions
+            push!(input_data, "$key = $value")
+        end
+
+        return input_data
+    end
+
+    # Generate input data
+    input_data = extract_initial_conditions()
+
+
+    V = L^3 # volume of the big box containing all sites/particles
     Δx = L/N_sites # length of the box of interacting neutrinos at a site in cm  #variable
 
     # Create an array of dimension N and fill it half with values of sites containing all electron neutrinos 
@@ -102,13 +149,6 @@ function main()
     N_nu_e_bar  = n_nu_e_bar * V 
     N_2 = fill(N_nu_e_bar / (N_sites ÷ 2), N_sites ÷ 2)
     N = vcat(N_1, N_2) # This is the total number of neutrinos. 
-
-    # s is an array of spin 1/2 tensor indices (Index objects) which will be the site or physical indices of the MPS.
-    # We overload siteinds function, which generates custom Index array with Index objects having the tag of total spin quantum number for all N.
-    # conserve_qns=true conserves the total spin quantum number "Sz" in the system as it evolves,
-    # i.e. examples of conservation of quantum numbers are the total number of neutrino particles, or the total of all S_z components of this system of spins
-    # conserving total Sz requires Sx and Sy in terms of S+ and S- by design choice.
-    s = siteinds("S=1/2", N_sites; conserve_qns=false) #fixed #switched conserve_qns to false to avoid fluxes error in expect function
     
     # Create a B vector that allows for perturbation to inital state in different directions
     B = [0.02, -0.02, 1] #variable
@@ -134,6 +174,13 @@ function main()
     p = hcat(generate_p_array(N_sites), generate_p_array(N_sites), generate_p_array(N_sites))
     # Create an array with the first half as 1 and the rest as -1
     energy_sign = [i <= N_sites ÷ 2 ? 1 : -1 for i in 1:N_sites] # half sites are (e) neutrinos with positive 1 entry while other half is anti (e) neutrinos with negative 1 entry
+    
+    # s is an array of spin 1/2 tensor indices (Index objects) which will be the site or physical indices of the MPS.
+    # We overload siteinds function, which generates custom Index array with Index objects having the tag of total spin quantum number for all N.
+    # conserve_qns=true conserves the total spin quantum number "Sz" in the system as it evolves,
+    # i.e. examples of conservation of quantum numbers are the total number of neutrino particles, or the total of all S_z components of this system of spins
+    # conserving total Sz requires Sx and Sy in terms of S+ and S- by design choice.
+    s = siteinds("S=1/2", N_sites; conserve_qns=false) #fixed #switched conserve_qns to false to avoid fluxes error in expect function
 
     # Initialize psi to be a product state (First half to be spin down and other half to be spin up)
     ψ = productMPS(s, N -> N <= N_sites/2 ? "Up" : "Dn") # Fixed to produce consistent results for the test assert conditions 
@@ -147,6 +194,9 @@ function main()
     #extract output for the survival probability values at each timestep
     Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, px_values, ρ_ee_array= evolve(s, τ, N, B,L, N_sites, 
                     Δx,del_m2, p, x, Δp, ψ_0, shape_name, energy_sign, cutoff, maxdim, datadir, ttotal,periodic)
+
+    # Call the function to generate the inputs file in the specified directory
+    generate_inputs_file(datadir, "input.txt", input_data)
 
     # Specify the relative directory path
     plotdir = joinpath(@__DIR__, "..","misc","plots","FFI", "par_"*string(N_sites), "tt_"*string(ttotal))
@@ -187,6 +237,9 @@ function main()
     end
 
     savefig(joinpath(plotdir,"Particles evolution.pdf"))
+
+    # Call the function to generate the inputs file in the specified directory
+    generate_inputs_file(plotdir, "inputs.txt", input_data)
 
 end 
 
