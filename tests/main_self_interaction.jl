@@ -54,54 +54,53 @@ sum Δx_i = L # domain size
 function main()
  
     # # My initial conditions 
-    N_sites =2  # number of sites # variable
-    cutoff = 1E-14 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT) #variable
-    τ = 1e-10 # time step # sec # variable
-    ttotal = 1e-9 # total time of evolution # sec #variable
-    tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution #variable
-    Δp = 1/4 # width of shape function  # cm #variable
-    del_m2 = 0 # fixed for 'only' self interactions # (erg^2)
-    maxdim = 1 # max bond dimension in MPS truncation
-    #Select a shape function based on the shape_name variable form the list defined in dictionary in shape_func file
-    shape_name = "triangular"  # Change this to the desired shape name #variable 
-    periodic = true  # true = imposes periodic boundary conditions while false doesn't
-    function generate_p_array(N_sites)
-        half_N_sites = div(N_sites, 2)
-        return [fill(50.0e6, half_N_sites); fill(-50.0e6, half_N_sites)]
-    end
-    L = 1 # cm # domain size # (aka big box length)
-    n_mu_e =  4.891290848285061e+32 # cm^-3 # number density of electron flavor neutrino
-    n_mu_e_bar =  4.891290848285061e+32 # cm^-3 # number density of electron flavor antineutrino
-
-    # #Richers(2021) initial conditions:
-    # L = 1 # cm # domain size # (aka big box length)
-    # n_mu_e =  4.891290848285061e+32 # cm^-3 # number density of electron flavor neutrino
-    # n_mu_e_bar =  4.891290848285061e+32 # cm^-3 # number density of electron flavor antineutrino
-    # N_sites_eachflavor= 50 # total sites/particles that evenly spaced "for each (electron) flavor" 
-    # N_sites = 100 #(2* N_sites_eachflavor) # total particles/sites for all neutrino and anti neutrino electron flavored
-    # cutoff = 1E-14 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT) #variable
-    # τ = 6.5E-13 # time step # sec # variable
-    # ttotal = 9E-11 # total time of evolution # sec #variable
+    # N_sites =2  # number of sites # variable
+    # τ = 1e-10 # time step # sec # variable
+    # ttotal = 1e-9 # total time of evolution # sec #variable
     # tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution #variable
-    # Δp = 1/4 # width of shape function  # cm #variable
-    # del_m2 = 0 # fixed for 'only' self interactions # (erg^2)
+    # del_m2 = 0 # mass square difference # fixed for 'only' self interactions # (erg^2)
     # maxdim = 1 # max bond dimension in MPS truncation
+    # cutoff = 0 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT) #variable
+    # L = 1 # cm # domain size # (aka big box length)
+    # n_nu_e =  4.891290848285061e+32 # cm^-3 # number density of electron flavor neutrino
+    # n_nu_e_bar =  4.891290848285061e+32 # cm^-3 # number density of electron flavor antineutrino
+    # neutrino_energy =  50.0e6 # energy of all neutrinos (P.S the its negative is energy of all antineutrinos)
+    # antineutrino_energy = -1* neutrino_energy # specific to my case only. Since all neutrinos have same energy, except in my case anti neutrinos are moving in opposite direction to give it a negative sign
     # #Select a shape function based on the shape_name variable form the list defined in dictionary in shape_func file
     # shape_name = "triangular"  # Change this to the desired shape name #variable 
+    # Δp = 1/(2*N_sites) # width of shape function  # cm #variable
     # periodic = true  # true = imposes periodic boundary conditions while false doesn't
-    # function generate_p_array(N_sites)
-    #     half_N_sites = div(N_sites, 2)
-    #     return [fill(50.0e6, half_N_sites); fill(-50.0e6, half_N_sites)]
-    # end
+
+
+    # #Richers(2021) initial conditions: 
+    N_sites_eachflavor= 50 # total sites/particles that evenly spaced "for each (electron) flavor" 
+    N_sites = 2* (N_sites_eachflavor) # total particles/sites for all neutrino and anti neutrino electron flavored
+    τ = 2E-13 # time step to include 50 steps every 10 picoseconds # sec # variable
+    ttotal = 9E-11 # total time of evolution # sec #variable
+    tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution #variable
+    del_m2 = 0 # mass square difference # fixed for 'only' self interactions # (erg^2)
+    maxdim = 1 # max bond dimension in MPS truncation
+    cutoff = 0 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT) #variable
+    L = 1 # cm # domain size # (aka big box length)
+    n_nu_e =  4.891290848285061e+32 # cm^-3 # number density of electron flavor neutrino
+    n_nu_e_bar =  4.891290848285061e+32 # cm^-3 # number density of electron flavor antineutrino
+    neutrino_energy =  50.0e6 # energy of all neutrinos (P.S the its negative is energy of all antineutrinos)
+    antineutrino_energy = -1 * neutrino_energy # specific to my case only. Since all neutrinos have same energy, except in my case anti neutrinos are moving in opposite direction to give it a negative sign
+    #Select a shape function based on the shape_name variable form the list defined in dictionary in shape_func file
+    shape_name = "triangular"  # Change this to the desired shape name #variable 
+    Δp = 1/N_sites_eachflavor # width of shape function  # cm #variable
+    periodic = true  # true = imposes periodic boundary conditions while false doesn't
+
 
     V = L^3 
     Δx = L/N_sites # length of the box of interacting neutrinos at a site in cm  #variable
+
     # Create an array of dimension N and fill it half with values of sites containing all electron neutrinos 
     # and other half with sites conatining electron anti-neutrino. 
-    N_mu_e  = n_mu_e * V 
-    N_1 = fill(N_mu_e / (N_sites ÷ 2), N_sites ÷ 2)
-    N_mu_e_bar  = n_mu_e_bar * V 
-    N_2 = fill(N_mu_e_bar / (N_sites ÷ 2), N_sites ÷ 2)
+    N_nu_e  = n_nu_e * V 
+    N_1 = fill(N_nu_e / (N_sites ÷ 2), N_sites ÷ 2)
+    N_nu_e_bar  = n_nu_e_bar * V 
+    N_2 = fill(N_nu_e_bar / (N_sites ÷ 2), N_sites ÷ 2)
     N = vcat(N_1, N_2) # This is the total number of neutrinos. 
 
     # s is an array of spin 1/2 tensor indices (Index objects) which will be the site or physical indices of the MPS.
@@ -125,6 +124,11 @@ function main()
     y = fill(rand(), N_sites) #variable
     z = fill(rand(), N_sites) #variable
 
+    #generate a momentum array that depicts the energy of neutrinos and anti-neutrinos in opposing beams
+    function generate_p_array(N_sites)                                                                                                                                                                                   
+        half_N_sites = div(N_sites, 2)
+        return [fill(neutrino_energy, half_N_sites); fill(antineutrino_energy, half_N_sites)]
+    end
 
     # p matrix with numbers generated from the p_array for all components (x, y, z)
     p = hcat(generate_p_array(N_sites), generate_p_array(N_sites), generate_p_array(N_sites))
@@ -175,7 +179,7 @@ function main()
     #Save the plot as a PDF file
     savefig(joinpath(plotdir,"<Sx> vs t (self-interactions w geo+shape)_MF_FFI.pdf"))
 
-    plot(title="Particle Position Evolution", xlabel= "Position (x)",ylabel="Time")
+    plot(title="Particle Position Evolution for $N_sites particles", xlabel= "Position (x)",ylabel="Time")
     for site in 1:N_sites
         site_positions = [(x_values[t][site]) for t in 1:length(x_values)]
         plot!(site_positions, 0.0:τ:ttotal, label="Site $site",

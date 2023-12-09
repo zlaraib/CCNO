@@ -21,7 +21,7 @@ p_mod = [] #Initialize array that contains mod of all sites
     # Append p_i_mod to the p_mod array
     push!(p_mod, p_i_mod)
   end
-
+  
   return p_mod, p_hat
 
 end
