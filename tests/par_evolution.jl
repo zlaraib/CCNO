@@ -17,11 +17,12 @@
     x = array of positions of sites (cm)
     τ = time step (sec)
     periodic = boolean indicating whether boundary conditions should be periodic
+    (anti)neutrino_energy = energy of (anti)neutrinos in ergs
     """
 
     # This file generates the evolve function which uses particles confined in a domain and tracks the particles displacement in time for a certain boundary condition
 
-    N_sites =6  # number of sites # variable
+    N_sites = 6  # number of sites # variable
     L = 1.0 # cm # domain size # (aka big box length)
     τ = 5e-11 # time step # sec # variable
     ttotal = 1e-9 # total time of evolution # sec #variable

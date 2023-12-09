@@ -53,9 +53,9 @@ sum Δx_i = L # domain size
 # so all neutrinos are electron flavored (at a site) which interact with electron flavored anti neutrinos (at a different site) in the opposing beam.
 function main()
  
-    # # My initial conditions 
-    # N_sites =2  # number of sites # variable
-    # τ = 1e-10 # time step # sec # variable
+    # """ My initial conditions""" 
+    # N_sites = 6 # number of sites # variable
+    # τ = 5e-12 # time step # sec # variable
     # ttotal = 1e-9 # total time of evolution # sec #variable
     # tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution #variable
     # del_m2 = 0 # mass square difference # fixed for 'only' self interactions # (erg^2)
@@ -72,7 +72,7 @@ function main()
     # periodic = true  # true = imposes periodic boundary conditions while false doesn't
 
 
-    # #Richers(2021) initial conditions: 
+    """ Richers(2021) initial conditions: """
     N_sites_eachflavor= 50 # total sites/particles that evenly spaced "for each (electron) flavor" 
     N_sites = 2* (N_sites_eachflavor) # total particles/sites for all neutrino and anti neutrino electron flavored
     τ = 2E-13 # time step to include 50 steps every 10 picoseconds # sec # variable
@@ -179,11 +179,11 @@ function main()
     #Save the plot as a PDF file
     savefig(joinpath(plotdir,"<Sx> vs t (self-interactions w geo+shape)_MF_FFI.pdf"))
 
-    plot(title="Particle Position Evolution for $N_sites particles", xlabel= "Position (x)",ylabel="Time")
+    plot(title="Position Evolution for $N_sites particles", xlabel= "Position (x)",ylabel="Time(s)")
     for site in 1:N_sites
         site_positions = [(x_values[t][site]) for t in 1:length(x_values)]
         plot!(site_positions, 0.0:τ:ttotal, label="Site $site",
-        left_margin = 30mm, right_margin = 5mm, top_margin = 5mm, bottom_margin = 20mm, margin= 10mm)
+        left_margin = 25mm, right_margin = 5mm, top_margin = 5mm, bottom_margin = 10mm, margin= 10mm)
     end
 
     savefig(joinpath(plotdir,"Particles evolution.pdf"))
