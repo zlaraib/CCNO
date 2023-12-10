@@ -12,7 +12,7 @@ include("momentum.jl")
     B = array of normalized vector related to mixing angle in vacuum oscillations (dimensionless constant)
     N_sites = Total no.of sites (dimensionless and unitless)
     Δx = length of the box of interacting neutrinos at a site (cm)
-    del_m2 = difference in mass squared (erg^2)
+    Δm² = difference in mass squared (erg^2)
     p = array of momentum vectors (erg)
     x = array of positions of sites (cm)
     Δp = width of shape function (cm)
@@ -27,22 +27,22 @@ include("momentum.jl")
 # This file generates the create_gates function that holds ITensors Trotter gates and returns the dimensionless unitary 
 # operators govered by the Hamiltonian which includes effects of the vacuum and self-interaction potential for each site.
 
-function create_gates(s, N, B, N_sites, Δx, del_m2, p, x, Δp, shape_name,L, τ, energy_sign, periodic)
+function create_gates(s, N, B, N_sites, Δx, Δm², p, x, Δp, shape_name,L, τ, energy_sign, periodic)
     
     # Make gates (1,2),(2,3),(3,4),... i.e. unitary gates which act on any (non-neighboring) pairs of sites in the chain.
     # Create an empty ITensors array that will be our Trotter gates
     gates = ITensor[] 
 
     # extract output of p_hat and p_mod for the p vector defined above for all sites. 
-    p_mod, p_hat = momentum(p,N_sites)  
-
+    p_mod, p̂ = momentum(p,N_sites)  
+    
     # define an array of vacuum oscillation frequencies (units of ergs)
-    if del_m2 == 0
+    if Δm² == 0
         ω = zeros(N_sites)
-    elseif del_m2 == 2 * π
+    elseif Δm² == 2 * π
        global ω = fill(π, N_sites) # added global so we can access and use this global variable without the need to pass them as arguments to another function
     else
-        global ω = [del_m2 / (2 * p_i_mod) for p_i_mod in p_mod]
+        global ω = [Δm²/ (2 * p_i_mod) for p_i_mod in p_mod]
     end
     println("ω = ", ω)
 
@@ -56,7 +56,7 @@ function create_gates(s, N, B, N_sites, Δx, del_m2, p, x, Δp, shape_name,L, τ
             # Get the shape function result for each pair of i and j 
             shape_result = shape_func(x, Δp, i, j,L, shape_name, periodic)
             # Calculate the geometric factor for each pair of i and j within the loop
-            geometric_factor = geometric_func(p, p_hat, i, j)
+            geometric_factor = geometric_func(p, p̂, i, j)
 
             # Our neutrino system Hamiltonian of self-interaction term represents 1D Heisenberg model.
             # total Hamiltonian of the system is a sum of local terms hj, where hj acts on sites i and j which are paired for gates to latch onto.

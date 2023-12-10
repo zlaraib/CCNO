@@ -16,25 +16,25 @@ PIC SETUP:
 big box (for 'all' sites/particles)
 total vol = V 
 length of each side = L 
-V = L^3 
+V = L³ 
 N_sites = total no.of sites or particles
 N =  total no.of neutrinos at all sites
 n = total no.density of neutrinos at all sites
 n = N / V 
 
 small box (for 'each' site/particle)
-total vol = V_i 
+total vol = Vᵢ
 length of each side = Δx 
-Δx^3 = V_i
-N_i =  total no.of neutrinos at site i 
-n_i  = total no.density of neutrinos at site i 
-N_i = n_i  * V_i  
+Δx³ = Vᵢ
+Nᵢ =  total no.of neutrinos at site i 
+nᵢ  = total no.density of neutrinos at site i 
+Nᵢ = nᵢ  * Vᵢ
 
 Combining (where index i represent a site and runs from 1:N_sites)
-sum n_i = n # total no.density of neutrinos
-sum N_i = N # total no.of neutrinos
-sum V_i = V # total volume of the grid
-sum Δx_i = L # domain size
+∑ᵢ nᵢ = n # total no.density of neutrinos
+∑ᵢ  Nᵢ = N # total no.of neutrinos
+∑ᵢ Vᵢ = V # total volume of the grid
+∑ᵢ Δxᵢ = L # domain size
 
 """
 
@@ -61,19 +61,18 @@ function main()
     # τ = 5e-12 # time step # sec # variable
     # ttotal = 1e-9 # total time of evolution # sec #variable
     # tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution #variable
-    # del_m2 = 0 # mass square difference # fixed for 'only' self interactions # (erg^2)
+    # Δm² = 0 # mass square difference # fixed for 'only' self interactions # (erg^2)
     # maxdim = 1 # max bond dimension in MPS truncation
     # cutoff = 0 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT) #variable
     # L = 1 # cm # domain size # (aka big box length)
-    # n_nu_e =  4.891290848285061e+32 # cm^-3 # number density of electron flavor neutrino
-    # n_nu_e_bar =  4.891290848285061e+32 # cm^-3 # number density of electron flavor antineutrino
-    # neutrino_energy =  50.0e6 # energy of all neutrinos (P.S the its negative is energy of all antineutrinos)
-    # antineutrino_energy = -1* neutrino_energy # specific to my case only. Since all neutrinos have same energy, except in my case anti neutrinos are moving in opposite direction to give it a negative sign
+    # n_νₑ =  4.891290848285061e+32 # cm^-3 # number density of electron flavor neutrino
+    # n_νₑ̄ =  4.891290848285061e+32 # cm^-3 # number density of electron flavor antineutrino
+    # Eνₑ =  50.0e6 # energy of all neutrinos (P.S the its negative is energy of all antineutrinos)
+    # Eνₑ̄ = -1* Eνₑ # specific to my case only. Since all neutrinos have same energy, except in my case anti neutrinos are moving in opposite direction to give it a negative sign
     # #Select a shape function based on the shape_name variable form the list defined in dictionary in shape_func file
     # shape_name = "triangular"  # Change this to the desired shape name #variable 
     # Δp = 1/N_sites_eachflavor # width of shape function  # cm #variable
     # periodic = true  # true = imposes periodic boundary conditions while false doesn't
-
 
     """ Richers(2021) initial conditions: """
     N_sites_eachflavor= 50 # total sites/particles that evenly spaced "for each (electron) flavor" 
@@ -81,19 +80,19 @@ function main()
     τ = 2E-13 # time step to include 50 steps every 10 picoseconds # sec # variable
     ttotal = 9E-11 # total time of evolution # sec #variable
     tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution #variable
-    del_m2 = 0 # mass square difference # fixed for 'only' self interactions # (erg^2)
+    Δm² = 0 # mass square difference # fixed for 'only' self interactions # (erg^2)
     maxdim = 1 # max bond dimension in MPS truncation
     cutoff = 0 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT) #variable
     L = 1 # cm # domain size # (aka big box length)
-    n_nu_e =  4.891290848285061e+32 # cm^-3 # number density of electron flavor neutrino
-    n_nu_e_bar =  4.891290848285061e+32 # cm^-3 # number density of electron flavor antineutrino
-    neutrino_energy =  50.0e6 # energy of all neutrinos (P.S the its negative is energy of all antineutrinos)
-    antineutrino_energy = -1 * neutrino_energy # specific to my case only. Since all neutrinos have same energy, except in my case anti neutrinos are moving in opposite direction to give it a negative sign
+    n_νₑ =  4.891290848285061e+32 # cm^-3 # number density of electron flavor neutrino
+    n_νₑ̄ =  4.891290848285061e+32 # cm^-3 # number density of electron flavor antineutrino
+    Eνₑ =  50.0e6 # energy of all neutrinos (P.S the its negative is energy of all antineutrinos)
+    Eνₑ̄ = -1 * Eνₑ # specific to my case only. Since all neutrinos have same energy, except in my case anti neutrinos are moving in opposite direction to give it a negative sign
     #Select a shape function based on the shape_name variable form the list defined in dictionary in shape_func file
     shape_name = "triangular"  # Change this to the desired shape name #variable 
     Δp = 1/N_sites_eachflavor # width of shape function  # cm #variable
     periodic = true  # true = imposes periodic boundary conditions while false doesn't
-
+     
 
     function generate_inputs_file(directory, filename, data)
         filepath = joinpath(directory, filename)
@@ -115,14 +114,14 @@ function main()
             "τ" => τ,
             "ttotal" => ttotal,
             "tolerance" => tolerance,
-            "del_m2" => del_m2,
+            "Δm²" => Δm²,
             "maxdim" => maxdim,
             "cutoff" => cutoff,
             "L" => L,
-            "n_nu_e" => n_nu_e,
-            "n_nu_e_bar" => n_nu_e_bar,
-            "neutrino_energy" => neutrino_energy,
-            "antineutrino_energy" => antineutrino_energy,
+            "n_νₑ" => n_νₑ,
+            "n_νₑ̄" => n_νₑ̄,
+            "Eνₑ" => Eνₑ,
+            "Eνₑ̄" => Eνₑ̄,
             "shape_name" => shape_name,
             "Δp" => Δp,
             "periodic" => periodic
@@ -136,22 +135,21 @@ function main()
 
         return input_data
     end
-
+    
     # Generate input data
     input_data = extract_initial_conditions()
-
 
     V = L^3 # volume of the big box containing all sites/particles
     Δx = L/N_sites # length of the box of interacting neutrinos at a site in cm  #variable
 
     # Create an array of dimension N and fill it half with values of sites containing all electron neutrinos 
-    # and other half with sites conatining electron anti-neutrino. 
-    N_nu_e  = n_nu_e * V 
-    N_1 = fill(N_nu_e / (N_sites ÷ 2), N_sites ÷ 2)
-    N_nu_e_bar  = n_nu_e_bar * V 
-    N_2 = fill(N_nu_e_bar / (N_sites ÷ 2), N_sites ÷ 2)
+    # and other half with sites containing electron anti-neutrino. 
+    N_νₑ  = n_νₑ * V 
+    N_1 = fill(N_νₑ / (N_sites ÷ 2), N_sites ÷ 2)
+    N_νₑ̄  = n_νₑ̄ * V 
+    N_2 = fill(N_νₑ̄/ (N_sites ÷ 2), N_sites ÷ 2)
     N = vcat(N_1, N_2) # This is the total number of neutrinos. 
-    
+
     # Create a B vector that allows for perturbation to inital state in different directions
     B = [0.02, -0.02, 1] #variable
     # Normalize B to have a norm of 1
@@ -169,7 +167,7 @@ function main()
     #generate a momentum array that depicts the energy of neutrinos and anti-neutrinos in opposing beams
     function generate_p_array(N_sites)                                                                                                                                                                                   
         half_N_sites = div(N_sites, 2)
-        return [fill(neutrino_energy, half_N_sites); fill(antineutrino_energy, half_N_sites)]
+        return [fill(Eνₑ, half_N_sites); fill(Eνₑ̄, half_N_sites)]
     end
 
     # p matrix with numbers generated from the p_array for all components (x, y, z)
@@ -188,17 +186,17 @@ function main()
     ψ = productMPS(s, N -> N <= N_sites/2 ? "Up" : "Dn") # Fixed to produce consistent results for the test assert conditions 
     
     # Perturb the state via one-body Hamiltonian
-    ψ_0 = evolve_perturbation(s, τ, B, N_sites, ψ, cutoff, maxdim, ttotal)
-
+    ψ₀= evolve_perturbation(s, τ, B, N_sites, ψ, cutoff, maxdim, ttotal)
+    
     # Specify the relative directory path
     datadir = joinpath(@__DIR__, "..","misc","datafiles","FFI", "par_"*string(N_sites), "tt_"*string(ttotal))
 
     # Call the function to generate the inputs file in the specified directory
-    generate_inputs_file(datadir, "input.txt", input_data)
+    generate_inputs_file(datadir, "inputs.txt", input_data)
 
     #extract output for the survival probability values at each timestep
-    Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, px_values, ρ_ee_array,ρ_μμ_array= evolve(s, τ, N, B,L, N_sites, 
-                    Δx,del_m2, p, x, Δp, ψ_0, shape_name, energy_sign, cutoff, maxdim, datadir, ttotal,periodic)
+    Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array= evolve(s, τ, N, B,L, N_sites, 
+                    Δx,Δm², p, x, Δp, ψ₀, shape_name, energy_sign, cutoff, maxdim, datadir, ttotal,periodic)
 
     # Specify the relative directory path
     plotdir = joinpath(@__DIR__, "..","misc","plots","FFI", "par_"*string(N_sites), "tt_"*string(ttotal))
@@ -208,7 +206,7 @@ function main()
 
     # Call the function to generate the inputs file in the specified directory
     generate_inputs_file(plotdir, "inputs.txt", input_data)
-
+    
     # Plotting ρ_μμ vs t
     plot(0.0:τ:τ*(length(ρ_μμ_array)-1), ρ_μμ_array, xlabel = "t", ylabel = "<ρ_μμ>", legend = false, 
     left_margin = 20mm, right_margin = 10mm, top_margin = 5mm, bottom_margin = 10mm) 
@@ -216,10 +214,10 @@ function main()
     savefig(joinpath(plotdir, "<ρ_μμ>_vs_t_self-interactions_w_geo+shape_MF_FFI.pdf"))
 
     # Plotting ρ_ee vs t
-    plot(0.0:τ:τ*(length(ρ_ee_array)-1), ρ_ee_array, xlabel = "t", ylabel = "<ρ_ee>", legend = false, 
+    plot(0.0:τ:τ*(length(ρₑₑ_array)-1), ρₑₑ_array, xlabel = "t", ylabel = "<ρₑₑ>", legend = false, 
     left_margin = 20mm, right_margin = 10mm, top_margin = 5mm, bottom_margin = 10mm) 
     # Save the plot as a PDF file
-    savefig(joinpath(plotdir, "<ρ_ee>_vs_t_self-interactions_w_geo+shape_MF_FFI.pdf"))
+    savefig(joinpath(plotdir, "<ρₑₑ>_vs_t_self-interactions_w_geo+shape_MF_FFI.pdf"))
 
    # Plotting P_surv vs t
    plot(0.0:τ:τ*(length(prob_surv_array)-1), prob_surv_array, xlabel = "t", ylabel = "Survival Probabillity p(t)",
@@ -234,13 +232,13 @@ function main()
     savefig(joinpath(plotdir, "<Sz>_vs_t_self-interactions_w_geo+shape_MF_FFI.pdf"))
 
     # Plotting Sy vs t
-    plot(0.0:τ:τ*(length(Sy_array)-1), Sy_array, xlabel = "t", ylabel = "<Sy_array>", legend = false,
+    plot(0.0:τ:τ*(length(Sy_array)-1), Sy_array, xlabel = "t", ylabel = "<Sy>", legend = false,
     left_margin = 40mm, right_margin = 5mm, top_margin = 5mm, bottom_margin = 10mm, margin= 10mm) 
     #Save the plot as a PDF file
     savefig(joinpath(plotdir,"<Sy> vs t (self-interactions w geo+shape)_MF_FFI.pdf"))
 
     # Plotting Sx vs t
-    plot(0.0:τ:τ*(length(Sx_array)-1), Sx_array, xlabel = "t", ylabel = "<Sx_array>", legend = false,
+    plot(0.0:τ:τ*(length(Sx_array)-1), Sx_array, xlabel = "t", ylabel = "<Sx>", legend = false,
     left_margin = 40mm, right_margin = 5mm, top_margin = 5mm, bottom_margin = 10mm, margin= 10mm) 
     #Save the plot as a PDF file
     savefig(joinpath(plotdir,"<Sx> vs t (self-interactions w geo+shape)_MF_FFI.pdf"))
@@ -255,13 +253,13 @@ function main()
     savefig(joinpath(plotdir,"Particles position(x) evolution.pdf"))
     
     # Plotting particles momentum evolution
-    plot(title="Particle Momentum Evolution", xlabel= "Momentum in x direction(p_x)",ylabel="Time")
+    plot(title="Particle Momentum Evolution", xlabel= "Momentum in x direction(pₓ)",ylabel="Time")
     for site in 1:N_sites
-        site_momentum = [(px_values[t][site]) for t in 1:length(px_values)]
+        site_momentum = [(pₓ_values[t][site]) for t in 1:length(pₓ_values)]
         plot!(site_momentum, 0.0:τ:ttotal, label="Site $site",left_margin = 25mm, right_margin = 5mm, 
         top_margin = 5mm, bottom_margin = 10mm)
     end
-    savefig(joinpath(plotdir,"Particles momentum(p_x) evolution.pdf"))
+    savefig(joinpath(plotdir,"Particles momentum(pₓ) evolution.pdf"))
 
 end 
 
