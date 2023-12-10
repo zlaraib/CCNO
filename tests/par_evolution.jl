@@ -68,6 +68,7 @@ function evolve(τ, L, N_sites, p, x, ttotal,periodic)
         px = p[:, 1] #p_x of all sites/particles
         push!(px_values, copy(px))
 
+        # method 1 of evolving particles within the domain "with" the nested for loop on particles 
         for i in 1:N_sites
             println("particle $i's position at time $t (before evolution) = $(x[i])")
             x[i] += p_x_hat[i] * c * τ
@@ -79,8 +80,18 @@ function evolve(τ, L, N_sites, p, x, ttotal,periodic)
                 # Checking if the updated x[i] satisfies the boundary conditions
                 @assert (x[i] >= 0 && x[i] <= L)
             end
-           
         end
+
+        # method 2 of evolving particles within the domain "without" the nested for loop on particles 
+        # x .+=  ((p_x_hat.*c) .* τ)  # displacing particle's position at each timestep 
+        # if periodic
+        #     # Wrap around position from 0 to domain size L
+        #     x = mod.(x, L)
+        #     println(x)
+        #     # Check if the updated x satisfies the boundary conditions
+        #     @assert all(x .>= 0) && all(x .<= L)
+        # end
+
         t ≈ ttotal && break
     end
     t_array = 0.0:τ:ttotal
