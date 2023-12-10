@@ -197,7 +197,7 @@ function main()
     generate_inputs_file(datadir, "input.txt", input_data)
 
     #extract output for the survival probability values at each timestep
-    Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, px_values, ρ_ee_array= evolve(s, τ, N, B,L, N_sites, 
+    Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, px_values, ρ_ee_array,ρ_μμ_array= evolve(s, τ, N, B,L, N_sites, 
                     Δx,del_m2, p, x, Δp, ψ_0, shape_name, energy_sign, cutoff, maxdim, datadir, ttotal,periodic)
 
     # Specify the relative directory path
@@ -209,40 +209,59 @@ function main()
     # Call the function to generate the inputs file in the specified directory
     generate_inputs_file(plotdir, "inputs.txt", input_data)
 
+    # Plotting ρ_μμ vs t
+    plot(0.0:τ:τ*(length(ρ_μμ_array)-1), ρ_μμ_array, xlabel = "t", ylabel = "<ρ_μμ>", legend = false, 
+    left_margin = 20mm, right_margin = 10mm, top_margin = 5mm, bottom_margin = 10mm) 
+    # Save the plot as a PDF file
+    savefig(joinpath(plotdir, "<ρ_μμ>_vs_t_self-interactions_w_geo+shape_MF_FFI.pdf"))
+
     # Plotting ρ_ee vs t
     plot(0.0:τ:τ*(length(ρ_ee_array)-1), ρ_ee_array, xlabel = "t", ylabel = "<ρ_ee>", legend = false, 
     left_margin = 20mm, right_margin = 10mm, top_margin = 5mm, bottom_margin = 10mm) 
-
     # Save the plot as a PDF file
     savefig(joinpath(plotdir, "<ρ_ee>_vs_t_self-interactions_w_geo+shape_MF_FFI.pdf"))
+
+   # Plotting P_surv vs t
+   plot(0.0:τ:τ*(length(prob_surv_array)-1), prob_surv_array, xlabel = "t", ylabel = "Survival Probabillity p(t)",
+   legend = false, left_margin = 20mm, right_margin = 10mm, top_margin = 5mm, bottom_margin = 10mm)
+   savefig(joinpath(plotdir,"Survival probability vs t (only self-interaction term)_FFI.pdf"))
 
     # Plotting Sz vs t
     plot(0.0:τ:τ*(length(Sz_array)-1), Sz_array, xlabel = "t", ylabel = "<Sz>", legend = false,
         left_margin = 25mm, right_margin = 5mm, top_margin = 5mm, bottom_margin = 20mm,margin= 10mm,
-        ylims = (minimum(Sz_array), maximum(Sz_array) + 0.1 * abs(maximum(Sz_array) - minimum(Sz_array)))
-    )
-
+        ylims = (minimum(Sz_array), maximum(Sz_array) + 0.1 * abs(maximum(Sz_array) - minimum(Sz_array))) )
     # Save the plot as a PDF file
     savefig(joinpath(plotdir, "<Sz>_vs_t_self-interactions_w_geo+shape_MF_FFI.pdf"))
 
+    # Plotting Sy vs t
     plot(0.0:τ:τ*(length(Sy_array)-1), Sy_array, xlabel = "t", ylabel = "<Sy_array>", legend = false,
     left_margin = 40mm, right_margin = 5mm, top_margin = 5mm, bottom_margin = 10mm, margin= 10mm) 
     #Save the plot as a PDF file
     savefig(joinpath(plotdir,"<Sy> vs t (self-interactions w geo+shape)_MF_FFI.pdf"))
 
+    # Plotting Sx vs t
     plot(0.0:τ:τ*(length(Sx_array)-1), Sx_array, xlabel = "t", ylabel = "<Sx_array>", legend = false,
     left_margin = 40mm, right_margin = 5mm, top_margin = 5mm, bottom_margin = 10mm, margin= 10mm) 
     #Save the plot as a PDF file
     savefig(joinpath(plotdir,"<Sx> vs t (self-interactions w geo+shape)_MF_FFI.pdf"))
 
+    # Plotting particles positional evolution
     plot(title="Position Evolution for $N_sites particles", xlabel= "Position (x)",ylabel="Time(s)")
     for site in 1:N_sites
         site_positions = [(x_values[t][site]) for t in 1:length(x_values)]
         plot!(site_positions, 0.0:τ:ttotal, label="Site $site",
         left_margin = 25mm, right_margin = 5mm, top_margin = 5mm, bottom_margin = 10mm, margin= 10mm)
     end
-
-    savefig(joinpath(plotdir,"Particles evolution.pdf"))
+    savefig(joinpath(plotdir,"Particles position(x) evolution.pdf"))
+    
+    # Plotting particles momentum evolution
+    plot(title="Particle Momentum Evolution", xlabel= "Momentum in x direction(p_x)",ylabel="Time")
+    for site in 1:N_sites
+        site_momentum = [(px_values[t][site]) for t in 1:length(px_values)]
+        plot!(site_momentum, 0.0:τ:ttotal, label="Site $site",left_margin = 25mm, right_margin = 5mm, 
+        top_margin = 5mm, bottom_margin = 10mm)
+    end
+    savefig(joinpath(plotdir,"Particles momentum(p_x) evolution.pdf"))
 
 end 
 
