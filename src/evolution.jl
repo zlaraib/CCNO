@@ -112,7 +112,9 @@ function evolve(s, τ, N, B,L, N_sites, Δx, del_m2, p, x, Δp, ψ, shape_name, 
         normalize!(ψ)
     end
     t_array = 0.0:τ:ttotal
-    ρ_ee_array = ( (2 * Sz_array) .+ 1)/2
+    # recall that in our code sigma_z = 2*Sz so make sure these expressions are consistent with "Sz in ITensors" 
+    ρ_ee_array = ( (2 * Sz_array) .+ 1)/2 
+    ρ_μμ_array = ( (-2 * Sz_array) .+ 1)/2 
 
     # Writing data to files with corresponding headers
     fname1 = joinpath(datadir, "t_<Sz>_<Sy>_<Sx>.dat")
@@ -123,7 +125,11 @@ function evolve(s, τ, N, B,L, N_sites, Δx, del_m2, p, x, Δp, ψ, shape_name, 
     writedlm(fname3, [t_array x_values])
     fname4 = joinpath(datadir, "t_pxsiteval.dat")
     writedlm(fname4, [t_array px_values])
-    return Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, px_values, ρ_ee_array
+    fname5 = joinpath(datadir, "t_ρ_ee.dat")
+    writedlm(fname5, [t_array ρ_ee_array])
+    fname6 = joinpath(datadir, "t_ρ_μμ.dat")
+    writedlm(fname6, [t_array ρ_μμ_array])
+    return Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, px_values, ρ_ee_array, ρ_μμ_array
 end
 
 
