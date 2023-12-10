@@ -44,9 +44,9 @@ function main(N; use_splitblocks = true,nsweeps = 10, blas_num_threads=1,
     maxdim!(sweeps, maxdims...)
     noise!(sweeps, 1e-6, 1e-7, 1e-8, 0.0)
 
-    if outputlevel > 0
-        @show sweeps
-    end
+    # if outputlevel > 0
+    #     @show sweeps
+    # end
 
     # Constants for Rogerro's fit (only self-interaction term)
     a_t = 0
@@ -78,10 +78,10 @@ function main(N; use_splitblocks = true,nsweeps = 10, blas_num_threads=1,
                                                                 maxdim,use_splitblocks,use_threaded_blocksparse)
     #energy,ψ  = eigenvals(s, τ, n, ω, B, N, Δx, cutoff, tolerance, ttotal,outputlevel,maxdim,use_splitblocks, 
                                                                        # sweeps,nsweeps,use_threaded_blocksparse)
-    if outputlevel > 0
-        @show flux(ψ)
-        @show maxlinkdim(ψ)
-    end
+    # if outputlevel > 0
+    #     @show flux(ψ)
+    #     @show maxlinkdim(ψ)
+    # end
 
 
     #index of minimum of the prob_surv_array (containing survival probability values at each time step)
@@ -97,17 +97,17 @@ function main(N; use_splitblocks = true,nsweeps = 10, blas_num_threads=1,
     #@assert abs(t_min - t_p_Rog) <  τ + tolerance 
 
     # Plotting P_surv vs t
-    #plot(0.0:τ:τ*(length(prob_surv_array)-1), prob_surv_array, xlabel = "t", 
-           # ylabel = "Survival Probabillity p(t)", legend = false, size=(800, 600), aspect_ratio=:auto,margin= 10mm) 
+    plot(0.0:τ:τ*(length(prob_surv_array)-1), prob_surv_array, xlabel = "t", 
+           ylabel = "Survival Probabillity p(t)", legend = false, size=(800, 600), aspect_ratio=:auto,margin= 10mm) 
 
     # Save the plot as a PDF file
-    #savefig("Survival probability vs t (only self-interaction term plot).pdf")
+    savefig("Survival probability vs t (only self-interaction term plot).pdf")
     #return apply_time
 end 
-N= 8
+N= 4
 println("Without threaded block sparse:\n")
 @time main(N; nsweeps = 10, use_threaded_blocksparse=false)
 println()
-println("With threaded block sparse:\n")
-@time main(N; nsweeps = 10, use_threaded_blocksparse=true)
-println()
+# println("With threaded block sparse:\n")
+# @time main(N; nsweeps = 10, use_threaded_blocksparse=true)
+# println()

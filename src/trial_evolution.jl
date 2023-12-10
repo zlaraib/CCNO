@@ -66,25 +66,14 @@ function evolve(s, τ, n, ω, B, N, Δx, ψ, cutoff, tolerance, ttotal,outputlev
 
 
 
-                    # function apply(gates, ψ;cutoff)
+            # function apply(gates, ψ;cutoff)
             #     temp = zeros(Int, Threads.nthreads())
             #     Threads.@threads for i in eachindex(ψ)
             #         temp[Threads.threadid()] = ψ[i]
             #     end
             #     return temp
             # end
-            # function apply_gate(mat, vec)
-            #     num_rows, num_cols = size(mat)
-            #     res = zeros(ComplexF64, num_rows)
-                
-            #     for i in 1:num_rows
-            #         for j in 1:num_cols
-            #             res[i] += mat[(i - 1) * num_cols + j] * vec[j]
-            #         end
-            #     end
-                
-            #     return res
-            # end
+
             # function apply_g(gates, ψ; cutoff)
             #     temp = Vector{ComplexF64}(undef, length(ψ))
             #     Threads.@threads for i in eachindex(ψ)

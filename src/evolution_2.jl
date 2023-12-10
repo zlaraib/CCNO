@@ -46,50 +46,31 @@ function evolve(s, τ, n, ω, B, N, Δx, ψ, cutoff, tolerance, ttotal,
     # Compute and print survival probability (found from <Sz>) at each time step then apply the gates to go to the next time
     for t in 0.0:τ:ttotal
         
-        # # compute initial expectation value of Sz(inbuilt operator in ITensors library) at the first site on the chain
-        # sz = expect(ψ, "Sz"; sites=1)
-
-        # Compute initial expectation value of Sz over all sites
-        sz_all_sites = [expect(ψ, "Sz"; sites=i) for i in 1:N]
-        println(sz_all_sites)
-        # Calculate the average Sz over all sites
-        sz = sum(sz_all_sites) / N
-              
+        # compute initial expectation value of Sz(inbuilt operator in ITensors library) at the first site on the chain
+        sz = expect(ψ, "Sz"; sites=1)
         # add an element sz to the end of Sz array 
         push!(Sz_array, sz)
-        #   total_sz = 0.0
-        #   for site_idx in 1:N
-        #     # sz=0.0
-        #     sz = expect(ψ, "Sz"; sites= site_idx)
-        #     #println(sz)
-        #     total_sz += sz
-        #     # println(total_sz)
-        #   end
         
-        # average_sz = total_sz / N
-        # push!(Sz_array, average_sz)
-    
-
         # survival probability for a (we took first) neutrino to be found in its initial flavor state (in this case a spin down)
         prob_surv = 0.5 * (1 - 2 * sz)
         # add an element prob_surv to the end of  prob_surv_array 
         push!(prob_surv_array, prob_surv)
 
-        for i in 1:(N-1)
-            if ω[i] != 0
-                # Compute the expected value based on the derived analytic formula
-                expected_sz = 0.5 * cos(ω[i] * t)
+        # for i in 1:(N-1)
+        #     if ω[i] != 0
+        #         # Compute the expected value based on the derived analytic formula
+        #         expected_sz = 0.5 * cos(ω[i] * t)
                 
-                # Checking that the value of Sz at the center spin oscillates between 0.5 and -0.5 
-                # Compare the actual value with the expected value using a tolerance
-                @assert abs(sz - expected_sz) < tolerance
-            end
-        end
-
-        # if ω == fill(0, N) 
-        #     println("$t $prob_surv")
-        # else println("$t $average_sz")
+        #         # Checking that the value of Sz at the center spin oscillates between 0.5 and -0.5 
+        #         # Compare the actual value with the expected value using a tolerance
+        #         @assert abs(sz - expected_sz) < tolerance
+        #     end
         # end
+
+        if ω == fill(0, N) 
+            println("$t $prob_surv")
+        else println("$t $sz")
+        end
 
         # Writing an if statement in a shorthand way that checks whether the current value of t is equal to ttotal, 
         # and if so, it executes the break statement, which causes the loop to terminate early.
@@ -100,18 +81,143 @@ function evolve(s, τ, n, ω, B, N, Δx, ψ, cutoff, tolerance, ttotal,
         # It automatically handles truncating the MPS and handles the non-nearest-neighbor gates in this example.
         @disable_warn_order begin
             #ITensors.enable_combine_contract()
-            ITensors.disable_threaded_blocksparse()
-            apply_time += @elapsed ψ = apply(gates, ψ;cutoff)
-            ITensors.disable_threaded_blocksparse()
+            
+            apply_time += @elapsed ψ = apply_z(gates, ψ;cutoff)
             #ITensors.disable_combine_contract()
         end
         # The normalize! function is used to ensure that the MPS is properly normalized after each application of the time evolution gates. 
         # This is necessary to ensure that the MPS represents a valid quantum state.
         normalize!(ψ)
     end
-    println(Sz_array)
+     
     return Sz_array, prob_surv_array, apply_time
 end
+
+# function apply_z(gates, ψ; cutoff)
+#     num_threads = Threads.nthreads()
+#     temp = [deepcopy(ψ) for _ in 1:num_threads]  # Create copies of ψ for each thread
+#     shared_temp = [deepcopy(gates) for _ in 1:num_threads]  # Create copies of gates for each thread
+#     results = [deepcopy(ψ) for _ in 1:num_threads]
+#     Threads.@threads for i in findsites(ψ, gates)
+#         thread_id = Threads.threadid()
+#         temp[thread_id][i] += ψ[i]
+#         shared_temp[thread_id][i] += gates[i]
+#         # Perform operations using temp and shared_temp for each thread
+#     end
+
+#     # Process temp and shared_temp for each thread separately
+#     for thread_id in 1:num_threads
+#         results[thread_id] = apply(shared_temp[thread_id], temp[thread_id]; cutoff)
+#         # Additional processing if needed
+#     end
+
+#     # Construct the final result as an MPS
+#     all_results = deepcopy(ψ)  # Initialize all_results with the first thread's result
+#     for i in 2:num_threads
+#         # Concatenate/combine the MPS from other threads into all_results
+#         # Adjust this part based on how you want to combine the MPS objects
+#         all_results = vcat(all_results, results[i])  # Replace combine_mps with appropriate operation
+#     end
+
+#     return all_results
+# end
+
+function product(
+    o::ITensor,
+    ψ::MPS,
+    ns=findsites(ψ, o);
+    move_sites_back::Bool=true,
+    apply_dag::Bool=false,
+    kwargs...,
+  )
+    N = length(ns)
+    ns = sort(ns)
+  
+    # TODO: make this smarter by minimizing
+    # distance to orthogonalization.
+    # For example, if ITensors.orthocenter(ψ) > ns[end],
+    # set to ns[end].
+    ψ = orthogonalize(ψ, ns[1])
+    diff_ns = diff(ns)
+    ns′ = ns
+    if any(!=(1), diff_ns)
+      ns′ = [ns[1] + n - 1 for n in 1:N]
+      ψ = movesites(ψ, ns .=> ns′; kwargs...)
+    end
+    ϕ = ψ[ns′[1]]
+    for n in 2:N
+      ϕ *= ψ[ns′[n]]
+    end
+    ϕ = product(o, ϕ; apply_dag=apply_dag)
+    ψ[ns′[1]:ns′[end], kwargs...] = ϕ
+    if move_sites_back
+      # Move the sites back to their original positions
+      ψ = movesites(ψ, ns′ .=> ns; kwargs...)
+    end
+    return ψ
+  end
+  gates = create_gates(s, n, ω, B, N, Δx, τ,outputlevel, use_splitblocks)
+  apply_z(gates, ψ, kwargs...) = product(
+    o::ITensor,
+    ψ::AbstractMPS,
+    ns=findsites(ψ, o);
+    move_sites_back::Bool=true,
+    apply_dag::Bool=false,
+    kwargs...,
+  )
+
+# function evolve(s, τ, n, ω, B, N, Δx, ψ, cutoff, tolerance, ttotal,outputlevel, 
+#     maxdim,use_splitblocks,use_threaded_blocksparse)
+#     Sz_array = Float64[]
+#     prob_surv_array = Float64[]
+#     gates = create_gates(s, n, ω, B, N, Δx, τ,outputlevel, use_splitblocks)
+#     apply_time = 0.0
+#     for t in 0.0:τ:ttotal
+#         sz = expect(ψ, "Sz"; sites=1)
+#         push!(Sz_array, sz)
+        
+#         prob_surv = 0.5 * (1 - 2 * sz)
+#         push!(prob_surv_array, prob_surv)
+        
+#         # Parallelizing the application of gates
+#         threads = Task[]
+#         for gate in gates
+#             th = Threads.@spawn begin
+#                 apply_time += @elapsed new_psi = apply(gate, deepcopy(ψ); cutoff)
+#                 normalize!(new_psi)
+#                 #println(new_psi)
+#                 return new_psi
+#             end
+#             push!(threads, th)
+#         end
+        
+#         # Waiting for all threads to finish and updating ψ
+#         for thread in threads
+#             ψ = fetch(thread)
+#         end
+#         println("$t $prob_surv")
+#         #t ≈ ttotal && break
+#     end
+    
+#     return apply_time
+# end
+
+# function apply_z(
+#     As::Vector{<:ITensor}, ψ::MPS; move_sites_back::Bool=true, kwargs...
+#   )
+#     Aψ = ψ
+#     for A in As
+#       Aψ = apply_z(A, Aψ; move_sites_back=false, kwargs...)
+#     end
+#     if move_sites_back
+#       s = siteinds(Aψ)
+#       ns = 1:length(ψ)
+#       ñs = [findsite(ψ, i) for i in s]
+#       Aψ = movesites(Aψ, ns .=> ñs; kwargs...)
+#     end
+#     return Aψ
+#   end
+
 
 function eigenvals(s, τ, n, ω, B, N, Δx, cutoff, tolerance, ttotal,outputlevel,maxdim,use_splitblocks, sweeps,nsweeps,use_threaded_blocksparse)
     
