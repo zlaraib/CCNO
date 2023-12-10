@@ -9,7 +9,7 @@ include("constants.jl")
     B = array of normalized vector related to mixing angle in vacuum oscillations (dimensionless constant)
     N_sites = Total no.of sites (dimensionless and unitless)
     Δx = length of the box of interacting neutrinos at a site (cm)
-    del_m2 = difference in mass squared (erg^2)
+    Δm² = difference in mass squared (erg^2)
     p = array of momentum vectors (erg)
     x = array of positions of sites (cm)
     Δp = width of shape function (cm)
@@ -24,7 +24,7 @@ include("constants.jl")
 # This file generates the evolve function which evolves the ψ state in time and computes the expectation values of Sz at each time step, along 
 # with their survival probabilities. The time evolution utilizes the unitary operators created as gates from the create_gates function.
 # The <Sz> and Survival probabilities output from this function are unitless. 
-function evolve(s, τ, N, B,L, N_sites, Δx, del_m2, p, x, Δp, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, ttotal, periodic= true)
+function evolve(s, τ, N, B,L, N_sites, Δx, Δm², p, x, Δp, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, ttotal, periodic= true)
 
     # check if a directory exists, and if it doesn't, create it using mkpath
     isdir(datadir) || mkpath(datadir)
@@ -36,23 +36,23 @@ function evolve(s, τ, N, B,L, N_sites, Δx, del_m2, p, x, Δp, ψ, shape_name, 
     t_array = [] # to store t values 
     prob_surv_array = Float64[]   # to store survival probability values 
     x_values = []  # to store x values for all sites 
-    px_values = [] # to store px vector values for all sites
+    pₓ_values = [] # to store px vector values for all sites
 
     # extract the gates array generated in the gates_function file
-    gates = create_gates(s, N, B, N_sites, Δx, del_m2, p, x, Δp, shape_name,L, τ, energy_sign,periodic)
+    gates = create_gates(s, N, B, N_sites, Δx, Δm², p, x, Δp, shape_name,L, τ, energy_sign,periodic)
 
     # extract output of p_hat and p_mod for the p vector defined above for all sites. 
-    p_mod, p_hat = momentum(p,N_sites) 
-    p_x_hat = [sub_array[1] for sub_array in p_hat]
-
+    p_mod, p̂ = momentum(p,N_sites) 
+    p̂ₓ= [sub_array[1] for sub_array in p̂]
+    
      # Compute and print survival probability (found from <Sz>) at each time step then apply the gates to go to the next time
      for t in 0.0:τ:ttotal
         push!(x_values, copy(x))  # Record x values at each time step
         px = p[:, 1]  # Extracting the first column (which corresponds to px values)
-        push!(px_values, copy(px)) # Record px values at each time step
+        push!(pₓ_values, copy(px)) # Record px values at each time step
 
         for i in eachindex(x)
-            x[i] += p_x_hat[i] * c * τ
+            x[i] += p̂ₓ[i] * c * τ
             if periodic
                 # wrap around position from 0 to domain size L
                 x[i] = mod(x[i],L)
@@ -113,7 +113,7 @@ function evolve(s, τ, N, B,L, N_sites, Δx, del_m2, p, x, Δp, ψ, shape_name, 
     end
     t_array = 0.0:τ:ttotal
     # recall that in our code sigma_z = 2*Sz so make sure these expressions are consistent with "Sz in ITensors" 
-    ρ_ee_array = ( (2 * Sz_array) .+ 1)/2 
+    ρₑₑ_array = ( (2 * Sz_array) .+ 1)/2 
     ρ_μμ_array = ( (-2 * Sz_array) .+ 1)/2 
 
     # Writing data to files with corresponding headers
@@ -124,12 +124,12 @@ function evolve(s, τ, N, B,L, N_sites, Δx, del_m2, p, x, Δp, ψ, shape_name, 
     fname3 = joinpath(datadir, "t_xsiteval.dat")
     writedlm(fname3, [t_array x_values])
     fname4 = joinpath(datadir, "t_pxsiteval.dat")
-    writedlm(fname4, [t_array px_values])
-    fname5 = joinpath(datadir, "t_ρ_ee.dat")
-    writedlm(fname5, [t_array ρ_ee_array])
+    writedlm(fname4, [t_array pₓ_values])
+    fname5 = joinpath(datadir, "t_ρₑₑ.dat")
+    writedlm(fname5, [t_array ρₑₑ_array])
     fname6 = joinpath(datadir, "t_ρ_μμ.dat")
     writedlm(fname6, [t_array ρ_μμ_array])
-    return Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, px_values, ρ_ee_array, ρ_μμ_array
+    return Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array
 end
 
 
