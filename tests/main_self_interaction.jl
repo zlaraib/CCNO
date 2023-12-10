@@ -3,6 +3,8 @@ using Plots
 using Measures
 using LinearAlgebra
 using DelimitedFiles
+using Statistics
+
 include("../src/evolution.jl")
 include("../src/constants.jl")
 include("../src/shape_func.jl")

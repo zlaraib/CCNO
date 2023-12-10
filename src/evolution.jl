@@ -48,12 +48,11 @@ function evolve(s, τ, N, B,L, N_sites, Δx, del_m2, p, x, Δp, ψ, shape_name, 
      # Compute and print survival probability (found from <Sz>) at each time step then apply the gates to go to the next time
      for t in 0.0:τ:ttotal
         push!(x_values, copy(x))  # Record x values at each time step
-        #x .+=  ((p_x_hat.*c) .* τ)  # displacing particle's position at each timestep 
-        # println(x_values)
-        
+        px = p[:, 1]  # Extracting the first column (which corresponds to px values)
+        push!(px_values, copy(px)) # Record px values at each time step
+
         for i in eachindex(x)
             x[i] += p_x_hat[i] * c * τ
- 
             if periodic
                 # wrap around position from 0 to domain size L
                 x[i] = mod(x[i],L)
@@ -61,18 +60,16 @@ function evolve(s, τ, N, B,L, N_sites, Δx, del_m2, p, x, Δp, ψ, shape_name, 
                 # Checking if the updated x[i] satisfies the boundary conditions
                 @assert (x[i] >= 0 && x[i] <= L)
             end
-                
         end
-        # x[t] .= ifelse.(x[t] .> L, x[t] .- L, ifelse.(x[t] .< 0, x[t] .+ L, x[t]))
-        # @assert all((x .>= 0) .& (x .<= L))
         
-    
-        #@assert (x>=0 || x<=L)
-        px = p[:, 1]  # Extracting the first column (which corresponds to px values)
-        push!(px_values, copy(px)) # Record px values at each time step
-
-        # compute expectation value of Sz (inbuilt operator in ITensors library) at the first site on the chain
-        sz = expect(ψ, "Sz"; sites=1)
+        if all(B[i] != 0 for i in 1:3) #specfic to the perturbation vector in my self-interaction file 
+            # compute the avg expectation value of Sz at all sites
+            sz_tot = expect(ψ, "Sz")
+            sz = mean(sz_tot)
+        else 
+            # compute expectation value of Sz (inbuilt operator in ITensors library) at the first site on the chain
+            sz = expect(ψ, "Sz"; sites=1)
+        end 
 
         # compute expectation value of sy and sx using S+ and S- (inbuilt operator in ITensors library) at the first site on the chain
         if p == zeros(N_sites, 3) #for rogerro's case only
