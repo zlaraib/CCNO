@@ -71,7 +71,7 @@ function main()
     # antineutrino_energy = -1* neutrino_energy # specific to my case only. Since all neutrinos have same energy, except in my case anti neutrinos are moving in opposite direction to give it a negative sign
     # #Select a shape function based on the shape_name variable form the list defined in dictionary in shape_func file
     # shape_name = "triangular"  # Change this to the desired shape name #variable 
-    # Δp = 1/(2*N_sites) # width of shape function  # cm #variable
+    # Δp = 1/N_sites_eachflavor # width of shape function  # cm #variable
     # periodic = true  # true = imposes periodic boundary conditions while false doesn't
 
 
@@ -193,18 +193,22 @@ function main()
     # Specify the relative directory path
     datadir = joinpath(@__DIR__, "..","misc","datafiles","FFI", "par_"*string(N_sites), "tt_"*string(ttotal))
 
+    # Call the function to generate the inputs file in the specified directory
+    generate_inputs_file(datadir, "input.txt", input_data)
+
     #extract output for the survival probability values at each timestep
     Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, px_values, ρ_ee_array= evolve(s, τ, N, B,L, N_sites, 
                     Δx,del_m2, p, x, Δp, ψ_0, shape_name, energy_sign, cutoff, maxdim, datadir, ttotal,periodic)
-
-    # Call the function to generate the inputs file in the specified directory
-    generate_inputs_file(datadir, "input.txt", input_data)
 
     # Specify the relative directory path
     plotdir = joinpath(@__DIR__, "..","misc","plots","FFI", "par_"*string(N_sites), "tt_"*string(ttotal))
     
     # check if a directory exists, and if it doesn't, create it using mkpath
     isdir(plotdir) || mkpath(plotdir)
+
+    # Call the function to generate the inputs file in the specified directory
+    generate_inputs_file(plotdir, "inputs.txt", input_data)
+
     # Plotting ρ_ee vs t
     plot(0.0:τ:τ*(length(ρ_ee_array)-1), ρ_ee_array, xlabel = "t", ylabel = "<ρ_ee>", legend = false, 
     left_margin = 20mm, right_margin = 10mm, top_margin = 5mm, bottom_margin = 10mm) 
@@ -239,9 +243,6 @@ function main()
     end
 
     savefig(joinpath(plotdir,"Particles evolution.pdf"))
-
-    # Call the function to generate the inputs file in the specified directory
-    generate_inputs_file(plotdir, "inputs.txt", input_data)
 
 end 
 
