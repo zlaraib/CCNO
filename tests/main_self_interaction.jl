@@ -183,8 +183,8 @@ function main()
     s = siteinds("S=1/2", N_sites; conserve_qns=false) #fixed #switched conserve_qns to false to avoid fluxes error in expect function
 
     # Initialize psi to be a product state (First half to be spin down and other half to be spin up)
-    ψ = productMPS(s, N -> N <= N_sites/2 ? "Up" : "Dn") # Fixed to produce consistent results for the test assert conditions 
-    
+    #ψ = productMPS(s, N -> N <= N_sites/2 ? "Up" : "Dn") # Fixed to produce consistent results for the test assert conditions 
+    ψ = productMPS(s, N_sites -> "Up") # inital state all in spin up direction i.e. all electron flavor
     # Perturb the state via one-body Hamiltonian
     ψ₀= evolve_perturbation(s, τ, B, N_sites, ψ, cutoff, maxdim, ttotal)
     
