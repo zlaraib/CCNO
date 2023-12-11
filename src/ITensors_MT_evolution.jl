@@ -31,7 +31,6 @@ function ITensors.measure!(o::EntanglementObserver; bond, ψ, half_sweep, kwargs
   println("  Entanglement across bond $bond = $SvN")
 end
 
-
 function evolve(s, τ, n, ω, B, N, Δx, ψ, cutoff, tolerance, ttotal,
     outputlevel,maxdim,use_splitblocks, use_threaded_blocksparse)
 
@@ -46,29 +45,11 @@ function evolve(s, τ, n, ω, B, N, Δx, ψ, cutoff, tolerance, ttotal,
     # Compute and print survival probability (found from <Sz>) at each time step then apply the gates to go to the next time
     for t in 0.0:τ:ttotal
         
-        # # compute initial expectation value of Sz(inbuilt operator in ITensors library) at the first site on the chain
-        # sz = expect(ψ, "Sz"; sites=1)
-
-        # Compute initial expectation value of Sz over all sites
-        sz_all_sites = [expect(ψ, "Sz"; sites=i) for i in 1:N]
-        println(sz_all_sites)
-        # Calculate the average Sz over all sites
-        sz = sum(sz_all_sites) / N
+        # compute initial expectation value of Sz(inbuilt operator in ITensors library) at the first site on the chain
+        sz = expect(ψ, "Sz"; sites=1)
               
         # add an element sz to the end of Sz array 
         push!(Sz_array, sz)
-        #   total_sz = 0.0
-        #   for site_idx in 1:N
-        #     # sz=0.0
-        #     sz = expect(ψ, "Sz"; sites= site_idx)
-        #     #println(sz)
-        #     total_sz += sz
-        #     # println(total_sz)
-        #   end
-        
-        # average_sz = total_sz / N
-        # push!(Sz_array, average_sz)
-    
 
         # survival probability for a (we took first) neutrino to be found in its initial flavor state (in this case a spin down)
         prob_surv = 0.5 * (1 - 2 * sz)
@@ -86,10 +67,10 @@ function evolve(s, τ, n, ω, B, N, Δx, ψ, cutoff, tolerance, ttotal,
             end
         end
 
-        # if ω == fill(0, N) 
-        #     println("$t $prob_surv")
-        # else println("$t $average_sz")
-        # end
+        if ω == fill(0, N) 
+            println("$t $prob_surv")
+        else println("$t $average_sz")
+        end
 
         # Writing an if statement in a shorthand way that checks whether the current value of t is equal to ttotal, 
         # and if so, it executes the break statement, which causes the loop to terminate early.
@@ -99,17 +80,17 @@ function evolve(s, τ, n, ω, B, N, Δx, ψ, cutoff, tolerance, ttotal,
         # The apply function is smart enough to determine which site indices each gate has, and then figure out where to apply it to our MPS. 
         # It automatically handles truncating the MPS and handles the non-nearest-neighbor gates in this example.
         @disable_warn_order begin
-            #ITensors.enable_combine_contract()
-            ITensors.disable_threaded_blocksparse()
+            ITensors.enable_combine_contract()
+            ITensors.enable_threaded_blocksparse()
             apply_time += @elapsed ψ = apply(gates, ψ;cutoff)
             ITensors.disable_threaded_blocksparse()
-            #ITensors.disable_combine_contract()
+            ITensors.disable_combine_contract()
         end
         # The normalize! function is used to ensure that the MPS is properly normalized after each application of the time evolution gates. 
         # This is necessary to ensure that the MPS represents a valid quantum state.
         normalize!(ψ)
     end
-    println(Sz_array)
+    # println(Sz_array)
     return Sz_array, prob_surv_array, apply_time
 end
 
@@ -132,11 +113,9 @@ function eigenvals(s, τ, n, ω, B, N, Δx, cutoff, tolerance, ttotal,outputleve
     #ψ0=randomMPS(s,linkdims=4)
     apply_time_parallel = 0
 
-    
 
     #obs = EntanglementObserver()
 
-    
 
     Sz_observer = DMRGObserver(["Sz"],s,energy_tol=1E-7)
     observer = EntanglementObserver()
@@ -150,8 +129,6 @@ function eigenvals(s, τ, n, ω, B, N, Δx, cutoff, tolerance, ttotal,outputleve
     for (sw,Szs) in enumerate(measurements(Sz_observer)["Sz"])
         println("Total Sz after sweep $sw = ", sum(Szs)/N)
     end
-
-
      
     return energy,ψ,apply_time_parallel
 end

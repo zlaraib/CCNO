@@ -4,7 +4,7 @@ using Measures
 using Base.Threads
 using LinearAlgebra
 
-include("../src/evolution.jl")
+include("../src/ITensors_MT_evolution.jl")
 include("../src/constants.jl")
 
 # We are simulating the time evolution of a 1D spin chain with N sites, where each site is a spin-1/2 particle. 
@@ -76,12 +76,12 @@ function main(N; use_splitblocks = true,nsweeps = 10, blas_num_threads=1,
     #extract output from the expect.jl file where the survival probability values were computed at each timestep
     Sz_array, prob_surv_array, apply_time= evolve(s, τ, n, ω, B, N, Δx, ψ, cutoff, tolerance, ttotal,outputlevel, 
                                                                 maxdim,use_splitblocks,use_threaded_blocksparse)
-    #energy,ψ  = eigenvals(s, τ, n, ω, B, N, Δx, cutoff, tolerance, ttotal,outputlevel,maxdim,use_splitblocks, 
-                                                                       # sweeps,nsweeps,use_threaded_blocksparse)
-    # if outputlevel > 0
-    #     @show flux(ψ)
-    #     @show maxlinkdim(ψ)
-    # end
+    energy,ψ  = eigenvals(s, τ, n, ω, B, N, Δx, cutoff, tolerance, ttotal,outputlevel,maxdim,use_splitblocks, 
+                                                                       sweeps,nsweeps,use_threaded_blocksparse)
+    if outputlevel > 0
+        @show flux(ψ)
+        @show maxlinkdim(ψ)
+    end
 
 
     #index of minimum of the prob_surv_array (containing survival probability values at each time step)
@@ -93,8 +93,8 @@ function main(N; use_splitblocks = true,nsweeps = 10, blas_num_threads=1,
     println("t_p_Rog= ",t_p_Rog)
     println("i_min= ", i_min)
     println("t_min= ", t_min)
-    # # Check that our time of minimum survival probability compared to Rogerro(2021) remains within the timestep and tolerance.
-    #@assert abs(t_min - t_p_Rog) <  τ + tolerance 
+    # Check that our time of minimum survival probability compared to Rogerro(2021) remains within the timestep and tolerance.
+    @assert abs(t_min - t_p_Rog) <  τ + tolerance 
 
     # Plotting P_surv vs t
     plot(0.0:τ:τ*(length(prob_surv_array)-1), prob_surv_array, xlabel = "t", 
@@ -105,9 +105,6 @@ function main(N; use_splitblocks = true,nsweeps = 10, blas_num_threads=1,
     #return apply_time
 end 
 N= 4
-println("Without threaded block sparse:\n")
-@time main(N; nsweeps = 10, use_threaded_blocksparse=false)
+println("With threaded block sparse:\n")
+@time main(N; nsweeps = 10, use_threaded_blocksparse=true)
 println()
-# println("With threaded block sparse:\n")
-# @time main(N; nsweeps = 10, use_threaded_blocksparse=true)
-# println()

@@ -210,10 +210,10 @@ function evolve(s, τ, n, ω, B, N, Δx, ψ, cutoff, tolerance, ttotal,outputlev
         #     all_results = deepcopy(ψ)  # Initialize all_results with the first thread's result
         #     for i in 2:num_threads
         #         # Concatenate/combine the MPS from other threads into all_results
-        #         # Adjust this part based on how you want to combine the MPS objects
-        #         all_results = combine_mps(all_results, results[i])  # Replace combine_mps with appropriate operation
+                    # Aggregate from all threads
+                    atomic_add!(all_results, results[i])
         #     end
-        
+
         #     return all_results
         # end
         
