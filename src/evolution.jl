@@ -89,8 +89,7 @@ function ITensors.measure!(o::EntanglementObserver; bond, ψ, half_sweep, kwargs
             # It waits for all the spawned threads within its scope to complete before moving on
             Threads.@sync begin
                 # The @threads macro is used to distribute the iterations of the loop across multiple threads.
-                # The :dynamic argument tells the system to dynamically assign iterations to threads as they become available
-                Threads.@threads :dynamic for i in 1:num_threads
+                Threads.@threads for i in 1:num_threads
                     # spawn macro is used to create a new thread for executing the code block which is nested inside the @threads loop, 
                     # i.e. for each iteration of the loop, a new thread is spawned to execute a specific apply to relevant sites.
                     Threads.@spawn begin
