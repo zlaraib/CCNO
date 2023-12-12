@@ -13,8 +13,7 @@ include("../src/constants.jl")
 
 function main(N; use_splitblocks = true, nsweeps, blas_num_threads,
     strided_num_threads, use_threaded_blocksparse, outputlevel)
-    
-    N = 4 # number of sites 
+
     maxdim = 200 #bondimension for the SVD in MPS representation
     cutoff = 1E-14 # also specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT)
     τ = 0.05 # time step (NEED TO BE 0.05 for Rog_results)
@@ -222,15 +221,7 @@ function main(N; use_splitblocks = true, nsweeps, blas_num_threads,
         savefig("Survival probability vs t (ITensors_MT self-interaction term plot).pdf")
     end
 
+    return apply_time 
+    
 end 
 
-
-println("Serial:\n")
-@time main(N; use_splitblocks = true,nsweeps=10, blas_num_threads=1,
-strided_num_threads=1, use_threaded_blocksparse=false, outputlevel=0)
-println("Multi-threading without threaded block sparse(my_effort):\n")
-@time main(N; use_splitblocks = true,nsweeps=10, blas_num_threads=128,
-strided_num_threads=128, use_threaded_blocksparse=false, outputlevel=1)
-println("Multi-threading with threaded block sparse(ITensors):\n")
-@time main(N; use_splitblocks = true,nsweeps=10, blas_num_threads=1,
-strided_num_threads=1, use_threaded_blocksparse=true, outputlevel=1)

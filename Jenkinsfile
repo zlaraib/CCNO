@@ -33,6 +33,11 @@ pipeline {
 		archiveArtifacts artifacts: '*.pdf'
     } 
 }
+	stage('Performance Analysis'){ steps{
+		sh 'julia tests/loop_main_self_interactions.jl'
+		archiveArtifacts artifacts: 'tests/misc/plots/*/*/*.pdf'
+    } 
+}
 
 }// stages{
 

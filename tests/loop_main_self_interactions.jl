@@ -1,4 +1,4 @@
-include("main_self_interaction.jl")
+include("main_self_interaction (test_copy_for_running_in_loop_of_N).jl")
 
 using BenchmarkTools
 using Measures
@@ -7,7 +7,7 @@ using ITensors
 using LinearAlgebra
 # Define the parameters for N range
 start_N = 4
-end_N = 6
+end_N = 12
 increment = 2
 
 # Specify the relative directory path
@@ -49,8 +49,8 @@ function run_main_loop(start_N, end_N, increment)
 
     
     plot(N_values, times_serial, label="Serial", xlabel="N", ylabel="Computation Time(s)", legend=:topleft, left_margin=15mm, bottom_margin=15mm)
-    plot!(N_values, times_no_ITensors_threaded, label="Without threaded block sparse", xlabel="N", ylabel="Computation Time(s)", legend=:topleft, left_margin=15mm, bottom_margin=15mm)
-    plot!(N_values, times_with_threaded, label="With threaded block sparse")
+    plot!(N_values, times_no_ITensors_threaded, label="Without threaded block sparse(my_MT)", xlabel="N", ylabel="Computation Time(s)", legend=:topleft, left_margin=15mm, bottom_margin=15mm)
+    plot!(N_values, times_with_threaded, label="With threaded block sparse(I_MT)")
     savefig(joinpath(plotdir,"Benchmark performance analysis serial vs myMT vs_ITensorsMT.pdf"))
 end
 
