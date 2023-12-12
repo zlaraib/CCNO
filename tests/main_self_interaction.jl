@@ -11,7 +11,7 @@ include("../src/constants.jl")
 # The simulation is done by applying a sequence of unitary gates to an initial state of the system, 
 # which is a product state where each site alternates between up and down.
 
-function main(N; use_splitblocks = true, nsweeps, blas_num_threads,
+function main(; use_splitblocks = true, nsweeps, blas_num_threads,
     strided_num_threads, use_threaded_blocksparse, outputlevel)
     
     N = 4 # number of sites 
@@ -226,11 +226,11 @@ end
 
 
 println("Serial:\n")
-@time main(N; use_splitblocks = true,nsweeps=10, blas_num_threads=1,
+@time main(;use_splitblocks = true,nsweeps=10, blas_num_threads=1,
 strided_num_threads=1, use_threaded_blocksparse=false, outputlevel=0)
 println("Multi-threading without threaded block sparse(my_effort):\n")
-@time main(N; use_splitblocks = true,nsweeps=10, blas_num_threads=128,
+@time main(;use_splitblocks = true,nsweeps=10, blas_num_threads=128,
 strided_num_threads=128, use_threaded_blocksparse=false, outputlevel=1)
 println("Multi-threading with threaded block sparse(ITensors):\n")
-@time main(N; use_splitblocks = true,nsweeps=10, blas_num_threads=1,
+@time main(;use_splitblocks = true,nsweeps=10, blas_num_threads=1,
 strided_num_threads=1, use_threaded_blocksparse=true, outputlevel=1)
