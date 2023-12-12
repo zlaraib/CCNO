@@ -1,6 +1,5 @@
 include("main_self_interaction (test_copy_for_running_in_loop_of_N).jl")
 
-using BenchmarkTools
 using Measures
 using DelimitedFiles
 using ITensors
