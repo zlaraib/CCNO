@@ -65,7 +65,7 @@ function create_gates(s, n, ω, B, N, Δx, τ,outputlevel, use_splitblocks)
 
     # Number of structural nonzero elements in a bulk
     # Hamiltonian MPO tensor
-    if outputlevel > 0
+    if outputlevel > 0 && ω == fill(0, N) 
         @show nnz(gates[end÷2])
         @show nnzblocks(gates[end÷2])
     end
@@ -123,7 +123,7 @@ function Hamiltonian_mpo(s, n, ω, B, N, Δx, τ,outputlevel, use_splitblocks)
     end
     # Number of structural nonzero elements in a bulk
     # Hamiltonian MPO tensor
-    if outputlevel > 0
+    if outputlevel > 0 && ω == fill(0, N) 
         @show nnz(H[end÷2])
         @show nnzblocks(H[end÷2])
     end
