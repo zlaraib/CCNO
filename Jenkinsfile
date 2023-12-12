@@ -23,7 +23,7 @@ pipeline {
 		sh 'julia tests/test_file.jl'
     } 
 }
-	stage('Time Evolution'){ steps{
+	stage('Vacuum Oscillations'){ steps{
 		sh 'julia tests/main_vac_osc.jl'
 		archiveArtifacts artifacts: '*.pdf'
     }

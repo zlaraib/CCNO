@@ -2,6 +2,7 @@ using ITensors
 using Plots 
 using Measures 
 using LinearAlgebra
+using Base.Threads
 include("../src/evolution.jl")
 include("../src/constants.jl")
 
