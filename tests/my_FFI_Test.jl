@@ -5,28 +5,28 @@ using LinearAlgebra
 using DelimitedFiles
 using Statistics
 
-#Needs revision
-
 include("main_self_interaction.jl")
-include("../src/constants")
-# dk what bipolar osc time is in the test
-""" Richers(2021) Test 2 initial conditions: """
-N_sites_eachflavor= 1 # total sites/particles that evenly spaced "for each (electron) flavor" 
+include("../src/constants.jl")
+
+""" My initial conditions""" 
+N_sites_eachflavor= 3 # total sites/particles that evenly spaced "for each (electron) flavor" 
 N_sites = 2* (N_sites_eachflavor) # total particles/sites for all neutrino and anti neutrino electron flavored
-τ = 2E-13 # time step to include 50 steps every 10 picoseconds # sec # variable
-ttotal = 9E-11 # total time of evolution # sec #variable
+τ = 5e-12 # time step # sec # variable
+ttotal = 1e-9 # total time of evolution # sec #variable
 tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution #variable
 m1 = 8.6e3 #eV  1st mass eigenstate of neutrino
 m2 = 0 #eV  2nd mass eigenstate of neutrino
-#Δm² = (m2^2-m1^2) # mass square difference # (erg^2) #not used in the test
-#add other parameters like charcteristic bipolar time and H neu/ H vac =10  ...?
+Δm² = (m2^2-m1^2) # mass square difference # (erg^2)
 maxdim = 1 # max bond dimension in MPS truncation
 cutoff = 0 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT) #variable
 L = 1 # cm # domain size # (aka big box length)
-n_νₑ =  (10* (m2-m1)^2 *c^4)/(2*√2*G_F*Eνₑ) # cm^-3 # number density of electron flavor neutrino
-n_νₑ̄ =  n_νₑ # cm^-3 # number density of electron flavor antineutrino
+n_νₑ =  4.891290848285061e+32 # cm^-3 # number density of electron flavor neutrino
+n_νₑ̄ =  4.891290848285061e+32 # cm^-3 # number density of electron flavor antineutrino
 Eνₑ =  50.0e6 # energy of all neutrinos (P.S the its negative is energy of all antineutrinos)
-Eνₑ̄ = -1 * Eνₑ # specific to my case only. Since all neutrinos have same energy, except in my case anti neutrinos are moving in opposite direction to give it a negative sign
+Eνₑ̄ = -1* Eνₑ # specific to my case only. Since all neutrinos have same energy, except in my case anti neutrinos are moving in opposite direction to give it a negative sign
+B_pert = [0.02, -0.02, 1] # Create a B vector that allows for perturbation to inital state in different directions #variable 
+theta_nu = 10e-6 # mixing_angle
+B = [sin(2*theta_nu), 0, -cos(2*theta_nu)] # actual b vector that activates the vacuum oscillation term in Hamiltonian
 #Select a shape function based on the shape_name variable form the list defined in dictionary in shape_func file
 shape_name = "triangular"  # Change this to the desired shape name #variable 
 Δp = 1/N_sites_eachflavor # width of shape function  # cm #variable
