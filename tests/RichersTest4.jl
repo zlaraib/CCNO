@@ -16,7 +16,7 @@ ttotal = 9E-11 # total time of evolution # sec #variable
 tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution #variable
 m1 = 8.6e3 #eV  1st mass eigenstate of neutrino
 m2 = 0 #eV  2nd mass eigenstate of neutrino
-Δm² = 0 # mass square difference # fixed for 'only' self interactions # (erg^2)
+Δm² = (m2^2-m1^2) # mass square difference # (erg^2)
 maxdim = 1 # max bond dimension in MPS truncation
 cutoff = 0 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT) #variable
 L = 1 # cm # domain size # (aka big box length)
