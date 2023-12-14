@@ -1,0 +1,56 @@
+\documentclass{article}
+\usepackage{amsmath}
+
+
+\title{Oscillatrino Test Definitions}
+
+\begin{document}
+
+\section{Shape Function}
+
+There are currently two options for the shape function. The choice of shape function will return a variable ``{\tt shape\_result}'', which contains the weighting based on the distance between two particles.
+
+\begin{equation}
+  asdf
+\end{equation}
+
+\begin{itemize}
+  \item {\tt ``none''} : {\tt shape\_result = 1}
+  \item {\tt ``flat\_top''} : {\tt shape\_result} $= \frac{1}{\Delta p} \Theta(0.5-|\xi|)$
+    \item {\tt ``triangular''} : {\tt shape\_result} $= \frac{1}{\Delta p} (1-|\xi|)\Theta(1-|\xi|)$
+\end{itemize}
+
+\section{Vacuum}
+
+\section{Roggero}
+
+% HOMOGENEOUS FFI %
+\section{Homogeneous FFI}
+The goal of this test is to reproduce the results of ``Particle-in-Cell Simulation of the Neutrino Fast Flavor Instability'' Figure 14.
+
+Parameters used in the Emu test:
+\begin{itemize}
+\item $L_x=L_y=L_z=10^7\,\mathrm{cm}$
+\item CFL factor = 0.5. This means $\Delta t = 0.5 \frac{\Delta x}{c}$ or $\Delta t = 1.666 \times10^{-4}\,\mathrm{s}$.
+\item One neutrino particle and one antineutrino particle.
+\item Periodic boundary conditions
+\item Run 100 steps
+\item Matter density $\rho=0$
+\item Two neutrino flavors
+\item shape function width: $\Delta p=L=10^7\,\mathrm{cm}$
+\item $\theta_{12}=10^{-6 \circ}$
+\item $m_1 = -0.008596511\,\mathrm{eV}$ \textbf{CHECK THE SIGN}
+\item $m_2 = 0$
+\item $n_{\nu_e}=(m_2^2-m_1^2) c^4/ (4 \sqrt{2} G_F h\nu)=2.92 \times10^{24}\,\mathrm{cm}^{-3}$, meaning $N=n_{\nu_e}V=2.92\times10^{45}$ for the electron neutrino particle
+\item $n_{\bar{\nu}_e} = n_{\nu_e}$
+\item $h\nu=50\,\mathrm{MeV}$
+\item $\hat{p}_{\nu_e} = \hat{z}$
+\item $\hat{p}_{\bar{\nu}_e} = -\hat{z}$
+\item $x_i = L_i/2$ where $i\in{x,y,z}$
+\end{itemize}
+
+The test asserts that the growth rate measured from timestep 50 to timestep 70 is equal to $\Im(\Omega)=(m_2^2-m_1^2)c^4/(2 h\nu \hbar)=1123\,\mathrm{s}^{-1}$ within 2\%.
+
+\section{Inhomogeneous FFI}
+
+\end{document}
