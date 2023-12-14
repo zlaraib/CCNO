@@ -62,7 +62,7 @@ function evolve(s, τ, N, B,L, N_sites, Δx, Δm², p, x, Δp, ψ, shape_name, e
             end
         end
         
-        if all(B[i] != 0 for i in 1:3) #specfic to the perturbation vector in my self-interaction file 
+        if shape_name!=="none" #specfic to the inhomogenous case Test4
             # compute the avg expectation value of Sz at all sites
             sz_tot = expect(ψ, "Sz")
             sz = mean(sz_tot)
@@ -72,7 +72,7 @@ function evolve(s, τ, N, B,L, N_sites, Δx, Δm², p, x, Δp, ψ, shape_name, e
         end 
 
         # compute expectation value of sy and sx using S+ and S- (inbuilt operator in ITensors library) at the first site on the chain
-        if p == zeros(N_sites, 3) #for rogerro's case only
+        if p == zeros(N_sites, 3) #for rogerro's case only (b/c S+ S- needed to keep conservation of QN number)
             sy = -0.5 *im * (expect(complex(ψ), "S+"; sites=1) - expect(complex(ψ), "S-"; sites=1)) #re-check
             sx = 0.5 * (expect(ψ, "S+"; sites=1) + expect(ψ, "S-"; sites=1)) #recheck
         else 
@@ -91,12 +91,14 @@ function evolve(s, τ, N, B,L, N_sites, Δx, Δm², p, x, Δp, ψ, shape_name, e
         # add an element prob_surv to the end of  prob_surv_array 
         push!(prob_surv_array, prob_surv)
 
-        if B[1] != 0
-            println("$t $sz")
-        else 
-            println("$t $prob_surv")
-        end
-
+        #figure out alternative to this ifelse statement
+        # if B[1] != 0
+        #     println("$t $sz")
+        # else 
+        #     println("$t $prob_surv")
+        # end
+        
+        println("$t $sz")
         # Writing an if statement in a shorthand way that checks whether the current value of t is equal to ttotal, 
         # and if so, it executes the break statement, which causes the loop to terminate early.
         t ≈ ttotal && break
