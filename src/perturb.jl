@@ -29,8 +29,8 @@ function create_perturbation_gates(s, B, N_sites, τ)
     gates = ITensor[] 
 
     # define an array of oscillation frequencies (units of ergs) of perturbation
-    ω = fill(π/8, N_sites) 
-    println("perturb_ω = ", ω)
+    ω_pert = fill(π/8, N_sites) 
+    println("perturb_ω = ", ω_pert)
 
     for i in 1:(N_sites-1)
         for j in i+1:N_sites
@@ -73,7 +73,7 @@ function evolve_perturbation(s, τ, B, N_sites, ψ, cutoff, maxdim, ttotal)
     perturb_gates = create_perturbation_gates(s, B, N_sites, τ)
 
      # Compute and print survival probability (found from <Sz>) at each time step then apply the gates to go to the next time
-     for t in 0.0:τ:ttotal
+     for t in 0.0:τ:ttotal #perhaps not perturn till the end? stop somewhere in the mid 
 
         # Writing an if statement in a shorthand way that checks whether the current value of t is equal to ttotal, 
         # and if so, it executes the break statement, which causes the loop to terminate early.
