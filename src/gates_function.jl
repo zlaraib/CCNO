@@ -37,7 +37,7 @@ function create_gates(s, N, B, N_sites, Δx, Δm², p, x, Δp, shape_name,L, τ,
     p_mod, p̂ = momentum(p,N_sites)  
     
     # define an array of vacuum oscillation frequencies (units of ergs)
-    if Δm² == 0
+    if Δm² == 0 #specific to self-int only
         ω = zeros(N_sites)
     elseif Δm² == 2 * π
        global ω = fill(π, N_sites) # added global so we can access and use this global variable without the need to pass them as arguments to another function

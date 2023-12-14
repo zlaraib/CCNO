@@ -9,6 +9,7 @@ p_mod = [] #Initialize array that contains mod of all sites
 
     if p ==  ones(N_sites,3)
       p[i, :] /= norm(p[i, :]) # Normalize each site of p to have magnitude 1. # special addition for this omega = pi case
+      # check if this needs to be obeyed for FFI test
     end 
 
     # mod = norm in julia. # The norm returns the magnitude of the vector (by default)
