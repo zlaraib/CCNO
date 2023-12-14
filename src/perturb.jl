@@ -46,9 +46,9 @@ function create_perturbation_gates(s, B, N_sites, τ)
 
             # add perturbation via one-body oscillation term to the Hamiltonian
             hj = (1/(N_sites-1))* 
-            ((ω[i] * B[1] * op("Sx", s_i)* op("Id", s_j))  + (ω[j] * B[1] * op("Sx", s_j) * op("Id", s_i))) + 
-            ((ω[i] * B[2] * op("Sy", s_i)* op("Id", s_j))  + (ω[j] * B[2] * op("Sy", s_j) * op("Id", s_i))) +
-            ((ω[i] * B[3] * op("Sz", s_i)* op("Id", s_j))  + (ω[j] * B[3] * op("Sz", s_j) * op("Id", s_i))) 
+            ((ω_pert[i] * B[1] * op("Sx", s_i)* op("Id", s_j))  + (ω_pert[j] * B[1] * op("Sx", s_j) * op("Id", s_i))) + 
+            ((ω_pert[i] * B[2] * op("Sy", s_i)* op("Id", s_j))  + (ω_pert[j] * B[2] * op("Sy", s_j) * op("Id", s_i))) +
+            ((ω_pert[i] * B[3] * op("Sz", s_i)* op("Id", s_j))  + (ω_pert[j] * B[3] * op("Sz", s_j) * op("Id", s_i))) 
 
             # make Trotter gate Gj that would correspond to each gate in the gate array of ITensors             
             Gj = exp(-im * τ/2 * hj)
