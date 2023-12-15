@@ -37,7 +37,11 @@ function shape_func(x, Δp, i, j,L, shape_name, periodic)
             if x[i] - x[j] < -L/2
                 ξ = ξ + L/Δp 
             end
-            @assert (2*Δp <L)
+
+            if shape_name == "none"
+                @assert (Δp == L)
+            else @assert (2*Δp <L)
+            end
             @assert (abs(ξ)<= L/(2* Δp))
         end
 
