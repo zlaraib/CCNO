@@ -51,7 +51,7 @@ function evolve(s, τ, N, B,L, N_sites, Δx, Δm², p, x, Δp, ψ, shape_name, e
         px = p[:, 1]  # Extracting the first column (which corresponds to px values)
         push!(pₓ_values, copy(px)) # Record px values at each time step
 
-        for i in eachindex(x)
+        for i in 1:N_sites
             x[i] += p̂ₓ[i] * c * τ
             if periodic
                 # wrap around position from 0 to domain size L
