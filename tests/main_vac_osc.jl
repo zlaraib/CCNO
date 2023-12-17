@@ -13,16 +13,14 @@ include("../src/momentum.jl")
 # which is a product state where each site alternates between up and down.
 
 function main()
-  N_sites = 4 # number of sites, #variable
+  N_sites = 6 # number of sites, #variable
   cutoff = 1E-14 # specifies a truncation threshold for the SVD in MPS representation #variable
   τ = 0.1 # time step # sec #variable
   ttotal = 5.0 # total time of evolution #sec #variable
   Δx = 1E-3 # length of the box of interacting neutrinos at a site in cm #variable
   tolerance  = 1E-5 # acceptable level of error or deviation from the exact value or solution #variable
-  Δp = 1/4 # shape function width # cm #variable
   Δm² = 2*π # Fixed for this vacuum oscillation case for omega =pi. dont change it to keep consistent results. 
   maxdim = 1 # max bond dimension in MPS truncation
-  L = 1 # cm # domain size # (aka big box length)
 
   # Make an array of 'site' indices and label as s 
   # conserve_qns=false doesnt conserve the total spin quantum number "S"(in z direction) in the system as it evolves
