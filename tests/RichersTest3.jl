@@ -27,27 +27,28 @@ n_νₑ =  2.92e24 # cm^-3 # number density of electron flavor neutrino
 n_νₑ̄ =  n_νₑ # cm^-3 # number density of electron flavor antineutrino
 Eνₑ =  50*MeV # energy of all neutrinos (P.S the its negative is energy of all antineutrinos)
 Eνₑ̄ = -1 * Eνₑ # specific to my case only. Since all neutrinos have same energy, except in my case anti neutrinos are moving in opposite direction to give it a negative sign
-B_pert = [0.02, -0.02 ,1] # Create a B vector that allows for perturbation to inital state in different directions #variable 
-# # Function to generate B_pert
-# function generate_B_pert()
-#     # Initialize Random Number Generator
-#     rng = MersenneTwister()
+α = 1e-6 # perturbation strength as mentioned in the paper
+#B_pert = α  * [0.02, -0.02 ,1] # Create a B vector that allows for perturbation to inital state in different directions #variable 
 
-#     # Randomly generate x and y such that x^2 + y^2 < 1
-#     x, y = rand(rng, 0:0.0001:1), rand(rng, 0:0.0001:1)
-#     while x^2 + y^2 >= 1
-#         x, y = rand(rng, 0:0.0001:1), rand(rng, 0:0.0001:1)
-#     end
+function generate_B_pert(α)
+    # Generate two random perturbations for x and y
+    x_pert = α * (2 * rand() - 1)  # Random number between -α and α
+    y_pert = α * (2 * rand() - 1)  # Random number between -α and α
 
-#     # Calculate z to ensure the norm of B_pert is 1
-#     z = sqrt(1 - x^2 - y^2)
+    # Calculate the z component to maintain normalization
+    z_pert = sqrt(max(0, 1 - x_pert^2 - y_pert^2))
 
-#     # Return the B_pert vector
-#     return [x, y, z]
-# end
+    # Return the B_pert vector
+    return [x_pert, y_pert, z_pert]
+end
 
-# # Generate the B_pert vector
-# B_pert = generate_B_pert()
+α = 1e-6 # perturbation strength as mentioned in the paper
+# Generate the perturbed B vector scaled by α  as mentioned in the paper
+B_pert = generate_B_pert(α)
+
+# Since the perturbation is small, B_pert should already be normalized, but you can normalize again for precision
+B_pert = B_pert / norm(B_pert)
+println(B_pert)  
 theta_nu = 1.74532925E-8  #1e-6 degrees # mixing_angle # = 1.74532925E-8 radians 
 B = [sin(2 * theta_nu), 0, -cos(2 * theta_nu)]  # actual b vector that activates the vacuum oscillation term in Hamiltonian
 B = B / norm(B)
