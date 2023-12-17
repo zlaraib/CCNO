@@ -7,14 +7,29 @@ include("../src/constants.jl")
 function main(Δω)
     N= 4
     cutoff = 1E-14
-    τ = 0.05
-    ttotal = 20
+    τ = 0.005
+    ttotal = 10
     tolerance  = 5E-1
     Δx = 1E-3
+    if Δω==-0.5
+        a_t = 0
+        b_t = 0
+        c_t = 1.82
+    end
     if Δω==0.0
         a_t = 0.0
         b_t = 2.105
         c_t = 0
+    end
+    if Δω==0.05
+        a_t = 2.586
+        b_t = 0
+        c_t = 0
+    end
+    if Δω==0.125
+        a_t = 1.656
+        b_t = 0
+        c_t = 1.42
     end
     if Δω==0.25
         a_t = 1.224
@@ -25,6 +40,11 @@ function main(Δω)
         a_t = 1.064
         b_t = 0
         c_t = 1.42
+    end
+    if Δω==1.0
+        a_t = 0.965
+        b_t = 0
+        c_t = 0
     end
 
     s = siteinds("S=1/2", N; conserve_qns=false)
@@ -64,7 +84,7 @@ function main(Δω)
 end
 
 # Arrays to store t_p_Rog and t_min for each Δω
-Δω_values = [0.0, 0.25, 0.5]
+Δω_values = [-0.5, 0.0,0.05,0.125, 0.25, 0.5,1.0]
 t_p_Rog_array = Float64[]
 t_min_array = Float64[]
 
@@ -75,6 +95,6 @@ for Δω in Δω_values
 end
 
 # Create the plot
-plot(Δω_values, t_p_Rog_array, label="t_p_Rog", xlabel="Δω", ylabel="Minimum Time(t_p)", title="Running t_p_vs_delta_w_for_symmetric_w_a_and_w_b_using_N_4 script", aspect_ratio=:auto,margin= 10mm)
+plot(Δω_values, t_p_Rog_array, label="t_p_Rog", xlabel="Δω", ylabel="Minimum Time(t_p)", title="Running\n t_p_vs_delta_w_for_symmetric_w_a_and_w_b\n _using_N_4\n script", aspect_ratio=:auto,margin= 10mm)
 plot!(Δω_values, t_min_array, label="t_min")
 savefig("t_p_vs_delta_w_for_symmetric_w_a_and_w_b_using_N_4.pdf")
