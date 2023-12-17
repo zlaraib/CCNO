@@ -53,10 +53,6 @@ function create_gates(s, N, B, N_sites, Δx, Δm², p, x, Δp, shape_name,L, τ,
             s_j = s[j]
             # assert B vector to have a magnitude of 1 while preserving its direction.
             @assert norm(B) == 1
-            # Get the shape function result for each pair of i and j 
-            shape_result = shape_func(x, Δp, i, j,L, shape_name, periodic)
-            # Calculate the geometric factor for each pair of i and j within the loop
-            geometric_factor = geometric_func(p, p̂, i, j)
 
             # Our neutrino system Hamiltonian of self-interaction term represents 1D Heisenberg model.
             # total Hamiltonian of the system is a sum of local terms hj, where hj acts on sites i and j which are paired for gates to latch onto.
@@ -64,27 +60,42 @@ function create_gates(s, N, B, N_sites, Δx, Δm², p, x, Δp, shape_name,L, τ,
             # ni and nj are the neutrions at site i and j respectively.
             # mu pairs divided by 2 to avoid double counting
             
-            interaction_strength = (2.0* √2 * G_F * (N[i]+ N[j])/(2*((Δx)^3))) * shape_result * geometric_factor
             if energy_sign[i]*energy_sign[j]>0
+                # Get the shape function result for each pair of i and j 
+                shape_result = shape_func(x, Δp, i, j,L, shape_name, periodic)
+                # Calculate the geometric factor for each pair of i and j within the loop
+                geometric_factor = geometric_func(p, p̂, i, j)
+                interaction_strength = (2.0* √2 * G_F * (N[i]+ N[j])/(2*((Δx)^3))) * shape_result * geometric_factor
                 hj = interaction_strength *
                 (op("Sz", s_i) * op("Sz", s_j) +
                 1/2 * op("S+", s_i) * op("S-", s_j) +
                 1/2 * op("S-", s_i) * op("S+", s_j))
             else
+                # Get the shape function result for each pair of i and j 
+                shape_result = shape_func(x, Δp, i, j,L, shape_name, periodic)
+                # Calculate the geometric factor for each pair of i and j within the loop
+                geometric_factor = geometric_func(p, p̂, i, j)
+                interaction_strength = (2.0* √2 * G_F * (N[i]+ N[j])/(2*((Δx)^3))) * shape_result * geometric_factor
                 hj = - interaction_strength * 
                 ((-2 *op("Sz",s_i) * op("Sz",s_j)) + 
                 op("S+", s_i) * op("S-", s_j) +
                 op("S-", s_i) * op("S+", s_j))
             end
             # add vacuum oscillation term to the Hamiltonian
-             if ω[i] != 0 && ω[j] != 0
-                hj += (1/(N_sites-1))* 
-                ((ω[i] * B[1] * op("Sx", s_i)* op("Id", s_j))  + (ω[j] * B[1] * op("Sx", s_j) * op("Id", s_i))) + 
-                ((ω[i] * B[2] * op("Sy", s_i)* op("Id", s_j))  + (ω[j] * B[2] * op("Sy", s_j) * op("Id", s_i))) +
-                ((ω[i] * B[3] * op("Sz", s_i)* op("Id", s_j))  + (ω[j] * B[3] * op("Sz", s_j) * op("Id", s_i))) 
+            #  if ω[i] != 0 && ω[j] != 0
+            #     hj += (1/(N_sites-1))* 
+            #     ((ω[i] * B[1] * op("Sx", s_i)* op("Id", s_j))  + (ω[j] * B[1] * op("Sx", s_j) * op("Id", s_i))) + 
+            #     ((ω[i] * B[2] * op("Sy", s_i)* op("Id", s_j))  + (ω[j] * B[2] * op("Sy", s_j) * op("Id", s_i))) +
+            #     ((ω[i] * B[3] * op("Sz", s_i)* op("Id", s_j))  + (ω[j] * B[3] * op("Sz", s_j) * op("Id", s_i))) 
                      
-             end
-            
+            #  end
+            if ω[i] != 0 && ω[j] != 0
+                hj += (1/(N_sites-1))* (
+                    (ω[i] * B[1] * op("Sx", s_i)* op("Id", s_j))  + (ω[i] * B[2] * op("Sy", s_i)* op("Id", s_j))  + (ω[i] * B[3] * op("Sz", s_i)* op("Id", s_j)) )
+                hj += (1/(N_sites-1))* (
+                    (ω[j] * B[1] * op("Id", s_i) * op("Sx", s_j)) + (ω[j] * B[2]  * op("Id", s_i)* op("Sy", s_j)) + (ω[j] * B[3]  * op("Id", s_i)* op("Sz", s_j)) )
+            end
+
             # make Trotter gate Gj that would correspond to each gate in the gate array of ITensors             
             Gj = exp(-im * τ/2 * hj)
             # has_fermion_string(hj) = true
