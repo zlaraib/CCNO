@@ -29,7 +29,7 @@ function create_perturbation_gates(s, B, N_sites, τ)
     gates = ITensor[] 
 
     # define an array of oscillation frequencies (units of ergs) of perturbation
-    ω_pert = fill(π/8, N_sites) 
+    ω_pert = fill((π*10^(-12))/8, N_sites) 
     println("perturb_ω = ", ω_pert)
 
     for i in 1:(N_sites-1)
@@ -39,17 +39,24 @@ function create_perturbation_gates(s, B, N_sites, τ)
             s_j = s[j]
             # assert B vector to have a magnitude of 1 while preserving its direction.
             @assert norm(B) == 1
-
-            
             # total Hamiltonian of the system is a sum of local terms hj, where hj acts on sites i and j which are paired for gates to latch onto.
             # op function returns these operators as ITensors and we tensor product and add them together to compute the operator hj.
 
             # add perturbation via one-body oscillation term to the Hamiltonian
-            hj = (1/(N_sites-1))* 
-            ((ω_pert[i] * B[1] * op("Sx", s_i)* op("Id", s_j))  + (ω_pert[j] * B[1] * op("Sx", s_j) * op("Id", s_i))) + 
-            ((ω_pert[i] * B[2] * op("Sy", s_i)* op("Id", s_j))  + (ω_pert[j] * B[2] * op("Sy", s_j) * op("Id", s_i))) +
-            ((ω_pert[i] * B[3] * op("Sz", s_i)* op("Id", s_j))  + (ω_pert[j] * B[3] * op("Sz", s_j) * op("Id", s_i))) 
+            # hj = (1/(N_sites-1))* (
+            # ((ω_pert[i] * B[1] * op("Sx", s_i)* op("Id", s_j))  + (ω_pert[j] * B[1] * op("Sx", s_j) * op("Id", s_i))) + 
+            # ((ω_pert[i] * B[2] * op("Sy", s_i)* op("Id", s_j))  + (ω_pert[j] * B[2] * op("Sy", s_j) * op("Id", s_i))) +
+            # ((ω_pert[i] * B[3] * op("Sz", s_i)* op("Id", s_j))  + (ω_pert[j] * B[3] * op("Sz", s_j) * op("Id", s_i))) 
+            # )
+            hj1 = (1/(N_sites-1))* (
+                (ω_pert[i] * B[1] * op("Sx", s_i)* op("Id", s_j))  + (ω_pert[i] * B[2] * op("Sy", s_i)* op("Id", s_j))  + (ω_pert[i] * B[3] * op("Sz", s_i)* op("Id", s_j)) )
+                println("hj1= ", hj1) 
+            hj2 = (1/(N_sites-1))* (
+                (ω_pert[j] * B[1] * op("Id", s_i) * op("Sx", s_j)) + (ω_pert[j] * B[2]  * op("Id", s_i)* op("Sy", s_j)) + (ω_pert[j] * B[3]  * op("Id", s_i)* op("Sz", s_j)) )
+                println("hj2= ", hj2)
+            hj= hj1 + hj2
 
+            #println("hj= ", hj)
             # make Trotter gate Gj that would correspond to each gate in the gate array of ITensors             
             Gj = exp(-im * τ/2 * hj)
 
@@ -57,12 +64,14 @@ function create_perturbation_gates(s, B, N_sites, τ)
             # ! performs an operation without creating a new object, (in a way overwites the previous array in consideration); 
             # i.e. we append a new element Gj (which is an ITensor object representing a gate) to the end of the gates array.
             push!(gates, Gj)
+            #println("perturb_gates= ", gates)
         end
     end
 
     # append! adds all the elements of a gates in reverse order (i.e. (N,N-1),(N-1,N-2),...) to the end of gates array.
     # appending reverse gates to create a second-order Trotter-Suzuki integration
     append!(gates, reverse(gates))
+    #println(gates)
     return gates
 end
 
