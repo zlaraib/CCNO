@@ -118,10 +118,6 @@ function main(N_sites_eachflavor,τ,ttotal,tolerance,Δm²,maxdim,cutoff,x, p, �
     N_2 = fill(N_νₑ̄/ (N_sites ÷ 2), N_sites ÷ 2)
     N = vcat(N_1, N_2) # This is the total number of neutrinos. 
 
-    # Normalize B_pert to have a norm of 1
-    B_pert = B_pert / norm(B_pert)
-
-
     # Perturb the state via one-body Hamiltonian
     ψ₀= evolve_perturbation(s, τ, B_pert, N_sites, ψ, cutoff, maxdim, ttotal)
     
