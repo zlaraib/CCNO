@@ -40,9 +40,9 @@ function create_gates(s, N, B, N_sites, Δx, Δm², p, x, Δp, shape_name,L, τ,
     if Δm² == 0 #specific to self-int only
         ω = zeros(N_sites)
     elseif Δm² == 2 * π
-       global ω = fill(π, N_sites) # added global so we can access and use this global variable without the need to pass them as arguments to another function
+       ω = fill(π, N_sites) # added global so we can access and use this global variable without the need to pass them as arguments to another function
     else
-        global ω = [Δm²/ (2 * p_i_mod) for p_i_mod in p_mod]
+        ω = [Δm²/ (2 * p_i_mod) for p_i_mod in p_mod]
     end
     println("ω = ", ω)
 
@@ -70,6 +70,7 @@ function create_gates(s, N, B, N_sites, Δx, Δm², p, x, Δp, shape_name,L, τ,
                 (op("Sz", s_i) * op("Sz", s_j) +
                 1/2 * op("S+", s_i) * op("S-", s_j) +
                 1/2 * op("S-", s_i) * op("S+", s_j))
+                println("hj= ", hj)
             else
                 # Get the shape function result for each pair of i and j 
                 shape_result = shape_func(x, Δp, i, j,L, shape_name, periodic)
@@ -80,6 +81,7 @@ function create_gates(s, N, B, N_sites, Δx, Δm², p, x, Δp, shape_name,L, τ,
                 ((-2 *op("Sz",s_i) * op("Sz",s_j)) + 
                 op("S+", s_i) * op("S-", s_j) +
                 op("S-", s_i) * op("S+", s_j))
+                println("hj= ", hj)
             end
             # add vacuum oscillation term to the Hamiltonian
             #  if ω[i] != 0 && ω[j] != 0
@@ -92,13 +94,15 @@ function create_gates(s, N, B, N_sites, Δx, Δm², p, x, Δp, shape_name,L, τ,
             if ω[i] != 0 && ω[j] != 0
                 hj += (1/(N_sites-1))* (
                     (ω[i] * B[1] * op("Sx", s_i)* op("Id", s_j))  + (ω[i] * B[2] * op("Sy", s_i)* op("Id", s_j))  + (ω[i] * B[3] * op("Sz", s_i)* op("Id", s_j)) )
-                hj += (1/(N_sites-1))* (
+                    println("hj= ", hj)
+                    hj += (1/(N_sites-1))* (
                     (ω[j] * B[1] * op("Id", s_i) * op("Sx", s_j)) + (ω[j] * B[2]  * op("Id", s_i)* op("Sy", s_j)) + (ω[j] * B[3]  * op("Id", s_i)* op("Sz", s_j)) )
+                    println("hj= ", hj)
             end
 
             # make Trotter gate Gj that would correspond to each gate in the gate array of ITensors             
             Gj = exp(-im * τ/2 * hj)
-            # has_fermion_string(hj) = true
+            println("Gj= ",Gj)
             # The push! function adds (appends) an element to the end of an array;
             # ! performs an operation without creating a new object, (in a way overwites the previous array in consideration); 
             # i.e. we append a new element Gj (which is an ITensor object representing a gate) to the end of the gates array.
