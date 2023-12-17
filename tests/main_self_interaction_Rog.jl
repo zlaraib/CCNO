@@ -17,10 +17,8 @@ function main()
     ttotal = 5 # total time of evolution #sec # variable.
     tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution # variable.
     Δx = 1E-3 # length of the box of interacting neutrinos at a site in cm  # variable.
-    Δp = 1/4 # shape function width #cm # fixed to be between 0-0-5 to stay cinsistent with all test files.
     Δm²= 0.0 # erg^2 # Fixed for rog test case. Please dont play with it. 
     maxdim = 4 # max bond dimension in MPS truncation
-    L = 1 # cm # domain size # (aka big box length)
     periodic = false  # true = imposes periodic boundary conditions while false doesn't
     # s is an array of spin 1/2 tensor indices (Index objects) which will be the site or physical indices of the MPS.
     # We overload siteinds function, which generates custom Index array with Index objects having the tag of total spin quantum number for all N.
