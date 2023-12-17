@@ -22,10 +22,10 @@
 
     # This file generates the evolve function which uses particles confined in a domain and tracks the particles displacement in time for a certain boundary condition
 
-    N_sites = 6  # number of sites # variable
-    L = 1.0 # cm # domain size # (aka big box length)
-    τ = 5e-11 # time step # sec # variable
-    ttotal = 1e-9 # total time of evolution # sec #variable
+    N_sites = 4  # number of sites # variable
+    L = 1e7 # cm # domain size # (aka big box length)
+    τ = 1.66e-4 # time step to include 50 steps every 10 picoseconds # sec # variable
+    ttotal = 1.66e-2 # total time of evolution # sec #variable
     periodic = true # true = imposes periodic boundary conditions while false doesn't
     neutrino_energy =  50.0e6 # energy of all neutrinos (P.S the its negative is energy of all antineutrinos)
     antineutrino_energy = -1 * neutrino_energy # specific to my case only. Since all neutrinos have same energy, except in my case anti neutrinos are moving in opposite direction to give it a negative sign
@@ -47,13 +47,20 @@
     println("Initial positions of the particles=",x)
 
 
-    function generate_p_array(N_sites)
+    function generate_px_array(N_sites)
         half_N_sites = div(N_sites, 2)
         return [fill(neutrino_energy, half_N_sites); fill(antineutrino_energy, half_N_sites)]
     end
 
+    function generate_py_array(N_sites)                                                                                                                                                                                   
+        return [fill(0, N_sites)]
+    end
+    
+    function generate_pz_array(N_sites)                                                                                                                                                                                   
+        return [fill(0, N_sites)]
+    end
     # p matrix with numbers generated from the p_array for all components (x, y, z)
-    p = hcat(generate_p_array(N_sites), generate_p_array(N_sites), generate_p_array(N_sites))
+    p = hcat(generate_px_array(N_sites), generate_py_array(N_sites), generate_pz_array(N_sites))
     println("Initial p_vector of all particles=",p)
 
 function evolve(τ, L, N_sites, p, x, ttotal,periodic)
