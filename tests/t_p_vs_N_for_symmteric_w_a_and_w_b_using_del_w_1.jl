@@ -54,16 +54,14 @@ t_p_Rog_array = Float64[]
 t_min_array = Float64[]
 Δω = 1
 
-
-
-# Loop from 4 to 12 particles with an increment of 4 particles each time
-for N in 4:4:12
+# Loop from 4 to 25 particles with an increment of 4 particles each time
+for N in 4:4:25
     t_p_Rog, t_min = @time main(N, Δω)
     push!(t_p_Rog_array, t_p_Rog)
     push!(t_min_array, t_min)
 end
 
 # Create the plot
-plot(4:4:12, t_p_Rog_array, label="t_p_Rog", xlabel="N", ylabel="Minimum Time(t_p)", title = "Running t_p_vs_N_for_symmetric_w_a_and_w_b_using_del_w_1 script", aspect_ratio=:auto,margin= 10mm)
-plot!(4:4:12, t_min_array, label="t_min")
+plot(4:4:25, t_p_Rog_array, label="t_p_Rog", xlabel="N", ylabel="Minimum Time(t_p)", title = "Running t_p_vs_N_\n for_symmetric_w_a_and_w_b_\n using_del_w_1 script", aspect_ratio=:auto,margin= 10mm)
+plot!(4:4:25, t_min_array, label="t_min")
 savefig("t_p_vs_N_for_symmetric_w_a_and_w_b_using_del_w_1.pdf")
