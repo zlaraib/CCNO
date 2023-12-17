@@ -29,7 +29,7 @@ function create_perturbation_gates(s, B, N_sites, τ)
     gates = ITensor[] 
 
     # define an array of oscillation frequencies (units of ergs) of perturbation
-    ω_pert = fill((π*10^(-12))/8, N_sites) 
+    ω_pert = fill(π/8, N_sites) 
     println("perturb_ω = ", ω_pert)
 
     for i in 1:(N_sites-1)
