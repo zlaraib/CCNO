@@ -37,6 +37,8 @@ function evolve(s, τ, N, B,L, N_sites, Δx, Δm², p, x, Δp, ψ, shape_name, e
     prob_surv_array = Float64[]   # to store survival probability values 
     x_values = []  # to store x values for all sites 
     pₓ_values = [] # to store px vector values for all sites
+    ρₑₑ_array = Float64[] # to store ρₑₑ values
+    ρ_μμ_array = Float64[] # to store ρ_μμ values
 
     # extract the gates array generated in the gates_function file
     gates = create_gates(s, N, B, N_sites, Δx, Δm², p, x, Δp, shape_name,L, τ, energy_sign,periodic)
@@ -97,8 +99,14 @@ function evolve(s, τ, N, B,L, N_sites, Δx, Δm², p, x, Δp, ψ, shape_name, e
         # else 
         #     println("$t $prob_surv")
         # end
-        
         println("$t $sz")
+        
+        # recall that in our code sigma_z = 2*Sz so make sure these expressions are consistent with "Sz in ITensors" 
+        ρₑₑ = ( (2 * sz) + 1)/2 
+        push!(ρₑₑ_array,ρₑₑ)
+        ρ_μμ = ( (-2 * sz) + 1)/2 
+        push!(ρ_μμ_array,ρ_μμ)
+
         # Writing an if statement in a shorthand way that checks whether the current value of t is equal to ttotal, 
         # and if so, it executes the break statement, which causes the loop to terminate early.
         t ≈ ttotal && break
@@ -114,9 +122,6 @@ function evolve(s, τ, N, B,L, N_sites, Δx, Δm², p, x, Δp, ψ, shape_name, e
         normalize!(ψ)
     end
     t_array = 0.0:τ:ttotal
-    # recall that in our code sigma_z = 2*Sz so make sure these expressions are consistent with "Sz in ITensors" 
-    ρₑₑ_array = ( (2 * Sz_array) .+ 1)/2 
-    ρ_μμ_array = ( (-2 * Sz_array) .+ 1)/2 
 
     # Writing data to files with corresponding headers
     fname1 = joinpath(datadir, "t_<Sz>_<Sy>_<Sx>.dat")
