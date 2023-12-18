@@ -48,7 +48,8 @@ function main(N, Δω)
     println("Corresponding time of first minimum index= ", t_min)
     t_p_Rog = a_t*log(N) + b_t * sqrt(N) + c_t
     println("t_p_Rog= ",t_p_Rog)
-
+    # Check that our time of first minimum survival probability compared to Rogerro(2021) remains within the timestep and tolerance.
+    @assert abs(t_min - t_p_Rog) <  τ + tolerance 
     return t_p_Rog, t_min
 end
 

@@ -46,7 +46,8 @@ function main(N)
     println("Corresponding time of first minimum index= ", t_min)
     t_p_Rog = a_t*log(N) + b_t * sqrt(N) + c_t
     println("t_p_Rog= ",t_p_Rog)
-
+    # Check that our time of first minimum survival probability compared to Rogerro(2021) remains within the timestep and tolerance.
+    @assert abs(t_min - t_p_Rog) <  τ + tolerance 
     return t_p_Rog, t_min
 end
 
@@ -62,6 +63,6 @@ for N in N_start: N_step:N_stop
 end
 
 # Create the plot
-plot(N_start: N_step:N_stop, t_p_Rog_array, label="t_p_Rog", xlabel="N", ylabel="Minimum Time (t_p)", title = "Running t_p_vs_N\n _for_w_a_2_w_b_0_\n using_del_w_1 script", aspect_ratio=:auto,margin= 10mm)
+plot(N_start: N_step:N_stop, t_p_Rog_array, label="t_p_Rog", xlabel="N", ylabel="Minimum Time (t_p)", title = "Running t_p_vs_N\n _for_w_a_2_w_b_0_\n using_del_w_1 script", legend=:topleft, aspect_ratio=:auto,margin= 10mm)
 plot!(N_start: N_step:N_stop, t_min_array, label="t_min")
 savefig("t_p_vs_N_for_w_a_2_w_b_0_using_del_w_1.pdf")
