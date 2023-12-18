@@ -87,7 +87,7 @@ function main()
     scatter!([t_p_Rog],[prob_surv_array[i_first_local_min]], label= ["t_p_Rog"])
     scatter!([t_min],[prob_surv_array[i_first_local_min]], label= ["My_t_min)"], legendfontsize=5, legend=:topright)
     # Save the plot as a PDF file
-    savefig("Survival probability vs t (only self-interaction term plot).pdf")
+    savefig("Survival probability vs t (only self-interaction term plot)for N$(N).pdf")
 end 
 
 @time main()
