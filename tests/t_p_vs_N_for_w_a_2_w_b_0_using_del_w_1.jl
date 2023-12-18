@@ -4,16 +4,20 @@ using Measures
 include("../src/evolution.jl")
 include("../src/constants.jl")
 
+
+#changing variables here
+N_start = 4 
+N_step= 4
+N_stop= 24
+
 function main(N)
-    N_start = 4 
-    N_step= 4
-    N_stop= 24
     cutoff = 1E-14
     τ = 0.05
     ttotal = 5
     tolerance  = 5E-1
     Δx = 1E-3
     s = siteinds("S=1/2", N; conserve_qns=false)
+    # check for Δω = 1.0 
     a_t = 0.965
     b_t = 0
     c_t = 0

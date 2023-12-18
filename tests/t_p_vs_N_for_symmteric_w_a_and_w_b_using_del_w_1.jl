@@ -4,16 +4,20 @@ using Measures
 include("../src/evolution.jl")
 include("../src/constants.jl")
 
+#changing variables here 
+Δω = 1
+N_start = 4 
+N_step= 4
+N_stop= 24
+
 function main(N, Δω)
-    N_start = 4 
-    N_step= 4
-    N_stop= 24
     cutoff = 1E-14
     τ = 0.05
     ttotal = 5
     tolerance  = 5E-1
     Δx = 1E-3
     s = siteinds("S=1/2", N; conserve_qns=false)
+    # check for Δω = 1.0 
     a_t = 0.965
     b_t = 0
     c_t = 0
@@ -56,7 +60,6 @@ end
 # Arrays to store t_p_Rog and t_min for each N
 t_p_Rog_array = Float64[]
 t_min_array = Float64[]
-Δω = 1
 
 # Loop from N_start to N_stop particles with an increment of N_step particles each time
 for N in N_start: N_step:N_stop
@@ -66,6 +69,6 @@ for N in N_start: N_step:N_stop
 end
 
 # Create the plot
-plot(N_start: N_step:N_stop, t_p_Rog_array, label="t_p_Rog", xlabel="N", ylabel="Minimum Time(t_p)", title = "Running t_p_vs_N_\n for_symmetric_w_a_and_w_b_\n using_del_w_1 script", aspect_ratio=:auto,margin= 10mm)
+plot(N_start: N_step:N_stop, t_p_Rog_array, label="t_p_Rog", xlabel="N", ylabel="Minimum Time(t_p)", title = "Running t_p_vs_N_\n for_symmetric_w_a_and_w_b_\n using_del_w_1 script", legend=:topleft, aspect_ratio=:auto,margin= 10mm)
 plot!(N_start: N_step:N_stop, t_min_array, label="t_min")
 savefig("t_p_vs_N_for_symmetric_w_a_and_w_b_using_del_w_1.pdf")
