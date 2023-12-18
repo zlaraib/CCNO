@@ -5,10 +5,10 @@ include("../src/evolution.jl")
 include("../src/constants.jl")
 
 function main(Δω)
-    global N = 12
+    global N = 4
     cutoff = 1E-14
     τ = 0.005
-    ttotal = 10
+    ttotal = 5
     tolerance  = 5E-1
     Δx = 1E-3
     if Δω==-0.5
@@ -84,7 +84,7 @@ function main(Δω)
 end
 
 # Arrays to store t_p_Rog and t_min for each Δω
-Δω_values = [-0.5, 0.0,0.05, 0.125, 0.25, 0.5, 1.0]
+Δω_values = [-0.5, 0.0, 0.125, 0.25, 0.5, 1.0]
 t_p_Rog_array = Float64[]
 t_min_array = Float64[]
 
