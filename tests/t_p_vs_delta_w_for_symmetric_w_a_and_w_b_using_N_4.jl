@@ -5,7 +5,7 @@ include("../src/evolution.jl")
 include("../src/constants.jl")
 
 function main(Δω)
-    N= 4
+    global N = 12
     cutoff = 1E-14
     τ = 0.005
     ttotal = 10
@@ -84,7 +84,7 @@ function main(Δω)
 end
 
 # Arrays to store t_p_Rog and t_min for each Δω
-Δω_values = [-0.5, 0.0,0.05,0.125, 0.25, 0.5,1.0]
+Δω_values = [-0.5, 0.0,0.05, 0.125, 0.25, 0.5, 1.0]
 t_p_Rog_array = Float64[]
 t_min_array = Float64[]
 
@@ -95,6 +95,6 @@ for Δω in Δω_values
 end
 
 # Create the plot
-plot(Δω_values, t_p_Rog_array, label="t_p_Rog", xlabel="Δω", ylabel="Minimum Time(t_p)", title="Running\n t_p_vs_delta_w_for_symmetric_w_a_and_w_b\n _using_N$(N) \n script", aspect_ratio=:auto,margin= 10mm)
+plot(Δω_values, t_p_Rog_array, label="t_p_Rog", xlabel="Δω", ylabel="Minimum Time(t_p)", title="Running\n t_p_vs_delta_w_for_symmetric_w_a_and_w_b\n using_N$(N) script", aspect_ratio=:auto,margin= 10mm)
 plot!(Δω_values, t_min_array, label="t_min")
 savefig("t_p_vs_delta_w_for_symmetric_w_a_and_w_b_for N$(N).pdf")
