@@ -95,6 +95,6 @@ for Δω in Δω_values
 end
 
 # Create the plot
-plot(Δω_values, t_p_Rog_array, label="t_p_Rog", xlabel="Δω", ylabel="Minimum Time(t_p)", title="Running\n t_p_vs_delta_w_for_symmetric_w_a_and_w_b\n _using_N_4\n script", aspect_ratio=:auto,margin= 10mm)
+plot(Δω_values, t_p_Rog_array, label="t_p_Rog", xlabel="Δω", ylabel="Minimum Time(t_p)", title="Running\n t_p_vs_delta_w_for_symmetric_w_a_and_w_b\n _using_N$(N) \n script", aspect_ratio=:auto,margin= 10mm)
 plot!(Δω_values, t_min_array, label="t_min")
-savefig("t_p_vs_delta_w_for_symmetric_w_a_and_w_b_using_N_4.pdf")
+savefig("t_p_vs_delta_w_for_symmetric_w_a_and_w_b_for N$(N).pdf")

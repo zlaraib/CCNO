@@ -5,6 +5,9 @@ include("../src/evolution.jl")
 include("../src/constants.jl")
 
 function main(N)
+    N_start = 4 
+    N_step= 4
+    N_stop= 24
     cutoff = 1E-14
     τ = 0.05
     ttotal = 5
@@ -51,14 +54,14 @@ end
 t_p_Rog_array = Float64[]
 t_min_array = Float64[]
 
-# Loop from 4 to 8 particles with an increment of 4 particles each time
-for N in 4:4:25
-    t_p_Rog, t_min = main(N)
+# Loop from N_start to N_stop particles with an increment of N_step particles each time
+for N in N_start: N_step:N_stop
+    t_p_Rog, t_min = @time main(N)
     push!(t_p_Rog_array, t_p_Rog)
     push!(t_min_array, t_min)
 end
 
 # Create the plot
-plot(4:4:25, t_p_Rog_array, label="t_p_Rog", xlabel="N", ylabel="Minimum Time (t_p)", title = "Running t_p_vs_N\n _for_w_a_2_w_b_0_\n using_del_w_1 script", aspect_ratio=:auto,margin= 10mm)
-plot!(4:4:25, t_min_array, label="t_min")
+plot(N_start: N_step:N_stop, t_p_Rog_array, label="t_p_Rog", xlabel="N", ylabel="Minimum Time (t_p)", title = "Running t_p_vs_N\n _for_w_a_2_w_b_0_\n using_del_w_1 script", aspect_ratio=:auto,margin= 10mm)
+plot!(N_start: N_step:N_stop, t_min_array, label="t_min")
 savefig("t_p_vs_N_for_w_a_2_w_b_0_using_del_w_1.pdf")
