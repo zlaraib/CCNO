@@ -72,14 +72,15 @@ function main(Δω)
     i_first_local_min = find_first_local_minima_index(prob_surv_array)
     if i_first_local_min != -1
         println("Index of the first local minimum: ", i_first_local_min)
-    else
+    else 
         println("No local minimum found in the array.")
     end
     t_min = τ * i_first_local_min - τ
     println("Corresponding time of first minimum index= ", t_min)
     t_p_Rog = a_t*log(N) + b_t * sqrt(N) + c_t
     println("t_p_Rog= ",t_p_Rog)
-
+    # Check that our time of first minimum survival probability compared to Rogerro(2021) remains within the timestep and tolerance.
+    @assert abs(t_min - t_p_Rog) <  τ + tolerance 
     return t_p_Rog, t_min
 end
 
