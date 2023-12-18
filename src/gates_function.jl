@@ -43,6 +43,8 @@ function create_gates(s, N, B, N_sites, Δx, Δm², p, x, Δp, shape_name,L, τ,
        ω = fill(π, N_sites) # added global so we can access and use this global variable without the need to pass them as arguments to another function
     else
         ω = [Δm²/ (2 * p_i_mod) for p_i_mod in p_mod]
+        # println("p_i_mod= ",p_i_mod)
+        # println("ω ", ω)
     end
     println("ω = ", ω)
 
@@ -70,7 +72,7 @@ function create_gates(s, N, B, N_sites, Δx, Δm², p, x, Δp, shape_name,L, τ,
                 (op("Sz", s_i) * op("Sz", s_j) +
                 1/2 * op("S+", s_i) * op("S-", s_j) +
                 1/2 * op("S-", s_i) * op("S+", s_j))
-                println("hj= ", hj)
+                #println("hj= ", hj)
             else
                 # Get the shape function result for each pair of i and j 
                 shape_result = shape_func(x, Δp, i, j,L, shape_name, periodic)
@@ -81,7 +83,7 @@ function create_gates(s, N, B, N_sites, Δx, Δm², p, x, Δp, shape_name,L, τ,
                 ((-2 *op("Sz",s_i) * op("Sz",s_j)) + 
                 op("S+", s_i) * op("S-", s_j) +
                 op("S-", s_i) * op("S+", s_j))
-                println("hj= ", hj)
+                #println("hj= ", hj)
             end
             # add vacuum oscillation term to the Hamiltonian
             #  if ω[i] != 0 && ω[j] != 0
@@ -92,17 +94,22 @@ function create_gates(s, N, B, N_sites, Δx, Δm², p, x, Δp, shape_name,L, τ,
                      
             #  end
             if ω[i] != 0 && ω[j] != 0
-                hj += (1/(N_sites-1))* (
+                # println("p_mod[$i]= ",p_mod[i])
+                # ω = Δm²/ (2 * p_mod[i])
+                # println("ω ", ω)
+                hj1 = (1/(N_sites-1))* (
                     (ω[i] * B[1] * op("Sx", s_i)* op("Id", s_j))  + (ω[i] * B[2] * op("Sy", s_i)* op("Id", s_j))  + (ω[i] * B[3] * op("Sz", s_i)* op("Id", s_j)) )
-                    println("hj= ", hj)
-                    hj += (1/(N_sites-1))* (
+                    #println("hj1= ", hj1)
+                    hj2 = (1/(N_sites-1))* (
                     (ω[j] * B[1] * op("Id", s_i) * op("Sx", s_j)) + (ω[j] * B[2]  * op("Id", s_i)* op("Sy", s_j)) + (ω[j] * B[3]  * op("Id", s_i)* op("Sz", s_j)) )
-                    println("hj= ", hj)
+                    #println("hj2= ", hj2)
+                    hj += hj1+ hj2
+                    #println("hj= ", hj)
             end
 
             # make Trotter gate Gj that would correspond to each gate in the gate array of ITensors             
             Gj = exp(-im * τ/2 * hj)
-            println("Gj= ",Gj)
+            #println("Gj= ",Gj)
             # The push! function adds (appends) an element to the end of an array;
             # ! performs an operation without creating a new object, (in a way overwites the previous array in consideration); 
             # i.e. we append a new element Gj (which is an ITensor object representing a gate) to the end of the gates array.
