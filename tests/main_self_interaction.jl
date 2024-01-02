@@ -53,8 +53,9 @@ Combining (where index i represent a site and runs from 1:N_sites)
 
 # throughout this code I am assuming each site is occupied by a particle i.e. each site contains some number of neutrinos all of same flavor 
 # so all neutrinos are electron flavored (at a site) which interact with electron flavored anti neutrinos (at a different site) in the opposing beam.
-function main(N_sites_eachflavor,τ,ttotal,tolerance,Δm²,maxdim,cutoff,x, p, ψ, L,n_νₑ,n_νₑ̄,Eνₑ,Eνₑ̄,B_pert,B,shape_name,periodic)
-
+# function main(N_sites_eachflavor,τ,ttotal,tolerance,Δm²,maxdim,cutoff,x, p, ψ, L,n_νₑ,n_νₑ̄,Eνₑ,Eνₑ̄,B_pert,B,shape_name,periodic)
+function main(s, τ, B,L, N_sites, N_sites_eachflavor, tolerance,
+    n_νₑ,n_νₑ̄,Eνₑ,Eνₑ̄,B_pert  ,Δx,Δm², p, x, Δp, ψ₀, shape_name, energy_sign, cutoff, maxdim, ttotal,periodic)
     
     function generate_inputs_file(directory, filename, data)
         filepath = joinpath(directory, filename)
@@ -83,6 +84,7 @@ function main(N_sites_eachflavor,τ,ttotal,tolerance,Δm²,maxdim,cutoff,x, p, �
             "p" => p,
             "ψ" => ψ,
             "L" => L,
+            "Δx" => Δx,
             "n_νₑ" => n_νₑ,
             "n_νₑ̄" => n_νₑ̄,
             "Eνₑ" => Eνₑ,
@@ -108,7 +110,6 @@ function main(N_sites_eachflavor,τ,ttotal,tolerance,Δm²,maxdim,cutoff,x, p, �
     input_data = extract_initial_conditions()
 
     V = L^3 # volume of the big box containing all sites/particles
-    Δx = L/N_sites # length of the box of interacting neutrinos at a site in cm  #variable
 
     # Create an array of dimension N and fill it half with values of sites containing all electron neutrinos 
     # and other half with sites containing electron anti-neutrino. 
@@ -118,8 +119,6 @@ function main(N_sites_eachflavor,τ,ttotal,tolerance,Δm²,maxdim,cutoff,x, p, �
     N_2 = fill(N_νₑ̄/ (N_sites ÷ 2), N_sites ÷ 2)
     N = vcat(N_1, N_2) # This is the total number of neutrinos. 
 
-    # Perturb the state via one-body Hamiltonian
-    ψ₀= evolve_perturbation(s, τ, B_pert, N_sites, ψ, cutoff, maxdim, ttotal)
     
     # Specify the relative directory path
     datadir = joinpath(@__DIR__, "..","misc","datafiles","FFI", "par_"*string(N_sites), "tt_"*string(ttotal))
