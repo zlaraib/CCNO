@@ -5,7 +5,6 @@ using LinearAlgebra
 using DelimitedFiles
 using Statistics
 using Random
-using SymPy
 
 include("main_self_interaction.jl")
 include("../src/constants.jl")
@@ -13,50 +12,28 @@ include("../src/constants.jl")
 """ Richers(2021) Test 3 initial conditions: """
 N_sites_eachflavor= 1 # total sites/particles that evenly spaced "for each (electron) flavor" 
 N_sites = 2* (N_sites_eachflavor) # total particles/sites for all neutrino and anti neutrino electron flavored
-τ = 1.66e-4 # time step to include 50 steps every 10 picoseconds # sec # variable
-ttotal = 1.66e-2 # total time of evolution # sec #variable
+τ = 1.666e-4 # time step from Richers test # sec # variable
+ttotal = 1.666e-2 # total time of evolution # sec #variable
 tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution #variable
-m1 = 8.6e3*eV  # 1.37787191e-8 ergs #  1st mass eigenstate of neutrino
+m1 = 0.008596511*eV  # 1.37787191e-8 ergs #  1st mass eigenstate of neutrino
 m2 = 0 # eV  2nd mass eigenstate of neutrino
 Δm² = (m2^2-m1^2) # mass square difference # (erg^2)
-println(Δm²)
-maxdim = 1 # max bond dimension in MPS truncation
-cutoff = 1e-14 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT) #variable
+maxdim = 100 # max bond dimension in MPS truncation
+cutoff = 1e-100 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT) #variable
 L = 1e7 # cm # domain size # (aka big box length)
 n_νₑ =  2.92e24 # cm^-3 # number density of electron flavor neutrino
 n_νₑ̄ =  n_νₑ # cm^-3 # number density of electron flavor antineutrino
 Eνₑ =  50*MeV # energy of all neutrinos (P.S the its negative is energy of all antineutrinos)
 Eνₑ̄ = -1 * Eνₑ # specific to my case only. Since all neutrinos have same energy, except in my case anti neutrinos are moving in opposite direction to give it a negative sign
-α = 1e-6 # perturbation strength as mentioned in the paper
-#B_pert = α  * [0.02, -0.02 ,1] # Create a B vector that allows for perturbation to inital state in different directions #variable 
+Δx = L # length of the box of interacting neutrinos at a site in cm
 
-function generate_B_pert(α)
-    # Generate two random perturbations for x and y
-    x_pert = α * (2 * rand() - 1)  # Random number between -α and α
-    y_pert = α * (2 * rand() - 1)  # Random number between -α and α
-
-    # Calculate the z component to maintain normalization
-    z_pert = sqrt(max(0, 1 - x_pert^2 - y_pert^2))
-
-    # Return the B_pert vector
-    return [x_pert, y_pert, z_pert]
-end
-
-α = 1e-6 # perturbation strength as mentioned in the paper
-# Generate the perturbed B vector scaled by α  as mentioned in the paper
-B_pert = generate_B_pert(α)
-
-# Since the perturbation is small, B_pert should already be normalized, but you can normalize again for precision
-B_pert = B_pert / norm(B_pert)
-println(B_pert)  
 theta_nu = 1.74532925E-8  #1e-6 degrees # mixing_angle # = 1.74532925E-8 radians 
 B = [sin(2 * theta_nu), 0, -cos(2 * theta_nu)]  # actual b vector that activates the vacuum oscillation term in Hamiltonian
-B = B / norm(B)
+B = B / norm(B) 
 #Select a shape function based on the shape_name variable form the list defined in dictionary in shape_func file
 shape_name = "none"  # Change this to the desired shape name #variable 
 Δp = L # width of shape function  # cm #variable
 periodic = true  # true = imposes periodic boundary conditions while false doesn't
-
 
 # generate x_array such that the first particle is at position L/(2*N_sites) while subsequent particles are at a position incremental by L/N_sites. # grid style
 function generate_x_array(N_sites, L)
@@ -64,8 +41,8 @@ function generate_x_array(N_sites, L)
 end
 
 x = generate_x_array(N_sites, L)
-y = fill(rand(), N_sites) #variable
-z = fill(rand(), N_sites) #variable
+y = generate_x_array(N_sites, L)
+z = generate_x_array(N_sites, L)
 
 #generate a momentum array in px direction that depicts the energy of neutrinos and anti-neutrinos in opposing beams
 function generate_px_array(N_sites)                                                                                                                                                                                   
@@ -85,6 +62,7 @@ end
 
 # p matrix with numbers generated from the p_array for all components (x, y, z) #sherood has 
 p = hcat(generate_px_array(N_sites), generate_py_array(N_sites), generate_pz_array(N_sites))
+
 # Create an array with the first half as 1 and the rest as -1
 energy_sign = [i <= N_sites ÷ 2 ? 1 : -1 for i in 1:N_sites] # half sites are (e) neutrinos with positive 1 entry while other half is anti (e) neutrinos with negative 1 entry
 
@@ -96,7 +74,9 @@ energy_sign = [i <= N_sites ÷ 2 ? 1 : -1 for i in 1:N_sites] # half sites are (
 
 s = siteinds("S=1/2", N_sites; conserve_qns=false) #fixed #switched conserve_qns to false to avoid fluxes error in expect function
 
-# Initialize psi to be a product state (Of all electron flavor neutrino i.e. spin up)
-ψ = productMPS(s, N_sites -> "Up") 
+# Initialize psi to be a product state (Of all electron flavor neutrino i.e. spin up in Richers notation which is equivalently half spin up and half chain spin down in my TN notation)
+ψ₀ = productMPS(s, n -> n <= N_sites/2 ? "Up" : "Dn")
+# ψ₀= productMPS(s, N_sites -> "Up") 
 
-@time main(N_sites_eachflavor,τ,ttotal,tolerance,Δm²,maxdim,cutoff,x, p, ψ, L,n_νₑ,n_νₑ̄,Eνₑ,Eνₑ̄,B_pert,B,shape_name,periodic)
+@time main(s, τ, B,L, N_sites, N_sites_eachflavor, tolerance,
+                n_νₑ,n_νₑ̄,Eνₑ,Eνₑ̄,B_pert  ,Δx,Δm², p, x, Δp, ψ₀, shape_name, energy_sign, cutoff, maxdim, ttotal,periodic)
