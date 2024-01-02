@@ -1,14 +1,17 @@
 using ITensors
 using Plots
 using Measures
+using DelimitedFiles
+
 include("../src/evolution.jl")
 include("../src/constants.jl")
 
-function main(Δω)
-    global N = 4
+N = 4
+ttotal = 5 
+function main(Δω, N, ttotal)
     cutoff = 1E-14
     τ = 0.005
-    ttotal = 5
+
     tolerance  = 5E-1
     Δx = 1E-3
     if Δω==-0.5
@@ -89,13 +92,21 @@ end
 t_p_Rog_array = Float64[]
 t_min_array = Float64[]
 
+datadir = joinpath(@__DIR__, "..","misc","datafiles","Rog", "par_"*string(N), "tt_"*string(ttotal))
+isdir(datadir) || mkpath(datadir)
 for Δω in Δω_values
     t_p_Rog, t_min = main(Δω)
     push!(t_p_Rog_array, t_p_Rog)
     push!(t_min_array, t_min)
 end
+fname1 = joinpath(datadir, "δω_tpRog_tpmine.dat")
+writedlm(fname1, [Δω_values t_p_Rog_array t_min_array])
 
+plotdir = joinpath(@__DIR__, "..","misc","plots","Rog", "par_"*string(N), "tt_"*string(ttotal))
+    
+# check if a directory exists, and if it doesn't, create it using mkpath
+isdir(plotdir) || mkpath(plotdir)
 # Create the plot
-plot(Δω_values, t_p_Rog_array, label="t_p_Rog", xlabel="Δω", ylabel="Minimum Time(t_p)", title="Running\n t_p_vs_delta_w_for_symmetric_w_a_and_w_b\n using_N$(N) script", aspect_ratio=:auto,margin= 10mm)
-plot!(Δω_values, t_min_array, label="t_min")
-savefig("t_p_vs_delta_w_for_symmetric_w_a_and_w_b_for N$(N).pdf")
+plot(Δω_values, t_p_Rog_array, label="Rogerro(2021)", xlabel="δω", ylabel="Minimum Time(tₚ)", title="Table I. Rogerro(2021) ", aspect_ratio=:auto,margin= 10mm)
+plot!(Δω_values, t_min_array, label="Our results")
+savefig(joinpath(plotdir,"tₚ_vs_δω_w/symmetric_ωa/b_for N$(N).pdf"))
