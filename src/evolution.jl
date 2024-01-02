@@ -42,7 +42,7 @@ function evolve(s, τ, N, B,L, N_sites, Δx, Δm², p, x, Δp, ψ, shape_name, e
 
     # extract the gates array generated in the gates_function file
     gates = create_gates(s, N, B, N_sites, Δx, Δm², p, x, Δp, shape_name,L, τ, energy_sign,periodic)
-
+    
     # extract output of p_hat and p_mod for the p vector defined above for all sites. 
     p_mod, p̂ = momentum(p,N_sites) 
     p̂ₓ= [sub_array[1] for sub_array in p̂]
@@ -73,6 +73,8 @@ function evolve(s, τ, N, B,L, N_sites, Δx, Δm², p, x, Δp, ψ, shape_name, e
             sz = expect(ψ, "Sz"; sites=1)
         end 
 
+        # sz_tot = expect(ψ, "Sz")
+        # sz = mean(sz_tot)
         # compute expectation value of sy and sx using S+ and S- (inbuilt operator in ITensors library) at the first site on the chain
         if p == zeros(N_sites, 3) #for rogerro's case only (b/c S+ S- needed to keep conservation of QN number)
             sy = -0.5 *im * (expect(complex(ψ), "S+"; sites=1) - expect(complex(ψ), "S-"; sites=1)) #re-check
@@ -103,10 +105,9 @@ function evolve(s, τ, N, B,L, N_sites, Δx, Δm², p, x, Δp, ψ, shape_name, e
         
         # recall that in our code sigma_z = 2*Sz so make sure these expressions are consistent with "Sz in ITensors" 
         ρₑₑ = ( (2 * sz) + 1)/2 
-        push!(ρₑₑ_array,ρₑₑ)
+        push!(ρₑₑ_array,abs(ρₑₑ))
         ρ_μμ = ( (-2 * sz) + 1)/2 
-        push!(ρ_μμ_array,ρ_μμ)
-
+        push!(ρ_μμ_array,abs(ρ_μμ))
         # Writing an if statement in a shorthand way that checks whether the current value of t is equal to ttotal, 
         # and if so, it executes the break statement, which causes the loop to terminate early.
         t ≈ ttotal && break
@@ -114,7 +115,8 @@ function evolve(s, τ, N, B,L, N_sites, Δx, Δm², p, x, Δp, ψ, shape_name, e
         # apply each gate in gates(ITensors array) successively to the wavefunction ψ (MPS)(it is equivalent to time evolving psi according to the time-dependent Hamiltonian represented by gates).
         # The apply function is a matrix-vector multiplication operation that is smart enough to determine which site indices each gate has, and then figure out where to apply it to our MPS. 
         # It truncates the MPS according to the set cutoff and maxdim for all the non-nearest-neighbor gates.
-        ψ = apply(gates, ψ; cutoff, maxdim)
+        #ψ = apply(gates, ψ; cutoff, maxdim)
+        ψ = apply(gates, ψ; cutoff)
         
 
         # The normalize! function is used to ensure that the MPS is properly normalized after each application of the time evolution gates. 
