@@ -55,7 +55,7 @@ Combining (where index i represent a site and runs from 1:N_sites)
 # so all neutrinos are electron flavored (at a site) which interact with electron flavored anti neutrinos (at a different site) in the opposing beam.
 # function main(N_sites_eachflavor,τ,ttotal,tolerance,Δm²,maxdim,cutoff,x, p, ψ, L,n_νₑ,n_νₑ̄,Eνₑ,Eνₑ̄,B_pert,B,shape_name,periodic)
 function main(s, τ, B,L, N_sites, N_sites_eachflavor, tolerance,
-    n_νₑ,n_νₑ̄,Eνₑ,Eνₑ̄,B_pert  ,Δx,Δm², p, x, Δp, ψ₀, shape_name, energy_sign, cutoff, maxdim, ttotal,periodic)
+    n_νₑ,n_νₑ̄,Eνₑ,Eνₑ̄,Δx,Δm², p, x, Δp, ψ₀, shape_name, energy_sign, cutoff, maxdim, ttotal,periodic)
     
     function generate_inputs_file(directory, filename, data)
         filepath = joinpath(directory, filename)
@@ -89,7 +89,6 @@ function main(s, τ, B,L, N_sites, N_sites_eachflavor, tolerance,
             "n_νₑ̄" => n_νₑ̄,
             "Eνₑ" => Eνₑ,
             "Eνₑ̄" => Eνₑ̄,
-            "B_pert" => B_pert,
             "B" => B,
             "shape_name" => shape_name,
             "Δp" => Δp,
