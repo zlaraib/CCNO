@@ -6,12 +6,15 @@ using DelimitedFiles
 include("../src/evolution.jl")
 include("../src/constants.jl")
 
+# this file plots δω on x axis while minimum time tp on y axis and compares
+# the values of our calculations with Rogerros calculations in Table I.
+# Here symmetric δω is used i.e. ω_a = - ω_b for a given δω plotted on x axis.
+
 N = 4
-ttotal = 5 
+ttotal = 5
 function main(Δω, N, ttotal)
     cutoff = 1E-14
     τ = 0.005
-
     tolerance  = 5E-1
     Δx = 1E-3
     if Δω==-0.5
@@ -95,7 +98,7 @@ t_min_array = Float64[]
 datadir = joinpath(@__DIR__, "..","misc","datafiles","Rog", "par_"*string(N), "tt_"*string(ttotal))
 isdir(datadir) || mkpath(datadir)
 for Δω in Δω_values
-    t_p_Rog, t_min = main(Δω)
+    t_p_Rog, t_min = main(Δω, N, ttotal)
     push!(t_p_Rog_array, t_p_Rog)
     push!(t_min_array, t_min)
 end
@@ -106,7 +109,8 @@ plotdir = joinpath(@__DIR__, "..","misc","plots","Rog", "par_"*string(N), "tt_"*
     
 # check if a directory exists, and if it doesn't, create it using mkpath
 isdir(plotdir) || mkpath(plotdir)
+
 # Create the plot
 plot(Δω_values, t_p_Rog_array, label="Rogerro(2021)", xlabel="δω", ylabel="Minimum Time(tₚ)", title="Table I. Rogerro(2021) ", aspect_ratio=:auto,margin= 10mm)
 plot!(Δω_values, t_min_array, label="Our results")
-savefig(joinpath(plotdir,"tₚ_vs_δω_w/symmetric_ωa/b_for N$(N).pdf"))
+savefig(joinpath(plotdir,"t_p_vs_symmetric del_omega for N$(N).pdf"))
