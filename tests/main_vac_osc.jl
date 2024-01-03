@@ -21,6 +21,8 @@ function main()
   tolerance  = 1E-5 # acceptable level of error or deviation from the exact value or solution #variable
   Δm² = 2*π # Fixed for this vacuum oscillation case for omega =pi. dont change it to keep consistent results. 
   maxdim = 1 # max bond dimension in MPS truncation
+  L = 1 # cm # not being used in this test but defined to keep the evolve function arguments consistent.
+  Δp = L # width of shape function # not being used in this test but defined to keep the evolve function arguments consistent.
 
   # Make an array of 'site' indices and label as s 
   # conserve_qns=false doesnt conserve the total spin quantum number "S"(in z direction) in the system as it evolves
