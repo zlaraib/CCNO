@@ -19,7 +19,10 @@ function main()
     Δx = 1E-3 # length of the box of interacting neutrinos at a site in cm  # variable.
     Δm²= 0.0 # erg^2 # Fixed for rog test case. Please dont play with it. 
     maxdim = 4 # max bond dimension in MPS truncation
+    L = 1 # cm # not being used in this test but defined to keep the evolve function arguments consistent.
+    Δp = L # width of shape function # not being used in this test but defined to keep the evolve function arguments consistent.  
     periodic = false  # true = imposes periodic boundary conditions while false doesn't
+   
     # s is an array of spin 1/2 tensor indices (Index objects) which will be the site or physical indices of the MPS.
     # We overload siteinds function, which generates custom Index array with Index objects having the tag of total spin quantum number for all N.
     # conserve_qns=true conserves the total spin quantum number "S" in the system as it evolves
