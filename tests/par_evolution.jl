@@ -53,12 +53,15 @@
     end
 
     function generate_py_array(N_sites)                                                                                                                                                                                   
-        return [fill(0, N_sites)]
+        half_N_sites = div(N_sites, 2)
+        return [fill(0, half_N_sites); fill(0, half_N_sites)]
     end
     
     function generate_pz_array(N_sites)                                                                                                                                                                                   
-        return [fill(0, N_sites)]
+        half_N_sites = div(N_sites, 2)
+        return [fill(0, half_N_sites); fill(0, half_N_sites)]
     end
+    
     # p matrix with numbers generated from the p_array for all components (x, y, z)
     p = hcat(generate_px_array(N_sites), generate_py_array(N_sites), generate_pz_array(N_sites))
     println("Initial p_vector of all particles=",p)
