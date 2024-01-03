@@ -28,33 +28,33 @@ pipeline {
 		archiveArtifacts artifacts: '*.pdf'
     }
 } 
-	stage('Self interaction'){ steps{
+	stage('Rogerro(2021) Self interactions'){ steps{
 		sh 'julia tests/main_self_interaction.jl'
 		archiveArtifacts artifacts: '*.pdf'
     } 
 }
-	stage('Rogerro(2021)_file'){ steps{
+	stage('Rogerro(2021) full Hamiltonian'){ steps{
 		sh 'julia tests/main_Rogerro.jl'
 		archiveArtifacts artifacts: '*.pdf'
     } 
 }
-	stage('Rog_particle_loop_test_file'){ steps{
-		sh 'julia tests/Rog_particle_loop.jl'
+	stage('Rog_full H looped over N'){ steps{
+		sh 'julia tests/main_Rog_N_loop.jl'
 		archiveArtifacts artifacts: '*.pdf'
     } 
 }
-	stage('t_p vs del_w (N=4) test_file'){ steps{
-		sh 'julia tests/t_p_vs_delta_w_for_symmetric_w_a_and_w_b_using_N_4.jl'
+	stage('t_p vs symmetric delta_omega'){ steps{
+		sh 'julia tests/t_p_vs_sym_delta_w.jl'
 		archiveArtifacts artifacts: '*.pdf'
     } 
 }
-	stage('t_p vs N(del_w=1, w_a=2, w_b=0) test_file'){ steps{
-		sh 'julia tests/t_p_vs_N_for_w_a_2_w_b_0_using_del_w_1.jl'
+	stage('t_p vs N (unsymmetric)'){ steps{
+		sh 'julia tests/t_p_vs_N_unsym.jl'
 		archiveArtifacts artifacts: '*.pdf'
     } 
 }
-	stage('t_p vs N(del_w=1, w_a=1, w_b=-1) test_file'){ steps{
-		sh 'julia tests/t_p_vs_N_for_symmteric_w_a_and_w_b_using_del_w_1.jl'
+	stage('t_p vs N (symmetric)'){ steps{
+		sh 'julia tests/t_p_vs_N_sym.jl'
 		archiveArtifacts artifacts: '*.pdf'
     } 
 }
