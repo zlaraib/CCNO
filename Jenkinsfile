@@ -38,8 +38,8 @@ pipeline {
 		archiveArtifacts artifacts: 'misc/plots/Rog_self_int/*/*/*.pdf'
     } 
 }
-	stage('Full_geometric_and_Shape_function'){ steps{
-		sh 'julia tests/main_self_interaction.jl'
+	stage('Richers(2021)_Homogenous_FFI'){ steps{
+		sh 'julia tests/Homogenous_FFI_Richers.jl'
 		archiveArtifacts artifacts: 'misc/plots/FFI/*/*/*.pdf'
     } 
 }
