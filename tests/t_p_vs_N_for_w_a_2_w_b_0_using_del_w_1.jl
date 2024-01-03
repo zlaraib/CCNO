@@ -4,6 +4,11 @@ using Measures
 include("../src/evolution.jl")
 include("../src/constants.jl")
 
+# This file evolves the system under the vaccum oscillations + self-interaction
+# Hamiltonian and then plots the system size N on x axis while minimum time tp  
+# on the y-axis. It then compares the values of our calculations with Rogerros 
+# calculations in Table I.
+# Here a fixed, but unsymmetric δω is used i.e. ω_a = - ω_b for a given δω = 1.0.
 
 #changing variables here
 N_start = 4 
@@ -17,7 +22,7 @@ function main(N)
     tolerance  = 5E-1
     Δx = 1E-3
     s = siteinds("S=1/2", N; conserve_qns=false)
-    # check for Δω = 1.0 
+    # check for Δω = 1.0
     a_t = 0.965
     b_t = 0
     c_t = 0
@@ -67,6 +72,6 @@ for N in N_start: N_step:N_stop
 end
 
 # Create the plot
-plot(N_start: N_step:N_stop, t_p_Rog_array, label="t_p_Rog", xlabel="N", ylabel="Minimum Time (t_p)", title = "Running t_p_vs_N\n _for_w_a_2_w_b_0_\n using_del_w_1 script", legend=:topleft, aspect_ratio=:auto,margin= 10mm)
-plot!(N_start: N_step:N_stop, t_min_array, label="t_min")
-savefig("t_p_vs_N_for_w_a_2_w_b_0_using_del_w_1.pdf")
+plot(N_start: N_step:N_stop, t_p_Rog_array, label="Rog_tp", xlabel="N", ylabel="Minimum Time (t_p)", title = "Table I Rogerro(2021) \n expanded for a unsymmetric δω=1.0", legend=:topleft, aspect_ratio=:auto,margin= 10mm)
+plot!(N_start: N_step:N_stop, t_min_array, label="Our_tp")
+savefig("t_p_vs_N_for_unsymmetric_del_w.pdf")
