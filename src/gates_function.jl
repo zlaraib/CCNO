@@ -40,7 +40,7 @@ function create_gates(s, N, B, N_sites, Δx, Δm², p, x, Δp, shape_name,L, τ,
     if Δm² == 0 #specific to self-int only
         ω = zeros(N_sites)
     elseif Δm² == 2 * π
-       ω = fill(π, N_sites) # added global so we can access and use this global variable without the need to pass them as arguments to another function
+       global ω = fill(π, N_sites) # added global so we can access and use this global variable without the need to pass them as arguments to another function
     else
         ω = [Δm²/ (2 * p_i_mod) for p_i_mod in p_mod]
         # println("p_i_mod= ",p_i_mod)
