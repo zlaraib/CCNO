@@ -17,7 +17,7 @@ ttotal = ttotal time (sec)
 # with their survival probabilities. The time evolution utilizes the unitary operators created as gates from the create_gates function.
 # The <Sz> and Survival probabilities output from this function are unitless. 
 
-function evolve(s, τ, n, ω, B, N, Δx, ψ, cutoff, ttotal)
+function evolve(s, τ, n, ω, B, N, Δx, ψ,energy_sign, cutoff, ttotal)
     
     # Create empty array to store sz values 
     Sz_array = Float64[]
@@ -25,7 +25,7 @@ function evolve(s, τ, n, ω, B, N, Δx, ψ, cutoff, ttotal)
     prob_surv_array = Float64[]
 
     # extract the gates array generated in the gates_function file
-    gates = create_gates(s, n, ω, B, N, Δx, τ)
+    gates = create_gates(s, n, ω, B, N, Δx,energy_sign, τ)
 
     # Compute and print survival probability (found from <Sz>) at each time step then apply the gates to go to the next time
     for t in 0.0:τ:ttotal
@@ -36,8 +36,8 @@ function evolve(s, τ, n, ω, B, N, Δx, ψ, cutoff, ttotal)
         push!(Sz_array, sz)
         
         # survival probability for a (we took first) neutrino to be found in its initial flavor state (in this case a spin down)
-        prob_surv = 0.5 * (1 - 2 * sz)
-
+        # prob_surv = 0.5 * (1 - (2* sz))
+        prob_surv = 0.5 * (1 - (( 4/N )* sz)) 
         # add an element prob_surv to the end of  prob_surv_array 
         push!(prob_surv_array, prob_surv)
 
