@@ -15,7 +15,7 @@ N = Total no.of sites (dimensionless and unitless)
 # This file generates the create_gates function that holds ITensors Trotter gates and returns the dimensionless unitary 
 # operators govered by the Hamiltonian which includes effects of the vacuum and self-interaction potential for each site.
 
-function create_gates(s, n, ω, B, N, Δx,energy_sign, τ)
+function create_gates(s, n, ω, B, N, Δx, τ,energy_sign)
     # Make gates (1,2),(2,3),(3,4),... i.e. unitary gates which act on any (non-neighboring) pairs of sites in the chain.
     # Create an empty ITensors array that will be our Trotter gates
     gates = ITensor[]                                                              
@@ -34,27 +34,20 @@ function create_gates(s, n, ω, B, N, Δx,energy_sign, τ)
             # ni and nj are the neutrions at site i and j respectively.
             # mu pairs divided by 2 to avoid double counting
             
-            # hj = 
-            # (2.0/N * √2 * G_F * (n[i]+ n[j])/(2*((Δx)^3))  * 
-            # (op("Sz", s_i) * op("Sz", s_j) +
-            # 1/2 * op("S+", s_i) * op("S-", s_j) +
-            # 1/2 * op("S-", s_i) * op("S+", s_j)))
-            
             if energy_sign[i]*energy_sign[j]>0
-                interaction_strength = (2.0* √2 * G_F * (n[i]+ n[j])/(((Δx)^3))) 
-                hj = interaction_strength *
+                hj = 
+                (2.0/N * √2 * G_F * (n[i]+ n[j])/(2*((Δx)^3))  * 
                 (op("Sz", s_i) * op("Sz", s_j) +
                 1/2 * op("S+", s_i) * op("S-", s_j) +
-                1/2 * op("S-", s_i) * op("S+", s_j))
-                #println("hj= ", hj)
+                1/2 * op("S-", s_i) * op("S+", s_j)))
             else
-                interaction_strength = (2.0* √2 * G_F * (n[i]+ n[j])/(((Δx)^3)))
-                hj = - interaction_strength * 
-                ((- 2 *op("Sz",s_i) * op("Sz",s_j)) + 
+                interaction_strength = (2.0* √2 * G_F * (n[i]+ n[j])/(2*((Δx)^3)))
+                hj =  -interaction_strength * 
+                (( -2 *op("Sz",s_i) * op("Sz",s_j)) + 
                 op("S+", s_i) * op("S-", s_j) +
                 op("S-", s_i) * op("S+", s_j))
             end
-             
+
             if ω[i] != 0 || ω[j] != 0
             #    hj += (1/(N-1))* 
             #    ((ω[i] * B[1] * op("Sx", s_i)* op("Id", s_j))  + (ω[j] * op("Sx", s_j) * op("Id", s_i))) + 
@@ -81,5 +74,3 @@ function create_gates(s, n, ω, B, N, Δx,energy_sign, τ)
     append!(gates, reverse(gates))
     return gates
 end
-
-
