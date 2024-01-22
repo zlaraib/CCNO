@@ -1,6 +1,7 @@
 using ITensors
 using Plots
 using Measures
+using ITensorTDVP
 include("../src/evolution.jl")
 include("../src/constants.jl")
 
@@ -10,21 +11,21 @@ include("../src/constants.jl")
 
 function main()
     N = 10 # number of sites (NEED TO GO TILL 96 for Rog_results)
-    cutoff = 1E-10 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT)
+    cutoff = 1E-14 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT)
     τ = 0.05 # time step (NEED TO BE 0.05 for Rog_results)
     ttotal = 20 # total time of evolution (NEED TO GO TILL 50 for Rog_results)
     tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution
     Δx = 1E-3 # length of the box of interacting neutrinos at a site/shape function width of neutrinos in cm 
-    # maxdim =1
+
     # s is an array of spin 1/2 tensor indices (Index objects) which will be the site or physical indices of the MPS.
     # We overload siteinds function, which generates custom Index array with Index objects having the tag of total spin quantum number for all N.
     # conserve_qns=false doesnt conserve the total spin quantum number "S" in the system as it evolves
     s = siteinds("S=1/2", N; conserve_qns=false)  
 
     # Constants for Rogerro's fit (only self-interaction term)
-    a_t = 0.965
+    a_t = 1.224
     b_t = 0
-    c_t = 0
+    c_t = 1.62
     
     # Initialize an array of ones for all N sites
     mu = ones(N) # erg
@@ -46,9 +47,10 @@ function main()
     ω = vcat(ω_a, ω_b)
 
     ψ = productMPS(s, n -> n <= N/2 ? "Dn" : "Up")
-    energy_sign = [i <= N ÷ 2 ? 1 : -1 for i in 1:N]
+    energy_sign = [i <= N ÷ 2 ? 1 : 1 for i in 1:N]
+
     #extract output from the expect.jl file where the survival probability values were computed at each timestep
-    Sz_array, prob_surv_array = evolve(s, τ, n, ω, B, N, Δx, ψ,energy_sign, cutoff, ttotal)
+    Sz_array, prob_surv_array = evolve(s, τ, n, ω, B, N, Δx, ψ, energy_sign, cutoff, ttotal)
 
     # This function scans through the array, compares each element with its neighbors, 
     # and returns the index of the first local minimum it encounters. 
@@ -93,3 +95,4 @@ function main()
 end 
 
 @time main()
+
