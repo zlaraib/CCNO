@@ -15,8 +15,8 @@ N_sites = 2* (N_sites_eachflavor) # total particles/sites for all neutrino and a
 τ = 1.666e-4 # time step from Richers test # sec # variable
 ttotal = 1.666e-2 # total time of evolution # sec #variable
 tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution #variable
-m1 = 0.008596511*eV  # 1.37787191e-8 ergs #  1st mass eigenstate of neutrino
-m2 = 0 # eV  2nd mass eigenstate of neutrino
+m2 = 0.008596511*eV  # 1.37787191e-8 ergs #  1st mass eigenstate of neutrino
+m1 = 0 # eV  2nd mass eigenstate of neutrino
 Δm² = (m2^2-m1^2) # mass square difference # (erg^2)
 maxdim = 100 # max bond dimension in MPS truncation
 cutoff = 1e-100 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT) #variable
