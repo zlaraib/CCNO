@@ -26,11 +26,11 @@ function evolve(s, τ, n, ω, B, N, Δx, ψ, energy_sign, cutoff, ttotal)
 
     # extract the gates array generated in the gates_function file
     gates = create_gates(s, n, ω, B, N, Δx, τ,energy_sign)
-    # H = Hamiltonian_mpo(s, n, ω, B, N, Δx,energy_sign, τ)
-
+    H = Hamiltonian_mpo(s, n, ω, B, N, Δx,energy_sign)
+    # H = MPO(Hamiltonian_mpo(s,n, ω, B, N, Δx,energy_sign), s)
     # Compute and print survival probability (found from <Sz>) at each time step then apply the gates to go to the next time
     for t in 0.0:τ:ttotal
-        
+        # sz = LocalMeasurementCallback(["Sz"], s,τ)
         # compute initial expectation value of Sz(inbuilt operator in ITensors library) at the first site on the chain
         sz = expect(ψ, "Sz"; sites=1)
         # add an element sz to the end of Sz array 
@@ -55,11 +55,14 @@ function evolve(s, τ, n, ω, B, N, Δx, ψ, energy_sign, cutoff, ttotal)
         # The apply function is smart enough to determine which site indices each gate has, and then figure out where to apply it to our MPS. 
         # It automatically handles truncating the MPS and handles the non-nearest-neighbor gates in this example.
         ψ = apply(gates, ψ; cutoff)
-        # ψ = tdvp(H, ψ, τ; cutoff)
+        # ψ = tdvp(H, ψ, τ;
+        # reverse_step=false,
+        # normalize=true, cutoff)
+        # ψ = tdvp!(ψ,H, τ,ttotal,maxdim=maxdim, callback=sz)
 
         # The normalize! function is used to ensure that the MPS is properly normalized after each application of the time evolution gates. 
         # This is necessary to ensure that the MPS represents a valid quantum state.
-        normalize!(ψ)
+        # normalize!(ψ)
     end
     return Sz_array, prob_surv_array
 end
