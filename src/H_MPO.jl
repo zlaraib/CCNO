@@ -1,7 +1,7 @@
 
 include("constants.jl")
 
-function Hamiltonian_mpo(s, n, ω, B, N, Δx,energy_sign, τ)
+function Hamiltonian_mpo(s,n, ω, B, N, Δx,energy_sign)
     #input the operator terms
     os = OpSum()                                                            
 
@@ -49,7 +49,7 @@ function Hamiltonian_mpo(s, n, ω, B, N, Δx,energy_sign, τ)
             
         end
     end
-
+    # return os
     H = MPO(os,s)
     return H
 end
