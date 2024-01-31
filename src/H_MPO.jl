@@ -35,9 +35,8 @@ function Hamiltonian_mpo(s, N, B, N_sites, Δx, Δm², p, x, Δp, shape_name,L, 
     end
     println("ω = ", ω)
 
-    for i in 1:(N-1)
-        for j in i+1:N
->>>>>>> c9f2089 (added src file for MPO Hamiltonian)
+    for i in 1:(N_sites-1)
+        for j in i+1:N_sites
             # assert B vector to have a magnitude of 1 while preserving its direction.
             @assert norm(B) == 1
 
@@ -83,22 +82,23 @@ function Hamiltonian_mpo(s, N, B, N_sites, Δx, Δm², p, x, Δp, shape_name,L, 
             end
 
             if ω[i] != 0 && ω[j] != 0
-<<<<<<< HEAD
-                numerical_factor = (1/(N_sites-1))
-                os+= numerical_factor,energy_sign[i],ω[i],B[1],"Sx",i,"Id",j  
-                os+= numerical_factor,energy_sign[i],ω[i],B[2],"Sy",i,"Id",j 
-                os+= numerical_factor,energy_sign[i],ω[i],B[3],"Sz",i,"Id",j 
-                os+= numerical_factor,energy_sign[j],ω[j],B[1],"Id",i,"Sx",j
-                os+= numerical_factor,energy_sign[j],ω[j],B[2],"Id",i,"Sy",j
-                os+= numerical_factor,energy_sign[j],ω[j],B[3],"Id",i,"Sz",j
-=======
-                numerical_factor = 1/(N_sites-1)
-                os+= numerical_factor,ω[i],B[1],"Sx",i,"Id",j  
-                os+= numerical_factor,ω[i],B[2],"Sy",i,"Id",j 
-                os+= numerical_factor,ω[i],B[3],"Sz",i,"Id",j 
-                os+= numerical_factor,ω[j],B[1],"Id",i,"Sx",j
-                os+= numerical_factor,ω[j],B[2],"Id",i,"Sy",j
-                os+= numerical_factor,ω[j],B[3],"Id",i,"Sz",j
+                if energy_sign[i]*energy_sign[j]>0
+                    numerical_factor = (1/(N_sites-1))
+                    os+= numerical_factor,ω[i],B[1],"Sx",i,"Id",j  
+                    os+= numerical_factor,ω[i],B[2],"Sy",i,"Id",j 
+                    os+= numerical_factor,ω[i],B[3],"Sz",i,"Id",j 
+                    os+= numerical_factor,ω[j],B[1],"Id",i,"Sx",j
+                    os+= numerical_factor,ω[j],B[2],"Id",i,"Sy",j
+                    os+= numerical_factor,ω[j],B[3],"Id",i,"Sz",j
+                else
+                    numerical_factor = (1/(N_sites-1))
+                    os+= numerical_factor,ω[i],B[1],"Sx",i,"Id",j  
+                    os+= numerical_factor,ω[i],B[2],"Sy",i,"Id",j 
+                    os+= numerical_factor,ω[i],B[3],"Sz",i,"Id",j 
+                    os+= numerical_factor,-ω[j],B[1],"Id",i,"Sx",j
+                    os+= numerical_factor,-ω[j],B[2],"Id",i,"Sy",j
+                    os+= numerical_factor,-ω[j],B[3],"Id",i,"Sz",j
+                end
                   
 >>>>>>> c9f2089 (added src file for MPO Hamiltonian)
             end
@@ -114,24 +114,7 @@ end
 
 
     #Convert these terms to an MPO
-    # H = MPO(os,s; splitblocks=true)
     H = MPO(os,s)
-    # if outputlevel > 0
-    #     @show use_splitblocks
-    # end
-    # #    # This step makes the MPO more sparse but also
-    # #    # introduces more blocks.
-    # #   #  It generally improves DMRG performance
-    # #    # at large bond dimensions.
-    # if use_splitblocks
-    #     H = splitblocks(linkinds, H)
-    # end
-    # # Number of structural nonzero elements in a bulk
-    # # Hamiltonian MPO tensor
-    # if outputlevel > 0 && ω == fill(0, N_sites) 
-    #     @show nnz(H[end÷2])
-    #     @show nnzblocks(H[end÷2])
-    # end
     return H
 end
 
