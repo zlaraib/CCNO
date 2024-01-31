@@ -75,7 +75,7 @@ energy_sign = [i <= N_sites ÷ 2 ? 1 : -1 for i in 1:N_sites] # half sites are (
 s = siteinds("S=1/2", N_sites; conserve_qns=false) #fixed #switched conserve_qns to false to avoid fluxes error in expect function
 
 # Initialize psi to be a product state (Of all electron flavor neutrino i.e. spin up in Richers notation which is equivalently half spin up and half chain spin down in my TN notation)
-ψ₀ = productMPS(s, n -> n <= N_sites/2 ? "Up" : "Dn")
+ψ₀ = productMPS(s, n -> n <= N_sites/2 ? "Up" : "Up")
 # ψ₀= productMPS(s, N_sites -> "Up") 
 
 @time main(s, τ, B,L, N_sites, N_sites_eachflavor, tolerance,
