@@ -1,7 +1,7 @@
 using ITensors
 using Plots
 using Measures
-# using ITensorTDVP
+using ITensorTDVP
 using TimeEvoMPS
 include("../src/evolution.jl")
 include("../src/constants.jl")
@@ -39,7 +39,7 @@ function main()
     B = [0, 0, -1]
 
     # Create arrays ω_a and ω_b
-    ω_a = fill(0.2, div(N, 2))
+    ω_a = fill(0.5, div(N, 2))
     ω_b = fill(0, div(N, 2))
 
     # Defining Δω as in Rogerro(2021)
