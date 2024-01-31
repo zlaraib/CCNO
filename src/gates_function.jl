@@ -86,24 +86,33 @@ function create_gates(s, N, B, N_sites, Δx, Δm², p, x, Δp, shape_name,L, τ,
                 op("S+", s_i) * op("S-", s_j) +
                 op("S-", s_i) * op("S+", s_j))
             end
-            # add vacuum oscillation term to the Hamiltonian
-            #  if ω[i] != 0 && ω[j] != 0
-            #     hj += (1/(N_sites-1))* 
-            #     ((ω[i] * B[1] * op("Sx", s_i)* op("Id", s_j))  + (ω[j] * B[1] * op("Sx", s_j) * op("Id", s_i))) + 
-            #     ((ω[i] * B[2] * op("Sy", s_i)* op("Id", s_j))  + (ω[j] * B[2] * op("Sy", s_j) * op("Id", s_i))) +
-            #     ((ω[i] * B[3] * op("Sz", s_i)* op("Id", s_j))  + (ω[j] * B[3] * op("Sz", s_j) * op("Id", s_i))) 
-                     
-            #  end
-            if ω[i] != 0 && ω[j] != 0
-                # println("p_mod[$i]= ",p_mod[i])
-                # ω = Δm²/ (2 * p_mod[i])
-                # println("ω ", ω)
-                hj1 = (1/(N_sites-1))* (
-                    (ω[i] * B[1] * op("Sx", s_i)* op("Id", s_j))  + (ω[i] * B[2] * op("Sy", s_i)* op("Id", s_j))  + (ω[i] * B[3] * op("Sz", s_i)* op("Id", s_j)) )
-                    hj2 = (1/(N_sites-1))* (
-                    (ω[j] * B[1] * op("Id", s_i) * op("Sx", s_j)) + (ω[j] * B[2]  * op("Id", s_i)* op("Sy", s_j)) + (ω[j] * B[3]  * op("Id", s_i)* op("Sz", s_j)) )
-                    hj += hj1+ hj2
+            # # add vacuum oscillation term to the Hamiltonian
+            # if ω[i] != 0 && ω[j] != 0
+            #     # println("p_mod[$i]= ",p_mod[i])
+            #     # ω = Δm²/ (2 * p_mod[i])
+            #     # println("ω ", ω)
+            #     hj1 = (1/(N_sites-1))* (
+            #         (ω[i] * B[1] * op("Sx", s_i)* op("Id", s_j))  + (ω[i] * B[2] * op("Sy", s_i)* op("Id", s_j))  + (ω[i] * B[3] * op("Sz", s_i)* op("Id", s_j)) )
+            #         hj2 = (1/(N_sites-1))* (
+            #         (ω[j] * B[1] * op("Id", s_i) * op("Sx", s_j)) + (ω[j] * B[2]  * op("Id", s_i)* op("Sy", s_j)) + (ω[j] * B[3]  * op("Id", s_i)* op("Sz", s_j)) )
+            #         hj += hj1+ hj2
+            # end
+
+            if ω[i] != 0 || ω[j] != 0
+                if energy_sign[i]*energy_sign[j]>0
+                    hj +=  (1/(N_sites-1))* (
+                        (ω[i] * B[1] * op("Sx", s_i)* op("Id", s_j))  + (ω[i] * B[2] * op("Sy", s_i)* op("Id", s_j))  + (ω[i] * B[3] * op("Sz", s_i)* op("Id", s_j)) )
+                    hj += (1/(N_sites-1))* (
+                        (ω[j] * B[1] * op("Id", s_i) * op("Sx", s_j)) + (ω[j] * B[2]  * op("Id", s_i)* op("Sy", s_j)) + (ω[j] * B[3]  * op("Id", s_i)* op("Sz", s_j)) )
+                else 
+                    hj += (1/(N_sites-1))* (
+                        (ω[i] * B[1] * op("Sx", s_i)* op("Id", s_j))  + (ω[i] * B[2] * op("Sy", s_i)* op("Id", s_j))  + (ω[i] * B[3] * op("Sz", s_i)* op("Id", s_j)) )
+                    hj += (1/(N_sites-1))* (
+                        (-ω[j] * B[1] * op("Id", s_i) * op("Sx", s_j)) + (-ω[j] * B[2]  * op("Id", s_i)* op("Sy", s_j)) + (-ω[j] * B[3]  * op("Id", s_i)* op("Sz", s_j)) )
+            
+                end
             end
+            
 
             # make Trotter gate Gj that would correspond to each gate in the gate array of ITensors             
             Gj = exp(-im * τ/2 * hj)
