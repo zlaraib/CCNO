@@ -54,15 +54,14 @@ function evolve(s, τ, n, ω, B, N, Δx, ψ, energy_sign, cutoff, ttotal)
         # apply each gate in gates successively to the wavefunction psi (it is equivalent to time evolving psi according to the time-dependent Hamiltonian represented by gates).
         # The apply function is smart enough to determine which site indices each gate has, and then figure out where to apply it to our MPS. 
         # It automatically handles truncating the MPS and handles the non-nearest-neighbor gates in this example.
-        ψ = apply(gates, ψ; cutoff)
-        # ψ = tdvp(H, ψ, τ;
-        # reverse_step=false,
-        # normalize=true, cutoff)
+        # ψ = apply(gates, ψ; cutoff)
+        ψ = tdvp(H, ψ,  -im *τ;   nsweeps=1,
+        reverse_step=true, outputlevel=1)
         # ψ = tdvp!(ψ,H, τ,ttotal,maxdim=maxdim, callback=sz)
 
         # The normalize! function is used to ensure that the MPS is properly normalized after each application of the time evolution gates. 
         # This is necessary to ensure that the MPS represents a valid quantum state.
-        # normalize!(ψ)
+        normalize!(ψ)
     end
     return Sz_array, prob_surv_array
 end
