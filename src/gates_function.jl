@@ -7,7 +7,7 @@ s = site index array (dimensionless and unitless)
 n = no.of neutrinos (dimensionless and unitless)
 ω = vacuum oscillation angular frequency (rad/s)
 B = Normalized vector related to mixing angle in vacuum oscillations (dimensionless constant)
-N = Total no.of sites (dimensionless and unitless)
+N_sites = Total no.of sites (dimensionless and unitless)
 Δx = length of the box of interacting neutrinos at a site (cm) 
 τ = time step (sec)
 """
@@ -15,13 +15,13 @@ N = Total no.of sites (dimensionless and unitless)
 # This file generates the create_gates function that holds ITensors Trotter gates and returns the dimensionless unitary 
 # operators govered by the Hamiltonian which includes effects of the vacuum and self-interaction potential for each site.
 
-function create_gates(s, n, ω, B, N, Δx, τ,energy_sign)
+function create_gates(s, n, ω, B, N_sites, Δx, τ,energy_sign)
     # Make gates (1,2),(2,3),(3,4),... i.e. unitary gates which act on any (non-neighboring) pairs of sites in the chain.
     # Create an empty ITensors array that will be our Trotter gates
     gates = ITensor[]                                                              
     
-    for i in 1:(N-1)
-        for j in i+1:N
+    for i in 1:(N_sites-1)
+        for j in i+1:N_sites
             #s_i, s_j are non-neighbouring spin site/indices from the s array
             s_i = s[i]                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
             s_j = s[j]
@@ -37,22 +37,22 @@ function create_gates(s, n, ω, B, N, Δx, τ,energy_sign)
             if energy_sign[i]*energy_sign[j]>0
 
             #     hj = 
-            #     (4/(2*N) * √2 * G_F * (n[i])/(((Δx)^3))  * 
+            #     (4/(2*N_sites) * √2 * G_F * (n[i])/(((Δx)^3))  * 
             #     (op("Sz", s_i) * op("Sz", s_j) +
             #     1/2 * op("S+", s_i) * op("S-", s_j) +
             #     1/2 * op("S-", s_i) * op("S+", s_j)))
             #     hj += 
-            #     (4/(2*N) * √2 * G_F * (n[j])/(((Δx)^3))  * 
+            #     (4/(2*N_sites) * √2 * G_F * (n[j])/(((Δx)^3))  * 
             #     (op("Sz", s_i) * op("Sz", s_j) +
             #     1/2 * op("S-", s_i) * op("S+", s_j) +
             #     1/2 * op("S+", s_i) * op("S-", s_j)))
-            #     hj +=  -(4/(2*N) * √2 * G_F * (n[i]+ n[j])/(2* ((Δx)^3)))* 
+            #     hj +=  -(4/(2*N_sites) * √2 * G_F * (n[i]+ n[j])/(2* ((Δx)^3)))* 
             #     (( -2 *op("Sz",s_i) * op("Sz",s_j)) + 
             #     op("S+", s_i) * op("S-", s_j) +
             #     op("S-", s_i) * op("S+", s_j))
 
             # else
-                interaction_strength = (2.0/N * √2 * G_F * (n[i]+ n[j])/(2* ((Δx)^3)))
+                interaction_strength = (2.0/N_sites * √2 * G_F * (n[i]+ n[j])/(2* ((Δx)^3)))
                 hj =  interaction_strength * 
                 (op("Sz", s_i) * op("Sz", s_j) +
                 1/2 * op("S+", s_i) * op("S-", s_j) +
@@ -60,9 +60,9 @@ function create_gates(s, n, ω, B, N, Δx, τ,energy_sign)
             end
 
             if ω[i] != 0 || ω[j] != 0
-                hj += (1/(N-1))* energy_sign[i]*(
+                hj += (1/(N_sites-1))* energy_sign[i]*(
                     (ω[i] * B[1] * op("Sx", s_i)* op("Id", s_j))  + (ω[i] * B[2] * op("Sy", s_i)* op("Id", s_j))  + (ω[i] * B[3] * op("Sz", s_i)* op("Id", s_j)) )
-                hj += (1/(N-1))*energy_sign[j]* (
+                hj += (1/(N_sites-1))*energy_sign[j]* (
                     (ω[j] * B[1] * op("Id", s_i) * op("Sx", s_j)) + (ω[j] * B[2]  * op("Id", s_i)* op("Sy", s_j)) + (ω[j] * B[3]  * op("Id", s_i)* op("Sz", s_j)) )
             end
             has_fermion_string(hj) = true
@@ -76,7 +76,7 @@ function create_gates(s, n, ω, B, N, Δx, τ,energy_sign)
         end 
     end
 
-    # append! adds all the elements of a gates in reverse order (i.e. (N,N-1),(N-1,N-2),...) to the end of gates array.
+    # append! adds all the elements of a gates in reverse order (i.e. (N_sites,N_sites-1),(N_sites-1,N_sites-2),...) to the end of gates array.
     # appending reverse gates to create a second-order Trotter-Suzuki integration
     append!(gates, reverse(gates))
     return gates
