@@ -10,9 +10,9 @@ include("../src/constants.jl")
 # the values of our calculations with Rogerros calculations in Table I.
 # Here symmetric δω is used i.e. ω_a = - ω_b for a given δω plotted on x axis.
 
-N = 4
+N_sites = 4
 ttotal = 5
-function main(Δω, N, ttotal)
+function main(Δω, N_sites, ttotal)
     cutoff = 1E-14
     τ = 0.005
     tolerance  = 5E-1
@@ -53,19 +53,19 @@ function main(Δω, N, ttotal)
         c_t = 0
     end
 
-    s = siteinds("S=1/2", N; conserve_qns=false)
-    mu = ones(N)
-    n = mu .* fill((Δx)^3/(sqrt(2) * G_F), N)
+    s = siteinds("S=1/2", N_sites; conserve_qns=false)
+    mu = ones(N_sites)
+    n = mu .* fill((Δx)^3/(sqrt(2) * G_F), N_sites)
     B = [0, 0, -1]
-    Δω_array= fill(Δω, div(N, 2))
+    Δω_array= fill(Δω, div(N_sites, 2))
     # Calculate ω_a and ω_b based on Δω
     ω_a = Δω_array 
     ω_b = -Δω_array 
     
     ω = vcat(ω_a, ω_b)
-    ψ = productMPS(s, n -> n <= N/2 ? "Dn" : "Up")
-    energy_sign = [i <= N ÷ 2 ? 1 : 1 for i in 1:N]
-    Sz_array, prob_surv_array = evolve(s, τ, n, ω, B, N, Δx, ψ, energy_sign, cutoff, ttotal)
+    ψ = productMPS(s, n -> n <= N_sites/2 ? "Dn" : "Up")
+    energy_sign = [i <= N_sites ÷ 2 ? 1 : 1 for i in 1:N_sites]
+    Sz_array, prob_surv_array = evolve(s, τ, n, ω, B, N_sites, Δx, ψ, energy_sign, cutoff, ttotal)
     function find_first_local_minima_index(arr)
         n = length(arr)
         for i in 2:(n-1)
@@ -84,7 +84,7 @@ function main(Δω, N, ttotal)
     end
     t_min = τ * i_first_local_min - τ
     println("Corresponding time of first minimum index= ", t_min)
-    t_p_Rog = a_t*log(N) + b_t * sqrt(N) + c_t
+    t_p_Rog = a_t*log(N_sites) + b_t * sqrt(N_sites) + c_t
     println("t_p_Rog= ",t_p_Rog)
     # Check that our time of first minimum survival probability compared to Rogerro(2021) remains within the timestep and tolerance.
     @assert abs(t_min - t_p_Rog) <  τ + tolerance 
@@ -96,17 +96,17 @@ end
 t_p_Rog_array = Float64[]
 t_min_array = Float64[]
 
-datadir = joinpath(@__DIR__, "..","misc","datafiles","Rog", "par_"*string(N), "tt_"*string(ttotal))
+datadir = joinpath(@__DIR__, "..","misc","datafiles","Rog", "par_"*string(N_sites), "tt_"*string(ttotal))
 isdir(datadir) || mkpath(datadir)
 for Δω in Δω_values
-    t_p_Rog, t_min = main(Δω, N, ttotal)
+    t_p_Rog, t_min = main(Δω, N_sites, ttotal)
     push!(t_p_Rog_array, t_p_Rog)
     push!(t_min_array, t_min)
 end
 fname1 = joinpath(datadir, "δω_tpRog_tpmine.dat")
 writedlm(fname1, [Δω_values t_p_Rog_array t_min_array])
 
-plotdir = joinpath(@__DIR__, "..","misc","plots","Rog", "par_"*string(N), "tt_"*string(ttotal))
+plotdir = joinpath(@__DIR__, "..","misc","plots","Rog", "par_"*string(N_sites), "tt_"*string(ttotal))
     
 # check if a directory exists, and if it doesn't, create it using mkpath
 isdir(plotdir) || mkpath(plotdir)
@@ -114,4 +114,4 @@ isdir(plotdir) || mkpath(plotdir)
 # Create the plot
 plot(Δω_values, t_p_Rog_array, label="Rogerro(2021)", xlabel="δω", ylabel="Minimum Time(tₚ)", title="Table I. Rogerro(2021) ", aspect_ratio=:auto,margin= 10mm)
 plot!(Δω_values, t_min_array, label="Our results")
-savefig(joinpath(plotdir,"t_p_vs_symmetric del_omega for N$(N).pdf"))
+savefig(joinpath(plotdir,"t_p_vs_symmetric del_omega for N_sites$(N_sites).pdf"))
