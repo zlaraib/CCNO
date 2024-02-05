@@ -30,7 +30,6 @@ function evolve(s, τ, n, ω, B, N, Δx, ψ, energy_sign, cutoff, ttotal)
     # H = MPO(Hamiltonian_mpo(s,n, ω, B, N, Δx,energy_sign), s)
     # Compute and print survival probability (found from <Sz>) at each time step then apply the gates to go to the next time
     for t in 0.0:τ:ttotal
-        # sz = LocalMeasurementCallback(["Sz"], s,τ)
         # compute initial expectation value of Sz(inbuilt operator in ITensors library) at the first site on the chain
         sz = expect(ψ, "Sz"; sites=1)
         # add an element sz to the end of Sz array 
@@ -38,7 +37,7 @@ function evolve(s, τ, n, ω, B, N, Δx, ψ, energy_sign, cutoff, ttotal)
         
         # survival probability for a (we took first) neutrino to be found in its initial flavor state (in this case a spin down)
         prob_surv = 0.5 * (1 - 2 * sz)
-        # prob_surv = 0.5 * (1 - (( 4/N )* sz)) 
+        
         # add an element prob_surv to the end of  prob_surv_array 
         push!(prob_surv_array, prob_surv)
 
@@ -54,10 +53,12 @@ function evolve(s, τ, n, ω, B, N, Δx, ψ, energy_sign, cutoff, ttotal)
         # apply each gate in gates successively to the wavefunction psi (it is equivalent to time evolving psi according to the time-dependent Hamiltonian represented by gates).
         # The apply function is smart enough to determine which site indices each gate has, and then figure out where to apply it to our MPS. 
         # It automatically handles truncating the MPS and handles the non-nearest-neighbor gates in this example.
-        # ψ = apply(gates, ψ; cutoff)
-        ψ = tdvp(H, ψ,  -im *τ;   nsweeps=1,
-        reverse_step=true, outputlevel=1)
-        # ψ = tdvp!(ψ,H, τ,ttotal,maxdim=maxdim, callback=sz)
+        ψ = apply(gates, ψ; cutoff)
+        # ψ = tdvp(H, ψ,  -im *τ;   nsweeps=1,
+        # reverse_step=true, outputlevel=1)
+        
+        # ψ = tdvp(H, -im *τ,ψ;
+        # nsite=2, time_step= -im * τ/2, cutoff,outputlevel=1)
 
         # The normalize! function is used to ensure that the MPS is properly normalized after each application of the time evolution gates. 
         # This is necessary to ensure that the MPS represents a valid quantum state.
