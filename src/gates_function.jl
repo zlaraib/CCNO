@@ -4,7 +4,7 @@ include("constants.jl")
 """
 Expected units of the quantities defined in the files in tests directory that are being used in the gates function.                                                                   
 s = site index array (dimensionless and unitless)          
-n = no.of neutrinos (dimensionless and unitless)
+N = no.of neutrinos (dimensionless and unitless)
 ω = vacuum oscillation angular frequency (rad/s)
 B = Normalized vector related to mixing angle in vacuum oscillations (dimensionless constant)
 N_sites = Total no.of sites (dimensionless and unitless)
@@ -15,7 +15,7 @@ N_sites = Total no.of sites (dimensionless and unitless)
 # This file generates the create_gates function that holds ITensors Trotter gates and returns the dimensionless unitary 
 # operators govered by the Hamiltonian which includes effects of the vacuum and self-interaction potential for each site.
 
-function create_gates(s, n, ω, B, N_sites, Δx, τ,energy_sign)
+function create_gates(s, N, ω, B, N_sites, Δx, τ,energy_sign)
     # Make gates (1,2),(2,3),(3,4),... i.e. unitary gates which act on any (non-neighboring) pairs of sites in the chain.
     # Create an empty ITensors array that will be our Trotter gates
     gates = ITensor[]                                                              
@@ -37,22 +37,22 @@ function create_gates(s, n, ω, B, N_sites, Δx, τ,energy_sign)
             if energy_sign[i]*energy_sign[j]>0
 
             #     hj = 
-            #     (4/(2*N_sites) * √2 * G_F * (n[i])/(((Δx)^3))  * 
+            #     (4/(2*N_sites) * √2 * G_F * (N[i])/(((Δx)^3))  * 
             #     (op("Sz", s_i) * op("Sz", s_j) +
             #     1/2 * op("S+", s_i) * op("S-", s_j) +
             #     1/2 * op("S-", s_i) * op("S+", s_j)))
             #     hj += 
-            #     (4/(2*N_sites) * √2 * G_F * (n[j])/(((Δx)^3))  * 
+            #     (4/(2*N_sites) * √2 * G_F * (N[j])/(((Δx)^3))  * 
             #     (op("Sz", s_i) * op("Sz", s_j) +
             #     1/2 * op("S-", s_i) * op("S+", s_j) +
             #     1/2 * op("S+", s_i) * op("S-", s_j)))
-            #     hj +=  -(4/(2*N_sites) * √2 * G_F * (n[i]+ n[j])/(2* ((Δx)^3)))* 
+            #     hj +=  -(4/(2*N_sites) * √2 * G_F * (N[i]+ N[j])/(2* ((Δx)^3)))* 
             #     (( -2 *op("Sz",s_i) * op("Sz",s_j)) + 
             #     op("S+", s_i) * op("S-", s_j) +
             #     op("S-", s_i) * op("S+", s_j))
 
             # else
-                interaction_strength = (2.0/N_sites * √2 * G_F * (n[i]+ n[j])/(2* ((Δx)^3)))
+                interaction_strength = (2.0/N_sites * √2 * G_F * (N[i]+ N[j])/(2* ((Δx)^3)))
                 hj =  interaction_strength * 
                 (op("Sz", s_i) * op("Sz", s_j) +
                 1/2 * op("S+", s_i) * op("S-", s_j) +
