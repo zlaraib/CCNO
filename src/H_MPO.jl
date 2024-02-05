@@ -1,7 +1,7 @@
 
 include("constants.jl")
 
-function Hamiltonian_mpo(s,n, ω, B, N_sites, Δx,energy_sign)
+function Hamiltonian_mpo(s,N, ω, B, N_sites, Δx,energy_sign)
     #input the operator terms
     os = OpSum()                                                            
 
@@ -15,12 +15,12 @@ function Hamiltonian_mpo(s,n, ω, B, N_sites, Δx,energy_sign)
             # mu pairs divided by 2 to avoid double counting
              
             if energy_sign[i]*energy_sign[j]>0
-                interaction_strength = (2.0/N_sites * √2 * G_F * (n[i]+ n[j])/(2*((Δx)^3))) 
+                interaction_strength = (2.0/N_sites * √2 * G_F * (N[i]+ N[j])/(2*((Δx)^3))) 
                 os+= interaction_strength,"Sz",i,"Sz", j 
                 os+= 1/2,interaction_strength,"S+",i,"S-",j
                 os+=  1/2,interaction_strength,"S-",i,"S+",j
             else
-                interaction_strength = (2.0/N_sites * √2 * G_F * (n[i]+ n[j])/(2*((Δx)^3))) 
+                interaction_strength = (2.0/N_sites * √2 * G_F * (N[i]+ N[j])/(2*((Δx)^3))) 
                 os+= 2,interaction_strength ,"Sz",i,"Sz", j 
                 os+= -interaction_strength ,"S+",i,"S-",j
                 os+=  -interaction_strength ,"S-",i,"S+",j
