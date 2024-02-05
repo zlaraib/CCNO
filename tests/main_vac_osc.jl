@@ -36,14 +36,14 @@ function main()
 
   # Concatenate ω_a and ω_b to form ω with N_sites elements. Each element of the array is a const pi.
   ω = vcat(ω_a, ω_b)
-
-  gates = create_gates(s, N, ω, B, N_sites, Δx, τ)
   
   # Initialize psi to be a product state (First half to be spin down and other half to be spin up)
   ψ = productMPS(s, N -> N <= N_sites/2 ? "Dn" : "Up")
 
+  energy_sign = [i <= N_sites ÷ 2 ? 1 : 1 for i in 1:N_sites]
+
   #extract output from the expect.jl file where the survival probability values were computed at each timestep
-  Sz_array, prob_surv_array = evolve(s, τ, N, ω, B, N_sites, Δx, ψ, cutoff, ttotal)
+  Sz_array, prob_surv_array = evolve(s, τ, N, ω, B, N_sites, Δx, ψ, energy_sign, cutoff,ttotal)
   
   expected_sz_array = Float64[]
   expected_sz= Float64[]
