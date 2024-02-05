@@ -2,7 +2,7 @@ using ITensors
 using Plots
 using Measures
 using ITensorTDVP
-using TimeEvoMPS
+# using TimeEvoMPS
 include("../src/evolution.jl")
 include("../src/constants.jl")
 
@@ -11,14 +11,14 @@ include("../src/constants.jl")
 # which is a product state where each site alternates between up and down.
 
 function main()
-    N = 10 # number of sites (NEED TO GO TILL 96 for Rog_results)
+    N = 4 # number of sites (NEED TO GO TILL 96 for Rog_results)
     cutoff = 1E-14 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT)
-    τ = 0.05 # time step (NEED TO BE 0.05 for Rog_results)
-    ttotal = 20 # total time of evolution (NEED TO GO TILL 50 for Rog_results)
+    τ = 0.25 # time step (NEED TO BE 0.05 for Rog_results)
+    ttotal = 50 # total time of evolution (NEED TO GO TILL 50 for Rog_results)
     tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution
     Δx = 1E-3 # length of the box of interacting neutrinos at a site/shape function width of neutrinos in cm 
-    # maxdim = 10000
-    cutoff = 1E-14
+    # maxdim = 1
+
     # s is an array of spin 1/2 tensor indices (Index objects) which will be the site or physical indices of the MPS.
     # We overload siteinds function, which generates custom Index array with Index objects having the tag of total spin quantum number for all N.
     # conserve_qns=false doesnt conserve the total spin quantum number "S" in the system as it evolves
@@ -36,10 +36,12 @@ function main()
     n = mu .* fill((Δx)^3/(sqrt(2) * G_F), N)
     
     # Create a B vector which would be same for all N particles 
-    B = [0, 0, -1]
-
+    # B = [0, 0, -1]
+    theta_nu= 0.5986 #rad # =34.3 degrees
+    B = [sin(2 *theta_nu), 0, -cos(2*theta_nu)]
+    B = B / norm(B) 
     # Create arrays ω_a and ω_b
-    ω_a = fill(0.5, div(N, 2))
+    ω_a = fill(0.2, div(N, 2))
     ω_b = fill(0, div(N, 2))
 
     # Defining Δω as in Rogerro(2021)
@@ -52,7 +54,7 @@ function main()
     energy_sign = [i <= N ÷ 2 ? 1 : 1 for i in 1:N]
 
     #extract output from the expect.jl file where the survival probability values were computed at each timestep
-    Sz_array, prob_surv_array = evolve(s, τ, n, ω, B, N, Δx, ψ, energy_sign, cutoff, ttotal)
+    Sz_array, prob_surv_array = evolve(s, τ, n, ω, B, N, Δx, ψ, energy_sign, cutoff,ttotal)
 
     # This function scans through the array, compares each element with its neighbors, 
     # and returns the index of the first local minimum it encounters. 
