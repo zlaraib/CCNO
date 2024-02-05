@@ -36,12 +36,12 @@ function main()
     n = mu .* fill((Δx)^3/(sqrt(2) * G_F), N)
     
     # Create a B vector which would be same for all N particles 
-    # B = [0, 0, -1]
+    B = [0, 0, -1]
     theta_nu= 0.1 #0.5986 #rad # =34.3 degrees
-    B = [sin(2 *theta_nu), 0, -cos(2*theta_nu)]
-    B = B / norm(B) 
+    # B = [sin(2 *theta_nu), 0, -cos(2*theta_nu)]
+    # B = B / norm(B) 
     # Create arrays ω_a and ω_b
-    ω_a = fill(0.2, div(N, 2))
+    ω_a = fill(0.5, div(N, 2))
     ω_b = fill(0, div(N, 2))
 
     # Defining Δω as in Rogerro(2021)
@@ -93,7 +93,7 @@ function main()
     # Plotting P_surv vs t
     plot(0.0:τ:τ*(length(prob_surv_array)-1), prob_surv_array, xlabel = "t", ylabel = "Survival Probabillity p(t)",title = "Running main_Rogerro script", legend = false, size=(700, 600), aspect_ratio=:auto,margin= 10mm, label= ["My_plot_for_N$(N)"]) 
     scatter!([t_p_Rog],[prob_surv_array[i_first_local_min]], label= ["t_p_Rog"])
-    scatter!([t_min],[prob_surv_array[i_first_local_min]], label= ["My_t_min)"], legendfontsize=5, legend=:topright)
+    scatter!([t_min],[prob_surv_array[i_first_local_min]], label= ["My_t_min)"], legendfontsize=5, legend=:bottomleft)
     # Save the plot as a PDF file
     savefig("Survival probability vs t (Rog)for N$(N).pdf")
 end 
