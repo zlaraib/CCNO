@@ -1,15 +1,15 @@
 
 # This file plots using the datafiles generated for table I(Rog) 
-# from julia testfile of t_p vs N. 
+# from julia testfile of t_p vs N_sites. 
 
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 
-# Define the directory and file name, N and ttotal are inputs that need to be formatted into the file path
-N = 12  
+# Define the directory and file name, N_sites and ttotal are inputs that need to be formatted into the file path
+N_sites = 12  
 ttotal = 10 
-file_path = f"misc/datafiles/Rog/par_{N}/tt_{ttotal}/δω_tpRog_tpmine.dat"
+file_path = f"misc/datafiles/Rog/par_{N_sites}/tt_{ttotal}/δω_tpRog_tpmine.dat"
 
 # Read the data from the file
 data = np.loadtxt(file_path)
