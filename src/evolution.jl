@@ -4,7 +4,7 @@ include("H_MPO.jl")
 Expected units of the quantities defined in the files in tests directory that are being used in the evolve function                                                                   
 s = site index array (dimensionless and unitless) 
 τ = time step (sec)      
-n = no.of neutrinos (dimensionless and unitless)
+N = no.of neutrinos (dimensionless and unitless)
 ω = vacuum oscillation angular frequency (rad/s)
 B = Normalized vector related to mixing angle in vacuum oscillations (dimensionless constant)
 N_sites = Total no.of sites (dimensionless and unitless)
@@ -17,7 +17,7 @@ ttotal = ttotal time (sec)
 # with their survival probabilities. The time evolution utilizes the unitary operators created as gates from the create_gates function.
 # The <Sz> and Survival probabilities output from this function are unitless. 
 
-function evolve(s, τ, n, ω, B, N_sites, Δx, ψ, energy_sign, cutoff, ttotal)
+function evolve(s, τ, N, ω, B, N_sites, Δx, ψ, energy_sign, cutoff, ttotal)
     
     # Create empty array to store sz values 
     Sz_array = Float64[]
@@ -25,9 +25,9 @@ function evolve(s, τ, n, ω, B, N_sites, Δx, ψ, energy_sign, cutoff, ttotal)
     prob_surv_array = Float64[]
 
     # extract the gates array generated in the gates_function file
-    gates = create_gates(s, n, ω, B, N_sites, Δx, τ,energy_sign)
-    H = Hamiltonian_mpo(s, n, ω, B, N_sites, Δx,energy_sign)
-    # H = MPO(Hamiltonian_mpo(s,n, ω, B, N_sites, Δx,energy_sign), s)
+    gates = create_gates(s, N, ω, B, N_sites, Δx, τ,energy_sign)
+    H = Hamiltonian_mpo(s, N, ω, B, N_sites, Δx,energy_sign)
+    # H = MPO(Hamiltonian_mpo(s,N, ω, B, N_sites, Δx,energy_sign), s)
     # Compute and print survival probability (found from <Sz>) at each time step then apply the gates to go to the next time
     for t in 0.0:τ:ttotal
         # compute initial expectation value of Sz(inbuilt operator in ITensors library) at the first site on the chain
@@ -41,7 +41,7 @@ function evolve(s, τ, n, ω, B, N_sites, Δx, ψ, energy_sign, cutoff, ttotal)
         # add an element prob_surv to the end of  prob_surv_array 
         push!(prob_surv_array, prob_surv)
 
-        if n == fill(0, N_sites)
+        if N == fill(0, N_sites)
             println("$t $sz")
         else println("$t $prob_surv")
         end
