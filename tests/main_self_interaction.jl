@@ -45,8 +45,10 @@ function main()
     # Initialize psi to be a product state (First half to be spin down and other half to be spin up)
     ψ = productMPS(s, N -> N <= N_sites/2 ? "Dn" : "Up")
 
+    energy_sign = [i <= N_sites ÷ 2 ? 1 : 1 for i in 1:N_sites]
+
     #extract output from the expect.jl file where the survival probability values were computed at each timestep
-    Sz_array, prob_surv_array = evolve(s, τ, N, ω, B, N_sites, Δx, ψ, cutoff, ttotal)
+    Sz_array, prob_surv_array = evolve(s, τ, N, ω, B, N_sites, Δx, ψ, energy_sign, cutoff,ttotal)
 
     # This function scans through the array, compares each element with its neighbors, 
     # and returns the index of the first local minimum it encounters. 
