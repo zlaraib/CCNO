@@ -55,7 +55,7 @@ function main(Δω, N_sites, ttotal)
 
     s = siteinds("S=1/2", N_sites; conserve_qns=false)
     mu = ones(N_sites)
-    n = mu .* fill((Δx)^3/(sqrt(2) * G_F), N_sites)
+    N = mu .* fill((Δx)^3/(sqrt(2) * G_F), N_sites)
     B = [0, 0, -1]
     Δω_array= fill(Δω, div(N_sites, 2))
     # Calculate ω_a and ω_b based on Δω
@@ -63,12 +63,12 @@ function main(Δω, N_sites, ttotal)
     ω_b = -Δω_array 
     
     ω = vcat(ω_a, ω_b)
-    ψ = productMPS(s, n -> n <= N_sites/2 ? "Dn" : "Up")
+    ψ = productMPS(s, N -> N <= N_sites/2 ? "Dn" : "Up")
     energy_sign = [i <= N_sites ÷ 2 ? 1 : 1 for i in 1:N_sites]
-    Sz_array, prob_surv_array = evolve(s, τ, n, ω, B, N_sites, Δx, ψ, energy_sign, cutoff, ttotal)
+    Sz_array, prob_surv_array = evolve(s, τ, N, ω, B, N_sites, Δx, ψ, energy_sign, cutoff, ttotal)
     function find_first_local_minima_index(arr)
-        n = length(arr)
-        for i in 2:(n-1)
+        N = length(arr)
+        for i in 2:(N-1)
             if arr[i] < arr[i-1] && arr[i] < arr[i+1]
                 return i
             end
