@@ -73,10 +73,10 @@ function create_gates(s, n, ω, B, N, Δx, τ,energy_sign)
             
                 end
             end
-            
+            has_fermion_string(hj) = true
             # make Trotter gate Gj that would correspond to each gate in the gate array of ITensors             
             Gj = exp(-im * τ/2 * hj)
-            
+            has_fermion_string(hj) = true
             # The push! function adds (appends) an element to the end of an array;
             # ! performs an operation without creating a new object, (in a way overwites the previous array in consideration); 
             # i.e. we append a new element Gj (which is an ITensor object representing a gate) to the end of the gates array.
