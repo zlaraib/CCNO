@@ -30,7 +30,7 @@ function main()
     mu = ones(N_sites) # erg
     
     # Create an array of dimension N_sites and fill it with the value 1/(sqrt(2) * G_F). This is the number of neutrinos. 
-    n = mu .* fill((Δx)^3/(sqrt(2) * G_F), N_sites)
+    N = mu .* fill((Δx)^3/(sqrt(2) * G_F), N_sites)
     
     # Create a B vector which would be same for all N_sites particles 
     B = [0, 0, 1]
@@ -43,17 +43,17 @@ function main()
     ω = vcat(ω_a, ω_b)
 
     # Initialize psi to be a product state (First half to be spin down and other half to be spin up)
-    ψ = productMPS(s, n -> n <= N_sites/2 ? "Dn" : "Up")
+    ψ = productMPS(s, N -> N <= N_sites/2 ? "Dn" : "Up")
 
     #extract output from the expect.jl file where the survival probability values were computed at each timestep
-    Sz_array, prob_surv_array = evolve(s, τ, n, ω, B, N_sites, Δx, ψ, cutoff, ttotal)
+    Sz_array, prob_surv_array = evolve(s, τ, N, ω, B, N_sites, Δx, ψ, cutoff, ttotal)
 
     # This function scans through the array, compares each element with its neighbors, 
     # and returns the index of the first local minimum it encounters. 
     # If no local minimum is found, it returns -1 to indicate that.
     function find_first_local_minima_index(arr)
-        n = length(arr)
-        for i in 2:(n-1)
+        N = length(arr)
+        for i in 2:(N-1)
             if arr[i] < arr[i-1] && arr[i] < arr[i+1]
                 return i
             end
