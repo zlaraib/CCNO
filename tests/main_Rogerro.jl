@@ -37,7 +37,7 @@ function main()
     
     # Create a B vector which would be same for all N particles 
     # B = [0, 0, -1]
-    theta_nu= 0.5986 #rad # =34.3 degrees
+    theta_nu= 0.1 #0.5986 #rad # =34.3 degrees
     B = [sin(2 *theta_nu), 0, -cos(2*theta_nu)]
     B = B / norm(B) 
     # Create arrays ω_a and ω_b
