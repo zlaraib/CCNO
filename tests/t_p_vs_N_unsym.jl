@@ -28,18 +28,18 @@ function main(N_sites)
     b_t = 0
     c_t = 1.62
     mu = ones(N_sites)
-    n = mu .* fill((Δx)^3/(sqrt(2) * G_F), N_sites)
+    N = mu .* fill((Δx)^3/(sqrt(2) * G_F), N_sites)
     B = [0, 0, -1]
     ω_a = fill(0.5, div(N_sites, 2))
     ω_b = fill(0, div(N_sites, 2))
     Δω = (ω_a - ω_b)/2
     ω = vcat(ω_a, ω_b)
-    ψ = productMPS(s, n -> n <= N_sites/2 ? "Dn" : "Up")
+    ψ = productMPS(s, N -> N <= N_sites/2 ? "Dn" : "Up")
     energy_sign = [i <= N_sites ÷ 2 ? 1 : 1 for i in 1:N_sites]
-    Sz_array, prob_surv_array = evolve(s, τ, n, ω, B, N_sites, Δx, ψ, energy_sign, cutoff, ttotal)
+    Sz_array, prob_surv_array = evolve(s, τ, N, ω, B, N_sites, Δx, ψ, energy_sign, cutoff, ttotal)
     function find_first_local_minima_index(arr)
-        n = length(arr)
-        for i in 2:(n-1)
+        N = length(arr)
+        for i in 2:(N-1)
             if arr[i] < arr[i-1] && arr[i] < arr[i+1]
                 return i
             end
@@ -85,6 +85,6 @@ plotdir = joinpath(@__DIR__, "..","misc","plots","Rog", "N_start_"*string(N_star
 isdir(plotdir) || mkpath(plotdir)
 
 # Create the plot
-plot(N_values, t_p_Rog_array, label="Rog_tp", xlabel="N_sites", ylabel="Minimum Time (t_p)", title = "Table I Rogerro(2021) \n expanded for a unsymmetric δω=0.25", legend=:topleft, aspect_ratio=:auto,margin= 10mm)
+plot(N_values, t_p_Rog_array, label="Rog_tp", xlabel="N_sites", ylabel="Minimum Time (t_p)", title = "Table I Rogerro(2021) \N expanded for a unsymmetric δω=0.25", legend=:topleft, aspect_ratio=:auto,margin= 10mm)
 plot!(N_values, t_min_array, label="Our_tp")
 savefig(joinpath(plotdir,"t_p_vs_N_for_unsymmetric_del_w.pdf"))
