@@ -25,7 +25,7 @@ function main()
   mu = zeros(N_sites)
                                 
   # Create an array of dimension N_sites and fill it with the value 1/(sqrt(2) * G_F). This is the number of neutrinos.
-  n = mu.* fill((Δx)^3/(sqrt(2) * G_F), N_sites)
+  N = mu.* fill((Δx)^3/(sqrt(2) * G_F), N_sites)
       
   # Create a B vector which would be same for all N_sites particles 
   B = [1, 0, 0]          
@@ -37,13 +37,13 @@ function main()
   # Concatenate ω_a and ω_b to form ω with N_sites elements. Each element of the array is a const pi.
   ω = vcat(ω_a, ω_b)
 
-  gates = create_gates(s, n, ω, B, N_sites, Δx, τ)
+  gates = create_gates(s, N, ω, B, N_sites, Δx, τ)
   
   # Initialize psi to be a product state (First half to be spin down and other half to be spin up)
-  ψ = productMPS(s, n -> n <= N_sites/2 ? "Dn" : "Up")
+  ψ = productMPS(s, N -> N <= N_sites/2 ? "Dn" : "Up")
 
   #extract output from the expect.jl file where the survival probability values were computed at each timestep
-  Sz_array, prob_surv_array = evolve(s, τ, n, ω, B, N_sites, Δx, ψ, cutoff, ttotal)
+  Sz_array, prob_surv_array = evolve(s, τ, N, ω, B, N_sites, Δx, ψ, cutoff, ttotal)
   
   expected_sz_array = Float64[]
   expected_sz= Float64[]
