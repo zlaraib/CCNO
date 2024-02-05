@@ -6,7 +6,7 @@ include("../src/evolution.jl")
 include("../src/constants.jl")
 
 # This file evolves the system under the vaccum oscillations + self-interaction
-# Hamiltonian and then plots the system size N on x axis while minimum time tp  
+# Hamiltonian and then plots the system size N_sites on x axis while minimum time tp  
 # on the y-axis. It then compares the values of our calculations with Rogerros 
 # calculations in Table I.
 # Here a fixed, but unsymmetric δω is used i.e. ω_a = - ω_b for a given δω = 0.25.
@@ -16,27 +16,27 @@ N_start = 4
 N_step= 4
 N_stop= 24
 
-function main(N)
+function main(N_sites)
     cutoff = 1E-14
     τ = 0.05
     ttotal = 10
     tolerance  = 5E-1
     Δx = 1E-3
-    s = siteinds("S=1/2", N; conserve_qns=false)
+    s = siteinds("S=1/2", N_sites; conserve_qns=false)
     # check for Δω = 0.25
     a_t = 1.224
     b_t = 0
     c_t = 1.62
-    mu = ones(N)
-    n = mu .* fill((Δx)^3/(sqrt(2) * G_F), N)
+    mu = ones(N_sites)
+    n = mu .* fill((Δx)^3/(sqrt(2) * G_F), N_sites)
     B = [0, 0, -1]
-    ω_a = fill(0.5, div(N, 2))
-    ω_b = fill(0, div(N, 2))
+    ω_a = fill(0.5, div(N_sites, 2))
+    ω_b = fill(0, div(N_sites, 2))
     Δω = (ω_a - ω_b)/2
     ω = vcat(ω_a, ω_b)
-    ψ = productMPS(s, n -> n <= N/2 ? "Dn" : "Up")
-    energy_sign = [i <= N ÷ 2 ? 1 : 1 for i in 1:N]
-    Sz_array, prob_surv_array = evolve(s, τ, n, ω, B, N, Δx, ψ, energy_sign, cutoff, ttotal)
+    ψ = productMPS(s, n -> n <= N_sites/2 ? "Dn" : "Up")
+    energy_sign = [i <= N_sites ÷ 2 ? 1 : 1 for i in 1:N_sites]
+    Sz_array, prob_surv_array = evolve(s, τ, n, ω, B, N_sites, Δx, ψ, energy_sign, cutoff, ttotal)
     function find_first_local_minima_index(arr)
         n = length(arr)
         for i in 2:(n-1)
@@ -55,7 +55,7 @@ function main(N)
     end
     t_min = τ * i_first_local_min - τ
     println("Corresponding time of first minimum index= ", t_min)
-    t_p_Rog = a_t*log(N) + b_t * sqrt(N) + c_t
+    t_p_Rog = a_t*log(N_sites) + b_t * sqrt(N_sites) + c_t
     println("t_p_Rog= ",t_p_Rog)
     # Check that our time of first minimum survival probability compared to Rogerro(2021) remains within the timestep and tolerance.
     @assert abs(t_min - t_p_Rog) <  τ + tolerance 
@@ -65,13 +65,13 @@ end
 datadir = joinpath(@__DIR__, "..","misc","datafiles","Rog", "N_start_"*string(N_start), "N_stop_"*string(N_stop))
 isdir(datadir) || mkpath(datadir)
 
-# Arrays to store t_p_Rog and t_min for each N
+# Arrays to store t_p_Rog and t_min for each N_sites
 t_p_Rog_array = Float64[]
 t_min_array = Float64[]
 
 # Loop from N_start to N_stop particles with an increment of N_step particles each time
-for N in N_start: N_step:N_stop
-    t_p_Rog, t_min = @time main(N)
+for N_sites in N_start: N_step:N_stop
+    t_p_Rog, t_min = @time main(N_sites)
     push!(t_p_Rog_array, t_p_Rog)
     push!(t_min_array, t_min)
 end
@@ -85,6 +85,6 @@ plotdir = joinpath(@__DIR__, "..","misc","plots","Rog", "N_start_"*string(N_star
 isdir(plotdir) || mkpath(plotdir)
 
 # Create the plot
-plot(N_values, t_p_Rog_array, label="Rog_tp", xlabel="N", ylabel="Minimum Time (t_p)", title = "Table I Rogerro(2021) \n expanded for a unsymmetric δω=0.25", legend=:topleft, aspect_ratio=:auto,margin= 10mm)
+plot(N_values, t_p_Rog_array, label="Rog_tp", xlabel="N_sites", ylabel="Minimum Time (t_p)", title = "Table I Rogerro(2021) \n expanded for a unsymmetric δω=0.25", legend=:topleft, aspect_ratio=:auto,margin= 10mm)
 plot!(N_values, t_min_array, label="Our_tp")
 savefig(joinpath(plotdir,"t_p_vs_N_for_unsymmetric_del_w.pdf"))
