@@ -36,22 +36,22 @@ function create_gates(s, n, ω, B, N, Δx, τ,energy_sign)
             
             if energy_sign[i]*energy_sign[j]>0
 
-                hj = 
-                (4/(2*N) * √2 * G_F * (n[i])/(((Δx)^3))  * 
-                (op("Sz", s_i) * op("Sz", s_j) +
-                1/2 * op("S+", s_i) * op("S-", s_j) +
-                1/2 * op("S-", s_i) * op("S+", s_j)))
-                hj += 
-                (4/(2*N) * √2 * G_F * (n[j])/(((Δx)^3))  * 
-                (op("Sz", s_i) * op("Sz", s_j) +
-                1/2 * op("S-", s_i) * op("S+", s_j) +
-                1/2 * op("S+", s_i) * op("S-", s_j)))
-                hj +=  -(4/(2*N) * √2 * G_F * (n[i]+ n[j])/(2* ((Δx)^3)))* 
-                (( -2 *op("Sz",s_i) * op("Sz",s_j)) + 
-                op("S+", s_i) * op("S-", s_j) +
-                op("S-", s_i) * op("S+", s_j))
+            #     hj = 
+            #     (4/(2*N) * √2 * G_F * (n[i])/(((Δx)^3))  * 
+            #     (op("Sz", s_i) * op("Sz", s_j) +
+            #     1/2 * op("S+", s_i) * op("S-", s_j) +
+            #     1/2 * op("S-", s_i) * op("S+", s_j)))
+            #     hj += 
+            #     (4/(2*N) * √2 * G_F * (n[j])/(((Δx)^3))  * 
+            #     (op("Sz", s_i) * op("Sz", s_j) +
+            #     1/2 * op("S-", s_i) * op("S+", s_j) +
+            #     1/2 * op("S+", s_i) * op("S-", s_j)))
+            #     hj +=  -(4/(2*N) * √2 * G_F * (n[i]+ n[j])/(2* ((Δx)^3)))* 
+            #     (( -2 *op("Sz",s_i) * op("Sz",s_j)) + 
+            #     op("S+", s_i) * op("S-", s_j) +
+            #     op("S-", s_i) * op("S+", s_j))
 
-            else
+            # else
                 interaction_strength = (2.0/N * √2 * G_F * (n[i]+ n[j])/(2* ((Δx)^3)))
                 hj =  interaction_strength * 
                 (op("Sz", s_i) * op("Sz", s_j) +
