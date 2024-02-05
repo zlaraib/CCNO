@@ -53,14 +53,14 @@ function create_gates(s, n, ω, B, N, Δx, τ,energy_sign)
 
             else
                 interaction_strength = (2.0/N * √2 * G_F * (n[i]+ n[j])/(2* ((Δx)^3)))
-                hj =  -interaction_strength * 
-                (( -2 *op("Sz",s_i) * op("Sz",s_j)) + 
-                op("S+", s_i) * op("S-", s_j) +
-                op("S-", s_i) * op("S+", s_j))
+                hj =  interaction_strength * 
+                (op("Sz", s_i) * op("Sz", s_j) +
+                1/2 * op("S+", s_i) * op("S-", s_j) +
+                1/2 * op("S-", s_i) * op("S+", s_j))
             end
 
             if ω[i] != 0 || ω[j] != 0
-                hj += (1/(N-1))* energy_sign[i](
+                hj += (1/(N-1))* energy_sign[i]*(
                     (ω[i] * B[1] * op("Sx", s_i)* op("Id", s_j))  + (ω[i] * B[2] * op("Sy", s_i)* op("Id", s_j))  + (ω[i] * B[3] * op("Sz", s_i)* op("Id", s_j)) )
                 hj += (1/(N-1))*energy_sign[j]* (
                     (ω[j] * B[1] * op("Id", s_i) * op("Sx", s_j)) + (ω[j] * B[2]  * op("Id", s_i)* op("Sy", s_j)) + (ω[j] * B[3]  * op("Id", s_i)* op("Sz", s_j)) )
