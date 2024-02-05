@@ -26,7 +26,9 @@ function main(N_sites)
     Δω = (ω_a - ω_b)/2
     ω = vcat(ω_a, ω_b)
     ψ = productMPS(s, N -> N <= N_sites/2 ? "Dn" : "Up")
-    Sz_array, prob_surv_array = evolve(s, τ, N, ω, B, N_sites, Δx, ψ, cutoff, ttotal)
+    energy_sign = [i <= N_sites ÷ 2 ? 1 : 1 for i in 1:N_sites]
+    Sz_array, prob_surv_array = evolve(s, τ, N, ω, B, N_sites, Δx, ψ, energy_sign, cutoff,ttotal)
+
     function find_first_local_minima_index(arr)
         N = length(arr)
         for i in 2:(N-1)
