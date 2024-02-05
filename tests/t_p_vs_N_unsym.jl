@@ -1,6 +1,7 @@
 using ITensors
 using Plots
 using Measures
+using DelimitedFiles
 include("../src/evolution.jl")
 include("../src/constants.jl")
 
@@ -8,7 +9,7 @@ include("../src/constants.jl")
 # Hamiltonian and then plots the system size N on x axis while minimum time tp  
 # on the y-axis. It then compares the values of our calculations with Rogerros 
 # calculations in Table I.
-# Here a fixed, but unsymmetric δω is used i.e. ω_a = - ω_b for a given δω = 1.0.
+# Here a fixed, but unsymmetric δω is used i.e. ω_a = - ω_b for a given δω = 0.25.
 
 #changing variables here
 N_start = 4 
@@ -18,23 +19,24 @@ N_stop= 24
 function main(N)
     cutoff = 1E-14
     τ = 0.05
-    ttotal = 5
+    ttotal = 10
     tolerance  = 5E-1
     Δx = 1E-3
     s = siteinds("S=1/2", N; conserve_qns=false)
-    # check for Δω = 1.0
-    a_t = 0.965
+    # check for Δω = 0.25
+    a_t = 1.224
     b_t = 0
-    c_t = 0
+    c_t = 1.62
     mu = ones(N)
     n = mu .* fill((Δx)^3/(sqrt(2) * G_F), N)
     B = [0, 0, -1]
-    ω_a = fill(2, div(N, 2))
+    ω_a = fill(0.5, div(N, 2))
     ω_b = fill(0, div(N, 2))
     Δω = (ω_a - ω_b)/2
     ω = vcat(ω_a, ω_b)
     ψ = productMPS(s, n -> n <= N/2 ? "Dn" : "Up")
-    Sz_array, prob_surv_array = evolve(s, τ, n, ω, B, N, Δx, ψ, cutoff, ttotal)
+    energy_sign = [i <= N ÷ 2 ? 1 : 1 for i in 1:N]
+    Sz_array, prob_surv_array = evolve(s, τ, n, ω, B, N, Δx, ψ, energy_sign, cutoff, ttotal)
     function find_first_local_minima_index(arr)
         n = length(arr)
         for i in 2:(n-1)
@@ -60,6 +62,9 @@ function main(N)
     return t_p_Rog, t_min
 end
 
+datadir = joinpath(@__DIR__, "..","misc","datafiles","Rog", "N_start_"*string(N_start), "N_stop_"*string(N_stop))
+isdir(datadir) || mkpath(datadir)
+
 # Arrays to store t_p_Rog and t_min for each N
 t_p_Rog_array = Float64[]
 t_min_array = Float64[]
@@ -70,8 +75,16 @@ for N in N_start: N_step:N_stop
     push!(t_p_Rog_array, t_p_Rog)
     push!(t_min_array, t_min)
 end
+N_values = range(N_start, stop=N_stop, step=N_step)
+fname1 = joinpath(datadir, "N_tpRog_tpmine.dat")
+writedlm(fname1, [N_values t_p_Rog_array t_min_array])
+
+plotdir = joinpath(@__DIR__, "..","misc","plots","Rog", "N_start_"*string(N_start), "N_stop_"*string(N_stop))
+    
+# check if a directory exists, and if it doesn't, create it using mkpath
+isdir(plotdir) || mkpath(plotdir)
 
 # Create the plot
-plot(N_start: N_step:N_stop, t_p_Rog_array, label="Rog_tp", xlabel="N", ylabel="Minimum Time (t_p)", title = "Table I Rogerro(2021) \n expanded for a unsymmetric δω=1.0", legend=:topleft, aspect_ratio=:auto,margin= 10mm)
-plot!(N_start: N_step:N_stop, t_min_array, label="Our_tp")
-savefig("t_p_vs_N_for_unsymmetric_del_w.pdf")
+plot(N_values, t_p_Rog_array, label="Rog_tp", xlabel="N", ylabel="Minimum Time (t_p)", title = "Table I Rogerro(2021) \n expanded for a unsymmetric δω=0.25", legend=:topleft, aspect_ratio=:auto,margin= 10mm)
+plot!(N_values, t_min_array, label="Our_tp")
+savefig(joinpath(plotdir,"t_p_vs_N_for_unsymmetric_del_w.pdf"))
