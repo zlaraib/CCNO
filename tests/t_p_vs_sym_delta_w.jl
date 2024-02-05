@@ -64,7 +64,8 @@ function main(Δω, N, ttotal)
     
     ω = vcat(ω_a, ω_b)
     ψ = productMPS(s, n -> n <= N/2 ? "Dn" : "Up")
-    Sz_array, prob_surv_array = evolve(s, τ, n, ω, B, N, Δx, ψ, cutoff, ttotal)
+    energy_sign = [i <= N ÷ 2 ? 1 : 1 for i in 1:N]
+    Sz_array, prob_surv_array = evolve(s, τ, n, ω, B, N, Δx, ψ, energy_sign, cutoff, ttotal)
     function find_first_local_minima_index(arr)
         n = length(arr)
         for i in 2:(n-1)
