@@ -19,17 +19,17 @@ function main(N_sites)
     b_t = 0
     c_t = 0
     mu = ones(N_sites)
-    n = mu .* fill((Δx)^3/(sqrt(2) * G_F), N_sites)
+    N = mu .* fill((Δx)^3/(sqrt(2) * G_F), N_sites)
     B = [0, 0, -1]
     ω_a = fill(2, div(N_sites, 2))
     ω_b = fill(0, div(N_sites, 2))
     Δω = (ω_a - ω_b)/2
     ω = vcat(ω_a, ω_b)
-    ψ = productMPS(s, n -> n <= N_sites/2 ? "Dn" : "Up")
-    Sz_array, prob_surv_array = evolve(s, τ, n, ω, B, N_sites, Δx, ψ, cutoff, ttotal)
+    ψ = productMPS(s, N -> N <= N_sites/2 ? "Dn" : "Up")
+    Sz_array, prob_surv_array = evolve(s, τ, N, ω, B, N_sites, Δx, ψ, cutoff, ttotal)
     function find_first_local_minima_index(arr)
-        n = length(arr)
-        for i in 2:(n-1)
+        N = length(arr)
+        for i in 2:(N-1)
             if arr[i] < arr[i-1] && arr[i] < arr[i+1]
                 return i
             end
