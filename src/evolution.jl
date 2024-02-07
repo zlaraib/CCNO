@@ -117,9 +117,9 @@ function evolve(s, τ, N, B,L, N_sites, Δx, Δm², p, x, Δp, ψ, shape_name, e
         # The apply function is a matrix-vector multiplication operation that is smart enough to determine which site indices each gate has, and then figure out where to apply it to our MPS. 
         # It truncates the MPS according to the set cutoff and maxdim for all the non-nearest-neighbor gates.
         #ψ = apply(gates, ψ; cutoff, maxdim)
-        # ψ = apply(gates, ψ; cutoff)
-        ψ = tdvp(H, ψ,  -im *τ;   nsweeps=1,
-        reverse_step=true,outputlevel=1)
+        ψ = apply(gates, ψ; cutoff)
+        # ψ = tdvp(H, ψ,  -im *τ;   nsweeps=1,
+        # reverse_step=true,outputlevel=1)
 
         # The normalize! function is used to ensure that the MPS is properly normalized after each application of the time evolution gates. 
         # This is necessary to ensure that the MPS represents a valid quantum state.
