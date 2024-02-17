@@ -4,7 +4,7 @@ include("constants.jl")
 """
 Expected units of the quantities defined in the files in tests directory that are being used in the gates function.                                                                   
 s = site index array (dimensionless and unitless)          
-N = no.of neutrinos (dimensionless and unitless)
+N = Total no.of neutrinos in the domain (dimensionless and unitless)
 ω = vacuum oscillation angular frequency (rad/s)
 B = Normalized vector related to mixing angle in vacuum oscillations (dimensionless constant)
 N_sites = Total no.of sites (dimensionless and unitless)
@@ -58,7 +58,7 @@ function create_gates(s, N, ω, B, N_sites, Δx, τ,energy_sign)
                 1/2 * op("S+", s_i) * op("S-", s_j) +
                 1/2 * op("S-", s_i) * op("S+", s_j))
             end
-
+            # Vacuum Oscillation Hamiltonian 
             if ω[i] != 0 || ω[j] != 0
                 hj += (1/(N_sites-1))* energy_sign[i]*(
                     (ω[i] * B[1] * op("Sx", s_i)* op("Id", s_j))  + (ω[i] * B[2] * op("Sy", s_i)* op("Id", s_j))  + (ω[i] * B[3] * op("Sz", s_i)* op("Id", s_j)) )
