@@ -10,6 +10,7 @@ B = Normalized vector related to mixing angle in vacuum oscillations (dimensionl
 N_sites = Total no.of sites (dimensionless and unitless)
 Δx = length of the box of interacting neutrinos at a site (cm) 
 τ = time step (sec)
+energy_sign = array of sign of the energy (1 or -1): 1 for neutrinos and -1 for anti-neutrinos (unitless)
 """
 
 # This file generates the create_gates function that holds ITensors Trotter gates and returns the dimensionless unitary 
@@ -35,40 +36,24 @@ function create_gates(s, N, ω, B, N_sites, Δx, τ,energy_sign)
             # mu pairs divided by 2 to avoid double counting
             
             if energy_sign[i]*energy_sign[j]>0
-
-            #     hj = 
-            #     (4/(2*N_sites) * √2 * G_F * (N[i])/(((Δx)^3))  * 
-            #     (op("Sz", s_i) * op("Sz", s_j) +
-            #     1/2 * op("S+", s_i) * op("S-", s_j) +
-            #     1/2 * op("S-", s_i) * op("S+", s_j)))
-            #     hj += 
-            #     (4/(2*N_sites) * √2 * G_F * (N[j])/(((Δx)^3))  * 
-            #     (op("Sz", s_i) * op("Sz", s_j) +
-            #     1/2 * op("S-", s_i) * op("S+", s_j) +
-            #     1/2 * op("S+", s_i) * op("S-", s_j)))
-            #     hj +=  -(4/(2*N_sites) * √2 * G_F * (N[i]+ N[j])/(2* ((Δx)^3)))* 
-            #     (( -2 *op("Sz",s_i) * op("Sz",s_j)) + 
-            #     op("S+", s_i) * op("S-", s_j) +
-            #     op("S-", s_i) * op("S+", s_j))
-
-            # else
                 interaction_strength = (2.0/N_sites * √2 * G_F * (N[i]+ N[j])/(2* ((Δx)^3)))
                 hj =  interaction_strength * 
                 (op("Sz", s_i) * op("Sz", s_j) +
                 1/2 * op("S+", s_i) * op("S-", s_j) +
                 1/2 * op("S-", s_i) * op("S+", s_j))
             end
-            # Vacuum Oscillation Hamiltonian 
+            
+            # Vacuum Oscillation Hamiltonian
             if ω[i] != 0 || ω[j] != 0
                 hj += (1/(N_sites-1))* energy_sign[i]*(
                     (ω[i] * B[1] * op("Sx", s_i)* op("Id", s_j))  + (ω[i] * B[2] * op("Sy", s_i)* op("Id", s_j))  + (ω[i] * B[3] * op("Sz", s_i)* op("Id", s_j)) )
                 hj += (1/(N_sites-1))*energy_sign[j]* (
                     (ω[j] * B[1] * op("Id", s_i) * op("Sx", s_j)) + (ω[j] * B[2]  * op("Id", s_i)* op("Sy", s_j)) + (ω[j] * B[3]  * op("Id", s_i)* op("Sz", s_j)) )
             end
-            has_fermion_string(hj) = true
+
             # make Trotter gate Gj that would correspond to each gate in the gate array of ITensors             
             Gj = exp(-im * τ/2 * hj)
-            has_fermion_string(hj) = true
+
             # The push! function adds (appends) an element to the end of an array;
             # ! performs an operation without creating a new object, (in a way overwites the previous array in consideration); 
             # i.e. we append a new element Gj (which is an ITensor object representing a gate) to the end of the gates array.
