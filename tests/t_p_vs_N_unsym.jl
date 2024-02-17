@@ -14,7 +14,7 @@ include("../src/constants.jl")
 #changing variables here
 N_start = 4 
 N_step= 4
-N_stop= 24
+N_stop= 12
 
 function main(N_sites)
     cutoff = 1E-14
