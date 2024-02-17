@@ -12,6 +12,7 @@ N_sites = Total no.of sites (dimensionless and unitless)
 cutoff = truncation threshold for the SVD in MPS (unitless, number)
 ttotal = ttotal time (sec)
 ψ = MPS representaion of the quantum state of the system
+energy_sign = array of sign of the energy (1 or -1): 1 for neutrinos and -1 for anti-neutrinos (unitless)
 """
 
 # This file generates the evolve function which evolves the ψ state in time and computes the expectation values of Sz at each time step, along 
