@@ -23,17 +23,41 @@ pipeline {
 		sh 'julia tests/test_file.jl'
     } 
 }
-	stage('Time Evolution'){ steps{
+	stage('Vacuum oscillation'){ steps{
 		sh 'julia tests/main_vac_osc.jl'
 		archiveArtifacts artifacts: '*.pdf'
     }
 } 
-	stage('Rogerro(2021)_file'){ steps{
+	stage('Rogerro(2021) Self interactions'){ steps{
 		sh 'julia tests/main_self_interaction.jl'
 		archiveArtifacts artifacts: '*.pdf'
     } 
 }
-
+	stage('Rogerro(2021) full Hamiltonian'){ steps{
+		sh 'julia tests/main_Rogerro.jl'
+		archiveArtifacts artifacts: '*.pdf'
+    } 
+}
+	stage('Rog_full H looped over N'){ steps{
+		sh 'julia tests/main_Rog_N_loop.jl'
+		archiveArtifacts artifacts: '*.pdf'
+    } 
+}
+	stage('t_p vs symmetric delta_omega'){ steps{
+		sh 'julia tests/t_p_vs_sym_delta_w.jl'
+		archiveArtifacts artifacts: '*.pdf'
+    } 
+}
+	stage('t_p vs N (unsymmetric)'){ steps{
+		sh 'julia tests/t_p_vs_N_unsym.jl'
+		archiveArtifacts artifacts: '*.pdf'
+    } 
+}
+	stage('t_p vs N (symmetric)'){ steps{
+		sh 'julia tests/t_p_vs_N_sym.jl'
+		archiveArtifacts artifacts: '*.pdf'
+    } 
+}
 }// stages{
 
     post {

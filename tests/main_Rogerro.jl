@@ -1,6 +1,8 @@
 using ITensors
 using Plots
 using Measures
+using ITensorTDVP
+# using TimeEvoMPS
 include("../src/evolution.jl")
 include("../src/constants.jl")
 
@@ -11,20 +13,20 @@ include("../src/constants.jl")
 function main()
     N_sites = 4 # number of sites (NEED TO GO TILL 96 for Rog_results)
     cutoff = 1E-14 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT)
-    τ = 0.05 # time step (NEED TO BE 0.05 for Rog_results)
-    ttotal = 10 # total time of evolution (NEED TO GO TILL 50 for Rog_results)
+    τ = 0.25 # time step (NEED TO BE 0.05 for Rog_results)
+    ttotal = 50 # total time of evolution (NEED TO GO TILL 50 for Rog_results)
     tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution
     Δx = 1E-3 # length of the box of interacting neutrinos at a site/shape function width of neutrinos in cm 
 
     # s is an array of spin 1/2 tensor indices (Index objects) which will be the site or physical indices of the MPS.
     # We overload siteinds function, which generates custom Index array with Index objects having the tag of total spin quantum number for all N_sites.
-    # conserve_qns=true conserves the total spin quantum number "S" in the system as it evolves
-    s = siteinds("S=1/2", N_sites; conserve_qns=true)  
+    # conserve_qns=false doesnt conserve the total spin quantum number "S" in the system as it evolves
+    s = siteinds("S=1/2", N_sites; conserve_qns=false)  
 
     # Constants for Rogerro's fit (only self-interaction term)
-    a_t = 0
-    b_t = 2.105
-    c_t = 0
+    a_t = 1.224
+    b_t = 0
+    c_t = 1.62
     
     # Initialize an array of ones for all N_sites sites
     mu = ones(N_sites) # erg
@@ -33,18 +35,19 @@ function main()
     N = mu .* fill((Δx)^3/(sqrt(2) * G_F), N_sites)
     
     # Create a B vector which would be same for all N_sites particles 
-    B = [0, 0, 1]
+    B = [0, 0, -1]
 
     # Create arrays ω_a and ω_b
-    ω_a = fill(0, div(N_sites, 2))
+    ω_a = fill(0.5, div(N_sites, 2))
     ω_b = fill(0, div(N_sites, 2))
 
-    # Concatenate ω_a and ω_b to form ω with N_sites elements. Each element of the array is a const 0.
+    # Defining Δω as in Rogerro(2021)
+    Δω = (ω_a - ω_b)/2
+    
+    # Concatenate ω_a and ω_b to form ω
     ω = vcat(ω_a, ω_b)
 
-    # Initialize psi to be a product state (First half to be spin down and other half to be spin up)
     ψ = productMPS(s, N -> N <= N_sites/2 ? "Dn" : "Up")
-
     energy_sign = [i <= N_sites ÷ 2 ? 1 : 1 for i in 1:N_sites]
 
     #extract output from the expect.jl file where the survival probability values were computed at each timestep
@@ -85,11 +88,11 @@ function main()
     @assert abs(t_min - t_p_Rog) <  τ + tolerance 
 
     # Plotting P_surv vs t
-    plot(0.0:τ:τ*(length(prob_surv_array)-1), prob_surv_array, xlabel = "t", ylabel = "Survival Probabillity p(t)",title = "Running main_self_interaction script", legend = true, size=(800, 600), aspect_ratio=:auto,margin= 10mm, label= ["My_plot_for_N$(N_sites)"]) 
+    plot(0.0:τ:τ*(length(prob_surv_array)-1), prob_surv_array, xlabel = "t", ylabel = "Survival Probabillity p(t)",title = "Running main_Rogerro script", legend = false, size=(700, 600), aspect_ratio=:auto,margin= 10mm, label= ["My_plot_for_N$(N_sites)"]) 
     scatter!([t_p_Rog],[prob_surv_array[i_first_local_min]], label= ["t_p_Rog"])
-    scatter!([t_min],[prob_surv_array[i_first_local_min]], label= ["My_t_min)"], legendfontsize=5, legend=:topright)
+    scatter!([t_min],[prob_surv_array[i_first_local_min]], label= ["My_t_min)"], legendfontsize=5, legend=:bottomleft)
     # Save the plot as a PDF file
-    savefig("Survival probability vs t (only self-interaction term plot)for N_sites$(N_sites).pdf")
+    savefig("Survival probability vs t (Rog)for N_sites$(N_sites).pdf")
 end 
 
 @time main()
