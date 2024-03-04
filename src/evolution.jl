@@ -42,7 +42,7 @@ function evolve(s, τ, N, B,L, N_sites, Δx, Δm², p, x, Δp, ψ, shape_name, e
     ρ_μμ_array = Float64[] # to store ρ_μμ values
 
     # extract the gates array generated in the gates_function file
-    gates = create_gates(s, N, B, N_sites, Δx, Δm², p, x, Δp, shape_name,L, τ, energy_sign,periodic)
+    gates = create_gates(s, N, B, N_sites, Δx, Δm², p, x, Δp, ψ, shape_name,L, τ, energy_sign, periodic)
     H = Hamiltonian_mpo(s, N, B, N_sites, Δx, Δm², p, x, Δp, shape_name,L, τ, energy_sign, periodic)
     # extract output of p_hat and p_mod for the p vector defined above for all sites. 
     p_mod, p̂ = momentum(p,N_sites) 
