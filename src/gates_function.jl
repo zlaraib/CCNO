@@ -48,7 +48,7 @@ function create_gates(s, N, ω, B, N_sites, Δx, ψ,τ,energy_sign)
                 hj = interaction_strength * 
                 (
                 ((sx_i * op("Id", s_i) * op("Sx", s_j)) + (sy_i * op("Id", s_i) * op("Sy", s_j)) + (sz_i * op("Id", s_i) * op("Sz", s_j))) + 
-                ( (op("Sx", s_i) * op("Id", s_j) * sx_j) + (op("Sy", s_i) * op("Id", s_j) * sy_j) + (op("Sz", s_i) * op("Id", s_j) * sz_j) ) + 
+                ( (op("Sx", s_i) * op("Id", s_j) * sx_j) + (op("Sy", s_i) * op("Id", s_j) * sy_j) + (op("Sz", s_i) * op("Id", s_j) * sz_j) ) -
                 ((sx_i * op("Id", s_i) * op("Id", s_j) * sx_j) + (sy_i * op("Id", s_i) * op("Id", s_j) * sy_j)  + (sz_i * op("Id", s_i) * op("Id", s_j) * sz_j))
                 )
 
