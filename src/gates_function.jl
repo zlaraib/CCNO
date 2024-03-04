@@ -15,7 +15,7 @@ N_sites = Total no.of sites (dimensionless and unitless)
 # This file generates the create_gates function that holds ITensors Trotter gates and returns the dimensionless unitary 
 # operators govered by the Hamiltonian which includes effects of the vacuum and self-interaction potential for each site.
 
-function create_gates(s, N, ω, B, N_sites, Δx, τ,energy_sign)
+function create_gates(s, N, ω, B, N_sites, Δx, ψ,τ,energy_sign)
     # Make gates (1,2),(2,3),(3,4),... i.e. unitary gates which act on any (non-neighboring) pairs of sites in the chain.
     # Create an empty ITensors array that will be our Trotter gates
     gates = ITensor[]                                                              
@@ -36,6 +36,22 @@ function create_gates(s, N, ω, B, N_sites, Δx, τ,energy_sign)
             
             if energy_sign[i]*energy_sign[j]>0
 
+                # MF self int hamiltonian
+                sz_i = expect(ψ, "Sz"; sites=i)
+                sy_i = expect(complex(ψ), "Sy"; sites=i)
+                sx_i = expect(ψ, "Sx"; sites=i)
+                sz_j = expect(ψ, "Sz"; sites=j)
+                sy_j = expect(complex(ψ), "Sy"; sites=j) 
+                sx_j = expect(ψ, "Sx"; sites=j)
+                
+                interaction_strength = (2.0/N_sites * √2 * G_F * (N[i]+ N[j])/(2* ((Δx)^3)))
+                hj = interaction_strength * 
+                (
+                ((sx_i * op("Id", s_i) * op("Sx", s_j)) + (sy_i * op("Id", s_i) * op("Sy", s_j)) + (sz_i * op("Id", s_i) * op("Sz", s_j))) + 
+                ( (op("Sx", s_i) * op("Id", s_j) * sx_j) + (op("Sy", s_i) * op("Id", s_j) * sy_j) + (op("Sz", s_i) * op("Id", s_j) * sz_j) ) + 
+                ((sx_i * op("Id", s_i) * op("Id", s_j) * sx_j) + (sy_i * op("Id", s_i) * op("Id", s_j) * sy_j)  + (sz_i * op("Id", s_i) * op("Id", s_j) * sz_j))
+                )
+
             #     hj = 
             #     (4/(2*N_sites) * √2 * G_F * (N[i])/(((Δx)^3))  * 
             #     (op("Sz", s_i) * op("Sz", s_j) +
@@ -52,11 +68,12 @@ function create_gates(s, N, ω, B, N_sites, Δx, τ,energy_sign)
             #     op("S-", s_i) * op("S+", s_j))
 
             # else
-                interaction_strength = (2.0/N_sites * √2 * G_F * (N[i]+ N[j])/(2* ((Δx)^3)))
-                hj =  interaction_strength * 
-                (op("Sz", s_i) * op("Sz", s_j) +
-                1/2 * op("S+", s_i) * op("S-", s_j) +
-                1/2 * op("S-", s_i) * op("S+", s_j))
+                # MB self int  Hamiltonian
+                # interaction_strength = (2.0/N_sites * √2 * G_F * (N[i]+ N[j])/(2* ((Δx)^3)))
+                # hj =  interaction_strength * 
+                # (op("Sz", s_i) * op("Sz", s_j) +
+                # 1/2 * op("S+", s_i) * op("S-", s_j) +
+                # 1/2 * op("S-", s_i) * op("S+", s_j))
             end
             # Vacuum Oscillation Hamiltonian 
             if ω[i] != 0 || ω[j] != 0
