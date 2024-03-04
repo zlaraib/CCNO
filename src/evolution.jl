@@ -26,7 +26,7 @@ function evolve(s, τ, N, ω, B, N_sites, Δx, ψ, energy_sign, cutoff, ttotal)
     prob_surv_array = Float64[]
 
     # extract the gates array generated in the gates_function file
-    gates = create_gates(s, N, ω, B, N_sites, Δx, τ,energy_sign)
+    gates = create_gates(s, N, ω, B, N_sites, Δx, ψ,τ,energy_sign)
     H = Hamiltonian_mpo(s, N, ω, B, N_sites, Δx,energy_sign)
     # H = MPO(Hamiltonian_mpo(s,N, ω, B, N_sites, Δx,energy_sign), s)
     # Compute and print survival probability (found from <Sz>) at each time step then apply the gates to go to the next time
