@@ -13,8 +13,8 @@ include("../src/constants.jl")
 function main()
     N_sites = 4 # number of sites (NEED TO GO TILL 96 for Rog_results)
     cutoff = 1E-14 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT)
-    τ = 0.25 # time step (NEED TO BE 0.05 for Rog_results)
-    ttotal = 50 # total time of evolution (NEED TO GO TILL 50 for Rog_results)
+    τ = 0.05 # time step (NEED TO BE 0.05 for Rog_results)
+    ttotal = 5 # total time of evolution (NEED TO GO TILL 50 for Rog_results)
     tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution
     Δx = 1E-3 # length of the box of interacting neutrinos at a site/shape function width of neutrinos in cm 
 
@@ -36,11 +36,9 @@ function main()
     
     # Create a B vector which would be same for all N_sites particles 
     B = [0, 0, -1]
-    theta_nu= 0.1 #0.5986 #rad # =34.3 degrees
-    # B = [sin(2 *theta_nu), 0, -cos(2*theta_nu)]
-    # B = B / norm(B) 
+
     # Create arrays ω_a and ω_b
-    ω_a = fill(0.2, div(N_sites, 2))
+    ω_a = fill(0.5, div(N_sites, 2))
     ω_b = fill(0, div(N_sites, 2))
 
     # Defining Δω as in Rogerro(2021)
