@@ -36,12 +36,12 @@ function main()
     N = mu .* fill((Δx)^3/(sqrt(2) * G_F), N_sites)
     
     # Create a B vector which would be same for all N_sites particles 
-    B = [0, 0, -1]
+    # B = [0, 0, -1]
     theta_nu= 0.1 #0.5986 #rad # =34.3 degrees
-    # B = [sin(2 *theta_nu), 0, -cos(2*theta_nu)]
-    # B = B / norm(B) 
+    B = [sin(2 *theta_nu), 0, -cos(2*theta_nu)]
+    B = B / norm(B) 
     # Create arrays ω_a and ω_b
-    ω_a = fill(0.5, div(N_sites, 2))
+    ω_a = fill(0.2, div(N_sites, 2))
     ω_b = fill(0, div(N_sites, 2))
 
     # Defining Δω as in Rogerro(2021)
