@@ -14,7 +14,7 @@ include("../src/constants.jl")
 #changing variables here
 N_start = 4 
 N_step= 4
-N_stop= 24
+N_stop= 12
 
 function main(N_sites)
     cutoff = 1E-14
@@ -85,6 +85,6 @@ plotdir = joinpath(@__DIR__, "..","misc","plots","Rog", "N_start_"*string(N_star
 isdir(plotdir) || mkpath(plotdir)
 
 # Create the plot
-plot(N_values, t_p_Rog_array, label="Rog_tp", xlabel="N_sites", ylabel="Minimum Time (t_p)", title = "Table I Rogerro(2021) \N expanded for a unsymmetric δω=0.25", legend=:topleft, aspect_ratio=:auto,margin= 10mm)
+plot(N_values, t_p_Rog_array, label="Rog_tp", xlabel="N_sites", ylabel="Minimum Time (t_p)", title = "Table I Rogerro(2021) \n expanded for a unsymmetric δω=0.25", legend=:topleft, aspect_ratio=:auto,margin= 10mm)
 plot!(N_values, t_min_array, label="Our_tp")
 savefig(joinpath(plotdir,"t_p_vs_N_for_unsymmetric_del_w.pdf"))
