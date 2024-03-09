@@ -10,6 +10,7 @@ B = Normalized vector related to mixing angle in vacuum oscillations (dimensionl
 N_sites = Total no.of sites (dimensionless and unitless)
 Δx = length of the box of interacting neutrinos at a site (cm) 
 τ = time step (sec)
+energy_sign = array of sign of the energy (1 or -1): 1 for neutrinos and -1 for anti-neutrinos (unitless)
 """
 
 # This file generates the create_gates function that holds ITensors Trotter gates and returns the dimensionless unitary 
@@ -51,23 +52,6 @@ function create_gates(s, N, ω, B, N_sites, Δx, ψ,τ,energy_sign)
                 ( (op("Sx", s_i) * op("Id", s_j) * sx_j) + (op("Sy", s_i) * op("Id", s_j) * sy_j) + (op("Sz", s_i) * op("Id", s_j) * sz_j) ) -
                 ((sx_i * op("Id", s_i) * op("Id", s_j) * sx_j) + (sy_i * op("Id", s_i) * op("Id", s_j) * sy_j)  + (sz_i * op("Id", s_i) * op("Id", s_j) * sz_j))
                 )
-
-            #     hj = 
-            #     (4/(2*N_sites) * √2 * G_F * (N[i])/(((Δx)^3))  * 
-            #     (op("Sz", s_i) * op("Sz", s_j) +
-            #     1/2 * op("S+", s_i) * op("S-", s_j) +
-            #     1/2 * op("S-", s_i) * op("S+", s_j)))
-            #     hj += 
-            #     (4/(2*N_sites) * √2 * G_F * (N[j])/(((Δx)^3))  * 
-            #     (op("Sz", s_i) * op("Sz", s_j) +
-            #     1/2 * op("S-", s_i) * op("S+", s_j) +
-            #     1/2 * op("S+", s_i) * op("S-", s_j)))
-            #     hj +=  -(4/(2*N_sites) * √2 * G_F * (N[i]+ N[j])/(2* ((Δx)^3)))* 
-            #     (( -2 *op("Sz",s_i) * op("Sz",s_j)) + 
-            #     op("S+", s_i) * op("S-", s_j) +
-            #     op("S-", s_i) * op("S+", s_j))
-
-            # else
                 # MB self int  Hamiltonian
                 # interaction_strength = (2.0/N_sites * √2 * G_F * (N[i]+ N[j])/(2* ((Δx)^3)))
                 # hj =  interaction_strength * 

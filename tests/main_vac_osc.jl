@@ -50,24 +50,17 @@ function main()
   
   for t in 0.0:τ:ttotal
 
-    for i in 1:(N_sites-1)
+    i = 1 # change it according to the corresponding site number in the expect function 
+    if B[1] == 1
 
-        if ω[i] != 0
+      # Compute the expected value based on the derived analytic formula
+      expected_sz = -0.5 * cos(ω[i] * t)
 
-          if B[1] == 1
+    end
+    if B[3] == -1
 
-            # Compute the expected value based on the derived analytic formula
-            expected_sz = -0.5 * cos(ω[i] * t)
-
-          end
-          if B[3] == -1
-
-            # Compute the expected value based on the derived analytic formula
-            expected_sz = -0.5
-
-          end
-
-        end
+      # Compute the expected value based on the derived analytic formula
+      expected_sz = -0.5
 
     end
 
@@ -82,7 +75,7 @@ function main()
 
   # Plotting P_surv vs t
   plot(0.0:τ:τ*(length(Sz_array)-1), Sz_array, xlabel = "t", ylabel = "<Sz>", title = "Running main_vac_osc script",legend = true, size=(700, 600), aspect_ratio=:auto,margin= 10mm, label = "My_sz") 
-  plot!(0.0:τ:τ*(length(Sz_array)-1), expected_sz_array, xlabel = "t", ylabel = "<Sz>", title = "Running main_vac_osc script", legendfontsize=8, legend=:topright, label = "Expected_sz from Sakurai") 
+  plot!(0.0:τ:τ*(length(Sz_array)-1), expected_sz_array, xlabel = "t", ylabel = "<Sz>", title = "Running main_vac_osc script", legendfontsize=8, legend=:topright, label = "Expected_sz from Sakurai", linestyle = :dot) 
   # Save the plot as a PDF file
   savefig("<Sz> vs t (only vacuum oscillation term plot).pdf")
 end

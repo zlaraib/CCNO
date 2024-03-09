@@ -17,7 +17,6 @@ function main()
     ttotal = 50 # total time of evolution (NEED TO GO TILL 50 for Rog_results)
     tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution
     Δx = 1E-3 # length of the box of interacting neutrinos at a site/shape function width of neutrinos in cm 
-    # maxdim = 1
 
     # s is an array of spin 1/2 tensor indices (Index objects) which will be the site or physical indices of the MPS.
     # We overload siteinds function, which generates custom Index array with Index objects having the tag of total spin quantum number for all N_sites.
@@ -36,10 +35,10 @@ function main()
     N = mu .* fill((Δx)^3/(sqrt(2) * G_F), N_sites)
     
     # Create a B vector which would be same for all N_sites particles 
-    # B = [0, 0, -1]
+    B = [0, 0, -1]
     theta_nu= 0.1 #0.5986 #rad # =34.3 degrees
-    B = [sin(2 *theta_nu), 0, -cos(2*theta_nu)]
-    B = B / norm(B) 
+    # B = [sin(2 *theta_nu), 0, -cos(2*theta_nu)]
+    # B = B / norm(B) 
     # Create arrays ω_a and ω_b
     ω_a = fill(0.2, div(N_sites, 2))
     ω_b = fill(0, div(N_sites, 2))
@@ -88,7 +87,7 @@ function main()
     println("t_p_Rog= ",t_p_Rog)
 
     # Check that our time of first minimum survival probability compared to Rogerro(2021) remains within the timestep and tolerance.
-    # @assert abs(t_min - t_p_Rog) <  τ + tolerance 
+    @assert abs(t_min - t_p_Rog) <  τ + tolerance 
 
     # Plotting P_surv vs t
     plot(0.0:τ:τ*(length(prob_surv_array)-1), prob_surv_array, xlabel = "t", ylabel = "Survival Probabillity p(t)",title = "Running main_Rogerro script", legend = false, size=(700, 600), aspect_ratio=:auto,margin= 10mm, label= ["My_plot_for_N$(N_sites)"]) 

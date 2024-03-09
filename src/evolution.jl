@@ -12,6 +12,7 @@ N_sites = Total no.of sites (dimensionless and unitless)
 cutoff = truncation threshold for the SVD in MPS (unitless, number)
 ttotal = ttotal time (sec)
 ψ = MPS representaion of the quantum state of the system
+energy_sign = array of sign of the energy (1 or -1): 1 for neutrinos and -1 for anti-neutrinos (unitless)
 """
 
 # This file generates the evolve function which evolves the ψ state in time and computes the expectation values of Sz at each time step, along 
@@ -26,7 +27,7 @@ function evolve(s, τ, N, ω, B, N_sites, Δx, ψ, energy_sign, cutoff, ttotal)
     prob_surv_array = Float64[]
 
     # extract the gates array generated in the gates_function file
-    gates = create_gates(s, N, ω, B, N_sites, Δx, ψ,τ,energy_sign)
+    gates = create_gates(s, N, ω, B, N_sites, Δx, τ,energy_sign)
     H = Hamiltonian_mpo(s, N, ω, B, N_sites, Δx,energy_sign)
     # H = MPO(Hamiltonian_mpo(s,N, ω, B, N_sites, Δx,energy_sign), s)
     # Compute and print survival probability (found from <Sz>) at each time step then apply the gates to go to the next time
@@ -55,11 +56,6 @@ function evolve(s, τ, N, ω, B, N_sites, Δx, ψ, energy_sign, cutoff, ttotal)
         # The apply function is smart enough to determine which site indices each gate has, and then figure out where to apply it to our MPS. 
         # It automatically handles truncating the MPS and handles the non-nearest-neighbor gates in this example.
         ψ = apply(gates, ψ; cutoff)
-        # ψ = tdvp(H, ψ,  -im *τ;   nsweeps=1,
-        # reverse_step=true, outputlevel=1)
-        
-        # ψ = tdvp(H, -im *τ,ψ;
-        # nsite=2, time_step= -im * τ/2, cutoff,outputlevel=1)
 
         # The normalize! function is used to ensure that the MPS is properly normalized after each application of the time evolution gates. 
         # This is necessary to ensure that the MPS represents a valid quantum state.
