@@ -40,7 +40,7 @@ pipeline {
 }
 	stage('Rogerro(2021) Bipolar'){ steps{
 		sh 'julia tests/main_Bipolar_Rog.jl'
-		archiveArtifacts artifacts: 'misc/plots/Rog_bipolar/*/*/*.pdf'
+		archiveArtifacts artifacts: 'misc/plots/Rog_bipolar/*/*/*/*.pdf'
     } 
 }
 	stage('Rog_full H looped over N'){ steps{
