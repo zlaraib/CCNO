@@ -17,7 +17,8 @@ function main()
     ttotal = 5 # total time of evolution (NEED TO GO TILL 50 for Rog_results)
     tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution
     Δx = 1E-3 # length of the box of interacting neutrinos at a site/shape function width of neutrinos in cm 
-    maxdim = 1000
+    maxdim = 1000 #bond dimension
+    
     # s is an array of spin 1/2 tensor indices (Index objects) which will be the site or physical indices of the MPS.
     # We overload siteinds function, which generates custom Index array with Index objects having the tag of total spin quantum number for all N_sites.
     # conserve_qns=false doesnt conserve the total spin quantum number "S" in the system as it evolves
@@ -100,7 +101,7 @@ function main()
     scatter!([t_p_Rog],[prob_surv_array[i_first_local_min]], label= ["t_p_Rog"])
     scatter!([t_min],[prob_surv_array[i_first_local_min]], label= ["My_t_min)"], legendfontsize=5, legend=:bottomleft)
     # Save the plot as a PDF file
-    savefig(joinpath("Survival probability vs t (Rog)for N_sites$(N_sites) with maxdim=1 and cutoff for τ$(τ).pdf"))
+    savefig(joinpath(plotdir,"Survival probability vs t (Rog)for N_sites$(N_sites) with maxdim=1 and cutoff for τ$(τ).pdf"))
 end 
 
 @time main()
