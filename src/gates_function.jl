@@ -76,42 +76,51 @@ function create_gates(s, N, B, N_sites, Δx, Δm², p, x, Δp, ψ, shape_name,L,
                 1/2 * op("S-", s_i) * op("S+", s_j))
                 #println("hj= ", hj)
             else
+            #     # Get the shape function result for each pair of i and j 
+            #     shape_result = shape_func(x, Δp, i, j,L, shape_name, periodic)
+            #     # Calculate the geometric factor for each pair of i and j within the loop
+            #     geometric_factor = geometric_func(p, p̂, i, j)
+            #     interaction_strength = (2.0* √2 * G_F * (N[i]+ N[j])/(2*((Δx)^3))) * shape_result * geometric_factor
+            #     # hj = - interaction_strength * 
+            #     # ((-2 *op("Sz",s_i) * op("Sz",s_j)) + 
+            #     # op("S+", s_i) * op("S-", s_j) +
+            #     # op("S-", s_i) * op("S+", s_j))
+            #     # MF self int hamiltonian
+            #     sz_i = expect(ψ, "Sz"; sites=i)
+            #     sy_i = expect(complex(ψ), "Sy"; sites=i)
+            #     sx_i = expect(ψ, "Sx"; sites=i)
+            #     sz_j = expect(ψ, "Sz"; sites=j)
+            #     sy_j = expect(complex(ψ), "Sy"; sites=j) 
+            #     sx_j = expect(ψ, "Sx"; sites=j)
+                
+            #     interaction_strength = (2.0/N_sites * √2 * G_F * (N[i]+ N[j])/(2* ((Δx)^3)))
+            #     hj = interaction_strength * 
+            #     (
+            #     ((sx_i * op("Id", s_i) * op("Sx", s_j)) + (sy_i * op("Id", s_i) * op("Sy", s_j)) + (sz_i * op("Id", s_i) * op("Sz", s_j))) + 
+            #     ( (op("Sx", s_i) * op("Id", s_j) * sx_j) + (op("Sy", s_i) * op("Id", s_j) * sy_j) + (op("Sz", s_i) * op("Id", s_j) * sz_j) ) - 
+            #     ((sx_i * op("Id", s_i) * op("Id", s_j) * sx_j) + (sy_i * op("Id", s_i) * op("Id", s_j) * sy_j)  + (sz_i * op("Id", s_i) * op("Id", s_j) * sz_j))
+            #     )
+
                 # Get the shape function result for each pair of i and j 
                 shape_result = shape_func(x, Δp, i, j,L, shape_name, periodic)
                 # Calculate the geometric factor for each pair of i and j within the loop
                 geometric_factor = geometric_func(p, p̂, i, j)
                 interaction_strength = (2.0* √2 * G_F * (N[i]+ N[j])/(2*((Δx)^3))) * shape_result * geometric_factor
-                # hj = - interaction_strength * 
-                # ((-2 *op("Sz",s_i) * op("Sz",s_j)) + 
-                # op("S+", s_i) * op("S-", s_j) +
-                # op("S-", s_i) * op("S+", s_j))
-                # MF self int hamiltonian
-                sz_i = expect(ψ, "Sz"; sites=i)
-                sy_i = expect(complex(ψ), "Sy"; sites=i)
-                sx_i = expect(ψ, "Sx"; sites=i)
-                sz_j = expect(ψ, "Sz"; sites=j)
-                sy_j = expect(complex(ψ), "Sy"; sites=j) 
-                sx_j = expect(ψ, "Sx"; sites=j)
-                
-                interaction_strength = (2.0/N_sites * √2 * G_F * (N[i]+ N[j])/(2* ((Δx)^3)))
-                hj = interaction_strength * 
-                (
-                ((sx_i * op("Id", s_i) * op("Sx", s_j)) + (sy_i * op("Id", s_i) * op("Sy", s_j)) + (sz_i * op("Id", s_i) * op("Sz", s_j))) + 
-                ( (op("Sx", s_i) * op("Id", s_j) * sx_j) + (op("Sy", s_i) * op("Id", s_j) * sy_j) + (op("Sz", s_i) * op("Id", s_j) * sz_j) ) - 
-                ((sx_i * op("Id", s_i) * op("Id", s_j) * sx_j) + (sy_i * op("Id", s_i) * op("Id", s_j) * sy_j)  + (sz_i * op("Id", s_i) * op("Id", s_j) * sz_j))
-                )
-                
+                hj = interaction_strength *
+                (op("Sz", s_i) * op("Sz", s_j) +
+                1/2 * op("S+", s_i) * op("S-", s_j) +
+                1/2 * op("S-", s_i) * op("S+", s_j))
             end
-            # # add vacuum oscillation term to the Hamiltonian
+            # add vacuum oscillation term to the Hamiltonian
             # if ω[i] != 0 && ω[j] != 0
-            #     # println("p_mod[$i]= ",p_mod[i])
-            #     # ω = Δm²/ (2 * p_mod[i])
-            #     # println("ω ", ω)
-            #     hj1 = (1/(N_sites-1))* (
+            #     println("p_mod[$i]= ",p_mod[i])
+            #     ω = Δm²/ (2 * p_mod[i])
+            #     println("ω ", ω)
+            #     hj1 = (1/(N_sites-1))* energy_sign[i]*(
             #         (ω[i] * B[1] * op("Sx", s_i)* op("Id", s_j))  + (ω[i] * B[2] * op("Sy", s_i)* op("Id", s_j))  + (ω[i] * B[3] * op("Sz", s_i)* op("Id", s_j)) )
-            #         hj2 = (1/(N_sites-1))* (
+            #     hj2 = (1/(N_sites-1))*energy_sign[j]* (
             #         (ω[j] * B[1] * op("Id", s_i) * op("Sx", s_j)) + (ω[j] * B[2]  * op("Id", s_i)* op("Sy", s_j)) + (ω[j] * B[3]  * op("Id", s_i)* op("Sz", s_j)) )
-            #         hj += hj1+ hj2
+            #     hj += hj1+ hj2
             # end
 
             if ω[i] != 0 || ω[j] != 0
