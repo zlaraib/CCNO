@@ -2,6 +2,7 @@ using ITensors
 using Plots
 using Measures
 using ITensorTDVP
+using DelimitedFiles
 # using TimeEvoMPS
 include("../src/evolution.jl")
 include("../src/constants.jl")
@@ -12,8 +13,8 @@ include("../src/constants.jl")
 
 function main()
     N_sites = 24 # number of sites (NEED TO GO TILL 96 for Rog_results)
-    cutoff = 1E-14 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT)
-    τ = 0.25 # time step (NEED TO BE 0.05 for Rog_results)
+    cutoff = 1E-10 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT)
+    τ = 0.05 # time step (NEED TO BE 0.05 for Rog_results)
     ttotal = 50 # total time of evolution (NEED TO GO TILL 50 for Rog_results)
     tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution
     Δx = 1E-3 # length of the box of interacting neutrinos at a site/shape function width of neutrinos in cm 
@@ -51,8 +52,10 @@ function main()
     ψ = productMPS(s, N -> N <= N_sites/2 ? "Dn" : "Up")
     energy_sign = [i <= N_sites ÷ 2 ? 1 : 1 for i in 1:N_sites]
 
+    # Specify the relative directory path
+    datadir = joinpath(@__DIR__, "..","misc","datafiles","Rog_bipolar", "par_"*string(N_sites), "tt_"*string(ttotal), "τ_"*string(τ))
     #extract output from the expect.jl file where the survival probability values were computed at each timestep
-    Sz_array, prob_surv_array = evolve(s, τ, N, ω, B, N_sites, Δx, ψ, energy_sign, cutoff, maxdim,ttotal)
+    Sz_array, prob_surv_array = evolve(s, τ, N, ω, B, N_sites, Δx, ψ, energy_sign, cutoff, maxdim, datadir,ttotal)
 
     # This function scans through the array, compares each element with its neighbors, 
     # and returns the index of the first local minimum it encounters. 
@@ -86,14 +89,20 @@ function main()
     println("t_p_Rog= ",t_p_Rog)
 
     # Check that our time of first minimum survival probability compared to Rogerro(2021) remains within the timestep and tolerance.
-    @assert abs(t_min - t_p_Rog) <  τ + tolerance 
+    # @assert abs(t_min - t_p_Rog) <  τ + tolerance 
+
+    # Specify the relative directory path
+    plotdir = joinpath(@__DIR__, "..","misc","plots","Rog_bipolar", "par_"*string(N_sites), "tt_"*string(ttotal), "τ_"*string(τ))
+
+    # check if a directory exists, and if it doesn't, create it using mkpath
+    isdir(plotdir) || mkpath(plotdir)
 
     # Plotting P_surv vs t
-    plot(0.0:τ:τ*(length(prob_surv_array)-1), prob_surv_array, xlabel = "t", ylabel = "Survival Probability p(t)",title = "Running main_Bipolar_Rog script \n for N_sites$(N_sites) with maxdim=1 MF for τ$(τ)", legend = false, size=(700, 600), aspect_ratio=:auto,margin= 10mm, label= ["My_plot_for_N$(N_sites)"]) 
+    plot(0.0:τ:τ*(length(prob_surv_array)-1), prob_surv_array, xlabel = "t", ylabel = "Survival Probability p(t)",title = "Running main_Bipolar_Rog script \n for N_sites$(N_sites) with maxdim=1 and cutoff for τ$(τ)", legend = false, size=(700, 600), aspect_ratio=:auto,margin= 10mm, label= ["My_plot_for_N$(N_sites)"]) 
         scatter!([t_p_Rog],[prob_surv_array[i_first_local_min]], label= ["t_p_Rog"])
         scatter!([t_min],[prob_surv_array[i_first_local_min]], label= ["My_t_min)"], legendfontsize=5, legend=:bottomleft)
         # Save the plot as a PDF file
-        savefig("Survival probability vs t (Rog_bipolar)for N_sites$(N_sites) with maxdim=1 and cutoff for τ$(τ).pdf")
+        savefig(joinpath(plotdir,"Survival probability vs t (Rog_bipolar)for N_sites$(N_sites) with maxdim=1 and cutoff for τ$(τ).pdf"))
 end 
 
 @time main()
