@@ -16,7 +16,8 @@ function main()
   ttotal = 5.0 # total time of evolution 
   Δx = 1E-3 # length of the box of interacting neutrinos at a site/shape function width of neutrinos in cm 
   tolerance  = 1E-5 # acceptable level of error or deviation from the exact value or solution
-
+  maxdim = 1000 #bond dimension
+  
   # Make an array of 'site' indices and label as s 
   # conserve_qns=false doesnt conserve the total spin quantum number "S"(in z direction) in the system as it evolves
   s = siteinds("S=1/2", N_sites; conserve_qns=false)  
@@ -42,9 +43,11 @@ function main()
 
   energy_sign = [i <= N_sites ÷ 2 ? 1 : 1 for i in 1:N_sites]
 
+  # Specify the relative directory path
+  datadir = joinpath(@__DIR__, "..","misc","datafiles","vac_osc", "par_"*string(N_sites), "tt_"*string(ttotal))
   #extract output from the expect.jl file where the survival probability values were computed at each timestep
-  Sz_array, prob_surv_array = evolve(s, τ, N, ω, B, N_sites, Δx, ψ, energy_sign, cutoff,ttotal)
-  
+  Sz_array, prob_surv_array = evolve(s, τ, N, ω, B, N_sites, Δx, ψ, energy_sign, cutoff, maxdim, datadir,ttotal)
+
   expected_sz_array = Float64[]
   expected_sz= Float64[]
   
@@ -73,11 +76,17 @@ function main()
   # for B vector in -z, it checks that the value of Sz at the firstspin site never oscillates from -0.5 
   @assert all(abs.(Sz_array .- expected_sz_array) .< tolerance)
 
+  # Specify the relative directory path
+  plotdir = joinpath(@__DIR__, "..","misc","plots","vac_osc", "par_"*string(N_sites), "tt_"*string(ttotal))
+
+  # check if a directory exists, and if it doesn't, create it using mkpath
+  isdir(plotdir) || mkpath(plotdir)
+
   # Plotting P_surv vs t
   plot(0.0:τ:τ*(length(Sz_array)-1), Sz_array, xlabel = "t", ylabel = "<Sz>", title = "Running main_vac_osc script",legend = true, size=(700, 600), aspect_ratio=:auto,margin= 10mm, label = "My_sz") 
   plot!(0.0:τ:τ*(length(Sz_array)-1), expected_sz_array, xlabel = "t", ylabel = "<Sz>", title = "Running main_vac_osc script", legendfontsize=8, legend=:topright, label = "Expected_sz from Sakurai", linestyle = :dot) 
   # Save the plot as a PDF file
-  savefig("<Sz> vs t (only vacuum oscillation term plot).pdf")
+  savefig(joinpath(plotdir,"<Sz> vs t (only vacuum oscillation term plot).pdf"))
 end
 
 @time main()
