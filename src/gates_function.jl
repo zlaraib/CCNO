@@ -37,27 +37,27 @@ function create_gates(s, N, ω, B, N_sites, Δx, ψ,τ,energy_sign)
             
             if energy_sign[i]*energy_sign[j]>0
 
-                # MF self int hamiltonian
-                sz_i = expect(ψ, "Sz"; sites=i)
-                sy_i = expect(complex(ψ), "Sy"; sites=i)
-                sx_i = expect(ψ, "Sx"; sites=i)
-                sz_j = expect(ψ, "Sz"; sites=j)
-                sy_j = expect(complex(ψ), "Sy"; sites=j) 
-                sx_j = expect(ψ, "Sx"; sites=j)
+                # # MF self int hamiltonian
+                # sz_i = expect(ψ, "Sz"; sites=i)
+                # sy_i = expect(complex(ψ), "Sy"; sites=i)
+                # sx_i = expect(ψ, "Sx"; sites=i)
+                # sz_j = expect(ψ, "Sz"; sites=j)
+                # sy_j = expect(complex(ψ), "Sy"; sites=j) 
+                # sx_j = expect(ψ, "Sx"; sites=j)
                 
-                interaction_strength = (2.0/N_sites * √2 * G_F * (N[i]+ N[j])/(2* ((Δx)^3)))
-                hj = interaction_strength * 
-                (
-                ((sx_i * op("Id", s_i) * op("Sx", s_j)) + (sy_i * op("Id", s_i) * op("Sy", s_j)) + (sz_i * op("Id", s_i) * op("Sz", s_j))) + 
-                ( (op("Sx", s_i) * op("Id", s_j) * sx_j) + (op("Sy", s_i) * op("Id", s_j) * sy_j) + (op("Sz", s_i) * op("Id", s_j) * sz_j) ) -
-                ((sx_i * op("Id", s_i) * op("Id", s_j) * sx_j) + (sy_i * op("Id", s_i) * op("Id", s_j) * sy_j)  + (sz_i * op("Id", s_i) * op("Id", s_j) * sz_j))
-                )
-                # MB self int  Hamiltonian
                 # interaction_strength = (2.0/N_sites * √2 * G_F * (N[i]+ N[j])/(2* ((Δx)^3)))
-                # hj =  interaction_strength * 
-                # (op("Sz", s_i) * op("Sz", s_j) +
-                # 1/2 * op("S+", s_i) * op("S-", s_j) +
-                # 1/2 * op("S-", s_i) * op("S+", s_j))
+                # hj = interaction_strength * 
+                # (
+                # ((sx_i * op("Id", s_i) * op("Sx", s_j)) + (sy_i * op("Id", s_i) * op("Sy", s_j)) + (sz_i * op("Id", s_i) * op("Sz", s_j))) + 
+                # ( (op("Sx", s_i) * op("Id", s_j) * sx_j) + (op("Sy", s_i) * op("Id", s_j) * sy_j) + (op("Sz", s_i) * op("Id", s_j) * sz_j) ) -
+                # ((sx_i * op("Id", s_i) * op("Id", s_j) * sx_j) + (sy_i * op("Id", s_i) * op("Id", s_j) * sy_j)  + (sz_i * op("Id", s_i) * op("Id", s_j) * sz_j))
+                # )
+                # MB self int  Hamiltonian
+                interaction_strength = (2.0/N_sites * √2 * G_F * (N[i]+ N[j])/(2* ((Δx)^3)))
+                hj =  interaction_strength * 
+                (op("Sz", s_i) * op("Sz", s_j) +
+                1/2 * op("S+", s_i) * op("S-", s_j) +
+                1/2 * op("S-", s_i) * op("S+", s_j))
             end
             # Vacuum Oscillation Hamiltonian 
             if ω[i] != 0 || ω[j] != 0
@@ -66,10 +66,10 @@ function create_gates(s, N, ω, B, N_sites, Δx, ψ,τ,energy_sign)
                 hj += (1/(N_sites-1))*energy_sign[j]* (
                     (ω[j] * B[1] * op("Id", s_i) * op("Sx", s_j)) + (ω[j] * B[2]  * op("Id", s_i)* op("Sy", s_j)) + (ω[j] * B[3]  * op("Id", s_i)* op("Sz", s_j)) )
             end
-            has_fermion_string(hj) = true
+            # has_fermion_string(hj) = true
             # make Trotter gate Gj that would correspond to each gate in the gate array of ITensors             
             Gj = exp(-im * τ/2 * hj)
-            has_fermion_string(hj) = true
+            # has_fermion_string(hj) = true
             # The push! function adds (appends) an element to the end of an array;
             # ! performs an operation without creating a new object, (in a way overwites the previous array in consideration); 
             # i.e. we append a new element Gj (which is an ITensor object representing a gate) to the end of the gates array.
