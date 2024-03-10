@@ -19,8 +19,9 @@ energy_sign = array of sign of the energy (1 or -1): 1 for neutrinos and -1 for 
 # with their survival probabilities. The time evolution utilizes the unitary operators created as gates from the create_gates function.
 # The <Sz> and Survival probabilities output from this function are unitless. 
 
-function evolve(s, τ, N, ω, B, N_sites, Δx, ψ, energy_sign, cutoff,maxdim, ttotal)
-    
+function evolve(s, τ, N, ω, B, N_sites, Δx, ψ, energy_sign, cutoff, maxdim, datadir,ttotal)
+    # check if a directory exists, and if it doesn't, create it using mkpath
+    isdir(datadir) || mkpath(datadir)
     # Create empty array to store sz values 
     Sz_array = Float64[]
     # Create empty array to store survival probability values 
@@ -56,10 +57,17 @@ function evolve(s, τ, N, ω, B, N_sites, Δx, ψ, energy_sign, cutoff,maxdim, t
         # The apply function is smart enough to determine which site indices each gate has, and then figure out where to apply it to our MPS. 
         # It automatically handles truncating the MPS and handles the non-nearest-neighbor gates in this example.
         ψ = apply(gates, ψ; cutoff, maxdim)
+        # ψ = tdvp(H, ψ,  -im *τ;   nsweeps=1,
+        # reverse_step=true, outputlevel=1)
 
         # The normalize! function is used to ensure that the MPS is properly normalized after each application of the time evolution gates. 
         # This is necessary to ensure that the MPS represents a valid quantum state.
         normalize!(ψ)
     end
+    t_array = 0.0:τ:ttotal
+
+    # Writing data to files with corresponding headers
+    fname2 = joinpath(datadir, "t_probsurv.dat")
+    writedlm(fname2, [t_array prob_surv_array])
     return Sz_array, prob_surv_array
 end
