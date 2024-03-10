@@ -17,6 +17,7 @@ function main(Δω, N_sites, ttotal)
     τ = 0.005
     tolerance  = 5E-1
     Δx = 1E-3
+    maxdim = 1000 #bond dimension
     if Δω==-0.5
         a_t = 0
         b_t = 0
@@ -65,7 +66,9 @@ function main(Δω, N_sites, ttotal)
     ω = vcat(ω_a, ω_b)
     ψ = productMPS(s, N -> N <= N_sites/2 ? "Dn" : "Up")
     energy_sign = [i <= N_sites ÷ 2 ? 1 : 1 for i in 1:N_sites]
-    Sz_array, prob_surv_array = evolve(s, τ, N, ω, B, N_sites, Δx, ψ, energy_sign, cutoff, ttotal)
+    # Specify the relative directory path
+    datadir = joinpath(@__DIR__, "..","misc","datafiles","Rog_Table_I", "par_"*string(N_sites), "Δω"*string(Δω))
+    Sz_array, prob_surv_array =  evolve(s, τ, N, ω, B, N_sites, Δx, ψ, energy_sign, cutoff, maxdim, datadir,ttotal)
     function find_first_local_minima_index(arr)
         N = length(arr)
         for i in 2:(N-1)
