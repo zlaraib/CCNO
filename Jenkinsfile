@@ -38,6 +38,11 @@ pipeline {
 		archiveArtifacts artifacts: '*.pdf'
     } 
 }
+	stage('Rogerro(2021) Bipolar'){ steps{
+		sh 'julia tests/main_Bipolar_Rog.jl'
+		archiveArtifacts artifacts: '*.pdf'
+    } 
+}
 	stage('Rog_full H looped over N'){ steps{
 		sh 'julia tests/main_Rog_N_loop.jl'
 		archiveArtifacts artifacts: '*.pdf'
