@@ -27,24 +27,13 @@ function Hamiltonian_mpo(s,N, ω, B, N_sites, Δx,energy_sign)
             end
 
             if ω[i] != 0 && ω[j] != 0
-                if energy_sign[i]*energy_sign[j]>0
-                    numerical_factor = (1/(N_sites-1))
-                    os+= numerical_factor,ω[i],B[1],"Sx",i,"Id",j  
-                    os+= numerical_factor,ω[i],B[2],"Sy",i,"Id",j 
-                    os+= numerical_factor,ω[i],B[3],"Sz",i,"Id",j 
-                    os+= numerical_factor,ω[j],B[1],"Id",i,"Sx",j
-                    os+= numerical_factor,ω[j],B[2],"Id",i,"Sy",j
-                    os+= numerical_factor,ω[j],B[3],"Id",i,"Sz",j
-                else
-                    numerical_factor = (1/(N_sites-1))
-                    os+= numerical_factor,ω[i],B[1],"Sx",i,"Id",j  
-                    os+= numerical_factor,ω[i],B[2],"Sy",i,"Id",j 
-                    os+= numerical_factor,ω[i],B[3],"Sz",i,"Id",j 
-                    os+= numerical_factor,-ω[j],B[1],"Id",i,"Sx",j
-                    os+= numerical_factor,-ω[j],B[2],"Id",i,"Sy",j
-                    os+= numerical_factor,-ω[j],B[3],"Id",i,"Sz",j
-                end
-                  
+                numerical_factor = (1/(N_sites-1))
+                os+= numerical_factor,energy_sign[i],ω[i],B[1],"Sx",i,"Id",j  
+                os+= numerical_factor,energy_sign[i],ω[i],B[2],"Sy",i,"Id",j 
+                os+= numerical_factor,energy_sign[i],ω[i],B[3],"Sz",i,"Id",j 
+                os+= numerical_factor,energy_sign[j],ω[j],B[1],"Id",i,"Sx",j
+                os+= numerical_factor,energy_sign[j],ω[j],B[2],"Id",i,"Sy",j
+                os+= numerical_factor,energy_sign[j],ω[j],B[3],"Id",i,"Sz",j
             end
             
         end
