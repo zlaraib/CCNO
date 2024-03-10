@@ -58,7 +58,7 @@ function main(N_sites)
     @assert abs(t_min - t_p_Rog) <  τ + tolerance 
 
     # Specify the relative directory path
-    plotdir = joinpath(@__DIR__, "..","misc","plots","Rog_N_loop", "par_"*string(N_sites), "tt_"*string(ttotal))
+    global plotdir = joinpath(@__DIR__, "..","misc","plots","Rog_N_loop", "par_"*string(N_sites), "tt_"*string(ttotal))
 
     # check if a directory exists, and if it doesn't, create it using mkpath
     isdir(plotdir) || mkpath(plotdir)
