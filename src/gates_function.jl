@@ -133,18 +133,16 @@ function create_gates(s, N, B, N_sites, Δx, Δm², p, x, Δp, ψ, shape_name,L,
 
             # make Trotter gate Gj that would correspond to each gate in the gate array of ITensors             
             Gj = exp(-im * τ/2 * hj)
-            #println("Gj= ",Gj)
+            #println("Gj= ",Gj)            # has_fermion_string(hj) = true
             # The push! function adds (appends) an element to the end of an array;
             # ! performs an operation without creating a new object, (in a way overwites the previous array in consideration); 
             # i.e. we append a new element Gj (which is an ITensor object representing a gate) to the end of the gates array.
             push!(gates, Gj)
-        end
+        end 
     end
 
-    # append! adds all the elements of a gates in reverse order (i.e. (N,N-1),(N-1,N-2),...) to the end of gates array.
+    # append! adds all the elements of a gates in reverse order (i.e. (N_sites,N_sites-1),(N_sites-1,N_sites-2),...) to the end of gates array.
     # appending reverse gates to create a second-order Trotter-Suzuki integration
     append!(gates, reverse(gates))
     return gates
 end
-
-

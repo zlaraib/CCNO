@@ -126,6 +126,7 @@ function evolve(s, τ, N, B,L, N_sites, Δx, Δm², p, x, Δp, ψ, shape_name, e
         normalize!(ψ)
     end
     t_array = 0.0:τ:ttotal
+    t_array = 0.0:τ:ttotal
 
     # Writing data to files with corresponding headers
     fname1 = joinpath(datadir, "t_<Sz>_<Sy>_<Sx>.dat")

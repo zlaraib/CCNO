@@ -3,17 +3,19 @@ using Plots
 using Measures 
 using LinearAlgebra
 using DelimitedFiles
+using DelimitedFiles
 include("../src/evolution.jl")
 include("../src/constants.jl")
 include("../src/shape_func.jl")
 include("../src/momentum.jl")
 
-# We are simulating the time evolution of a 1D spin chain with N sites, where each site is a spin-1/2 particle. 
+# We are simulating the time evolution of a 1D spin chain with N_sites sites, where each site is a spin-1/2 particle. 
 # The simulation is done by applying a sequence of unitary gates to an initial state of the system, 
 # which is a product state where each site alternates between up and down.
 
+
 function main()
-  N_sites = 6 # number of sites, #variable
+  N_sites_sites = 6 # number of sites, #variable
   cutoff = 1E-14 # specifies a truncation threshold for the SVD in MPS representation #variable
   τ = 0.1 # time step # sec #variable
   ttotal = 5.0 # total time of evolution #sec #variable
@@ -23,13 +25,14 @@ function main()
   maxdim = 1 # max bond dimension in MPS truncation
   L = 1 # cm # not being used in this test but defined to keep the evolve function arguments consistent.
   Δp = L # width of shape function # not being used in this test but defined to keep the evolve function arguments consistent.
+  maxdim = 1000 #bond dimension
 
   # Make an array of 'site' indices and label as s 
   # conserve_qns=false doesnt conserve the total spin quantum number "S"(in z direction) in the system as it evolves
   s = siteinds("S=1/2", N_sites; conserve_qns=false)  #Fixed
 
-  # Initialize an array of zeros for all N particles
-  mu = zeros(N_sites) #Fixed
+  # Initialize an array of zeros for all N_sites particles
+  mu = zeros(N_sites_sites) #Fixed
                                 
   # Create an array of dimension N and fill it with the value 1/(sqrt(2) * G_F). This is the number of neutrinos.
   N = mu.* fill((Δx)^3/(sqrt(2) * G_F), N_sites) 
