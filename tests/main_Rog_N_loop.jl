@@ -15,7 +15,13 @@ function main(N_sites)
     ttotal = 5
     tolerance  = 5E-1
     Δx = 1E-3
+    Δm²_b= fill(0, div(N_sites, 2)) #0.0 # erg^2 
+    Δm²_a=  fill(4, div(N_sites, 2)) # 4
+    Δm² = vcat(Δm²_a,Δm²_b)
     maxdim = 1000 #bond dimension
+    L = 1 # cm # not being used in this test but defined to keep the evolve function arguments consistent.
+    Δp = L # width of shape function # not being used in this test but defined to keep the evolve function arguments consistent.  
+    periodic = false  # true = imposes periodic boundary conditions while false doesn't
     s = siteinds("S=1/2", N_sites; conserve_qns=false)
     a_t = 0.965
     b_t = 0
@@ -23,16 +29,23 @@ function main(N_sites)
     mu = ones(N_sites)
     N = mu .* fill((Δx)^3/(sqrt(2) * G_F), N_sites)
     B = [0, 0, -1]
-    ω_a = fill(2, div(N_sites, 2))
-    ω_b = fill(0, div(N_sites, 2))
-    Δω = (ω_a - ω_b)/2
-    ω = vcat(ω_a, ω_b)
+    p = ones(N_sites, 3) 
+    # ω_a = fill(2, div(N_sites, 2))
+    # ω_b = fill(0, div(N_sites, 2))
+    # Δω = (ω_a - ω_b)/2
+    x = fill(rand(), N_sites) # variable.
+    y = fill(rand(), N_sites) # variable.
+    z = fill(rand(), N_sites) # variable.
+    # ω = vcat(ω_a, ω_b)
     ψ = productMPS(s, N -> N <= N_sites/2 ? "Dn" : "Up")
     energy_sign = [i <= N_sites ÷ 2 ? 1 : 1 for i in 1:N_sites]
+    shape_name = "none"  # Change this to the desired shape name # variable.
+
     # Specify the relative directory path
     datadir = joinpath(@__DIR__, "..","misc","datafiles","Rog_N_loop", "par_"*string(N_sites), "tt_"*string(ttotal))
     #extract output from the expect.jl file where the survival probability values were computed at each timestep
-    Sz_array, prob_surv_array = evolve(s, τ, N, ω, B, N_sites, Δx, ψ, energy_sign, cutoff, maxdim, datadir,ttotal)
+    Sz_array, prob_surv_array = evolve(s, τ, N, B,L, N_sites, 
+    Δx,Δm², p, x, Δp, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, ttotal,periodic)
 
     function find_first_local_minima_index(arr)
         N = length(arr)
