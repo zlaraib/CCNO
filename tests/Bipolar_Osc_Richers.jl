@@ -9,10 +9,10 @@ include("main_Hamiltonian.jl")
 include("../src/constants.jl")
 
 """ Richers(2021) Test 2 initial conditions: """
-N_sites_eachflavor= 2 # total sites/particles that evenly spaced "for each (electron) flavor" 
+N_sites_eachflavor= 1 # total sites/particles that evenly spaced "for each (electron) flavor" 
 N_sites = 2* (N_sites_eachflavor) # total particles/sites for all neutrino and anti neutrino electron flavored
 τ = 0.05 # time step to include 50 steps every 10 picoseconds # sec # variable
-ttotal = 30 # total time of evolution # sec #variable
+ttotal = 13000 # total time of evolution # sec #variable
 tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution #variable
 m1 = -8.6e-3*eV  #1st mass eigenstate of neutrino #ergs
 # m1 =  -1.378e-14#ergs
