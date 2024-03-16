@@ -6,7 +6,7 @@
 """
 function geometric_func(p, p̂, i, j)
 
-    if p[i] == 0  && p[j] == 0.0 #homogenous case
+    if p[i] == 0  && p[j] == 0.0 #isotropic case
         return 1
     else
         return 1 - dot(p̂[i, :], p̂[j, :])
