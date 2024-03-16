@@ -64,7 +64,7 @@ end
 p = hcat(generate_px_array(N_sites), generate_py_array(N_sites), generate_pz_array(N_sites))
 
 # Create an array with the first half as 1 and the rest as -1
-energy_sign = [i <= N_sites ÷ 2 ? 1 : -1 for i in 1:N_sites] # half sites are (e) neutrinos with positive 1 entry while other half is anti (e) neutrinos with negative 1 entry
+energy_sign = [i <= N_sites ÷ 2 ? 1 : 1 for i in 1:N_sites] # half sites are (e) neutrinos with positive 1 entry while other half is anti (e) neutrinos with negative 1 entry
 
 # s is an array of spin 1/2 tensor indices (Index objects) which will be the site or physical indices of the MPS.
 # We overload siteinds function, which generates custom Index array with Index objects having the tag of total spin quantum number for all N.
@@ -75,7 +75,7 @@ energy_sign = [i <= N_sites ÷ 2 ? 1 : -1 for i in 1:N_sites] # half sites are (
 s = siteinds("S=1/2", N_sites; conserve_qns=false) #fixed #switched conserve_qns to false to avoid fluxes error in expect function
 
 # Initialize psi to be a product state (Of all electron flavor neutrino i.e. spin up in Richers notation which is equivalently half spin up and half chain spin down in my TN notation)
-ψ₀ = productMPS(s, n -> n <= N_sites/2 ? "Up" : "Up")
+ψ₀ = productMPS(s, n -> n <= N_sites/2 ? "Up" : "Dn")
 # ψ₀= productMPS(s, N_sites -> "Up") 
 
 @time main(s, τ, B,L, N_sites, N_sites_eachflavor, tolerance,
