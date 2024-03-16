@@ -18,7 +18,7 @@ function main()
     tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution # variable.
     Δx = 1E-3 # length of the box of interacting neutrinos at a site in cm  # variable.
     Δm²= 0.0 # erg^2 # Fixed for rog test case. Please dont play with it. 
-    maxdim = 4 # max bond dimension in MPS truncation
+    maxdim = 1000 # max bond dimension in MPS truncation
     L = 1 # cm # not being used in this test but defined to keep the evolve function arguments consistent.
     Δp = L # width of shape function # not being used in this test but defined to keep the evolve function arguments consistent.  
     periodic = false  # true = imposes periodic boundary conditions while false doesn't
@@ -111,7 +111,7 @@ function main()
     scatter!([t_p_Rog],[prob_surv_array[i_first_local_min]], label= ["t_p_Rog"])
     scatter!([t_min],[prob_surv_array[i_first_local_min]], label= ["My_t_min)"], legendfontsize=5, legend=:topright)
     # Save the plot as a PDF file
-    savefig(joinpath(plotdir,"Survival probability vs t (only self-interaction term plot)_Rog.pdf"))
+    savefig(joinpath(plotdir,"Survival probability vs t (only self-interaction term plot)_Rog for N_sites$(N_sites).pdf"))
 
     plot(0.0:τ:τ*(length(Sz_array)-1), Sz_array, xlabel = "t", ylabel = "<Sz>", legend = false, size=(800, 600), 
     left_margin = 20mm, right_margin = 5mm, top_margin = 5mm, bottom_margin = 10mm, aspect_ratio=:auto,margin= 10mm) 
