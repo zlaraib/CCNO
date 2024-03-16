@@ -42,7 +42,8 @@ function create_gates(s, N, B, N_sites, Δx, Δm², p, x, Δp, ψ, shape_name,L,
     elseif Δm² == 2 * π
        global ω = fill(π, N_sites) # added global so we can access and use this global variable without the need to pass them as arguments to another function
     else
-        ω = [Δm²/ (2 * p_i_mod) for p_i_mod in p_mod]
+        # ω = [Δm²/ (2 * p_i_mod) for p_i_mod in p_mod]
+        ω = [Δm² / (2 * p_mod[i]) * energy_sign[i] for i in 1:N_sites]
         # @assert Im(ω) == ((Δm²))/(2 *hbar * Eνₑ)
         # println("Im(ω)=",Im(ω))
         # println("p_i_mod= ",p_i_mod)
@@ -68,13 +69,14 @@ function create_gates(s, N, B, N_sites, Δx, Δm², p, x, Δp, ψ, shape_name,L,
                 # Get the shape function result for each pair of i and j 
                 shape_result = shape_func(x, Δp, i, j,L, shape_name, periodic)
                 # Calculate the geometric factor for each pair of i and j within the loop
-                geometric_factor = geometric_func(p, p̂, i, j)
+                # geometric_factor = geometric_func(p, p̂, i, j)
+                geometric_factor = 1
                 interaction_strength = (2.0* √2 * G_F * (N[i]+ N[j])/(2*((Δx)^3))) * shape_result * geometric_factor
                 hj = interaction_strength *
                 (op("Sz", s_i) * op("Sz", s_j) +
                 1/2 * op("S+", s_i) * op("S-", s_j) +
                 1/2 * op("S-", s_i) * op("S+", s_j))
-                #println("hj= ", hj)
+                # println("hj= ", hj)
             else
             #     # Get the shape function result for each pair of i and j 
             #     shape_result = shape_func(x, Δp, i, j,L, shape_name, periodic)
@@ -104,12 +106,14 @@ function create_gates(s, N, B, N_sites, Δx, Δm², p, x, Δp, ψ, shape_name,L,
                 # Get the shape function result for each pair of i and j 
                 shape_result = shape_func(x, Δp, i, j,L, shape_name, periodic)
                 # Calculate the geometric factor for each pair of i and j within the loop
-                geometric_factor = geometric_func(p, p̂, i, j)
+                # geometric_factor = geometric_func(p, p̂, i, j)
+                geometric_factor = 1
                 interaction_strength = (2.0* √2 * G_F * (N[i]+ N[j])/(2*((Δx)^3))) * shape_result * geometric_factor
                 hj = interaction_strength *
                 (op("Sz", s_i) * op("Sz", s_j) +
                 1/2 * op("S+", s_i) * op("S-", s_j) +
                 1/2 * op("S-", s_i) * op("S+", s_j))
+                # println("hj= ", hj)
             end
             # add vacuum oscillation term to the Hamiltonian
             # if ω[i] != 0 && ω[j] != 0
@@ -124,16 +128,20 @@ function create_gates(s, N, B, N_sites, Δx, Δm², p, x, Δp, ψ, shape_name,L,
             # end
 
             if ω[i] != 0 || ω[j] != 0
-                hj += (1/(N_sites-1))* energy_sign[i]*(
+                # println("ω[i]* energy_sign[i]=",ω[i]* energy_sign[i])
+                hj += (1/(N_sites-1))*( 
                     (ω[i] * B[1] * op("Sx", s_i)* op("Id", s_j))  + (ω[i] * B[2] * op("Sy", s_i)* op("Id", s_j))  + (ω[i] * B[3] * op("Sz", s_i)* op("Id", s_j)) )
-                hj += (1/(N_sites-1))*energy_sign[j]* (
+                    # println("hj= ", hj)
+                # println("ω[j]* energy_sign[j]=",ω[j]* energy_sign[j])
+                hj += (1/(N_sites-1))*(
                     (ω[j] * B[1] * op("Id", s_i) * op("Sx", s_j)) + (ω[j] * B[2]  * op("Id", s_i)* op("Sy", s_j)) + (ω[j] * B[3]  * op("Id", s_i)* op("Sz", s_j)) )
+                    # println("hj= ", hj)
             end
             
 
             # make Trotter gate Gj that would correspond to each gate in the gate array of ITensors             
             Gj = exp(-im * τ/2 * hj)
-            #println("Gj= ",Gj)            # has_fermion_string(hj) = true
+            # println("Gj= ",Gj)            # has_fermion_string(hj) = true
             # The push! function adds (appends) an element to the end of an array;
             # ! performs an operation without creating a new object, (in a way overwites the previous array in consideration); 
             # i.e. we append a new element Gj (which is an ITensor object representing a gate) to the end of the gates array.
