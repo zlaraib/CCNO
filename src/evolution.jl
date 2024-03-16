@@ -43,7 +43,7 @@ function evolve(s, τ, N, B,L, N_sites, Δx, Δm², p, x, Δp, ψ, shape_name, e
 
     # extract the gates array generated in the gates_function file
     gates = create_gates(s, N, B, N_sites, Δx, Δm², p, x, Δp, ψ, shape_name,L, τ, energy_sign, periodic)
-    H = Hamiltonian_mpo(s, N, B, N_sites, Δx, Δm², p, x, Δp, shape_name,L, τ, energy_sign, periodic)
+    # H = Hamiltonian_mpo(s, N, B, N_sites, Δx, Δm², p, x, Δp, shape_name,L, τ, energy_sign, periodic)
     # extract output of p_hat and p_mod for the p vector defined above for all sites. 
     p_mod, p̂ = momentum(p,N_sites) 
     p̂ₓ= [sub_array[1] for sub_array in p̂]
@@ -117,7 +117,7 @@ function evolve(s, τ, N, B,L, N_sites, Δx, Δm², p, x, Δp, ψ, shape_name, e
         # The apply function is a matrix-vector multiplication operation that is smart enough to determine which site indices each gate has, and then figure out where to apply it to our MPS. 
         # It truncates the MPS according to the set cutoff and maxdim for all the non-nearest-neighbor gates.
         #ψ = apply(gates, ψ; cutoff, maxdim)
-        ψ = apply(gates, ψ; cutoff)
+        ψ = apply(gates, ψ; cutoff, maxdim)
         # ψ = tdvp(H, ψ,  -im *τ;   nsweeps=1,
         # reverse_step=true,outputlevel=1)
 
