@@ -25,7 +25,7 @@ include("constants.jl")
 # This file generates the evolve function which evolves the ψ state in time and computes the expectation values of Sz at each time step, along 
 # with their survival probabilities. The time evolution utilizes the unitary operators created as gates from the create_gates function.
 # The <Sz> and Survival probabilities output from this function are unitless. 
-function evolve(s, τ, N, B,L, N_sites, Δx, Δm², p, x, Δp, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, ttotal, periodic= true)
+function evolve(s, τ, N, B,L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, ttotal, periodic= true)
 
     # check if a directory exists, and if it doesn't, create it using mkpath
     isdir(datadir) || mkpath(datadir)
@@ -42,7 +42,7 @@ function evolve(s, τ, N, B,L, N_sites, Δx, Δm², p, x, Δp, ψ, shape_name, e
     ρ_μμ_array = Float64[] # to store ρ_μμ values
 
     # extract the gates array generated in the gates_function file
-    gates = create_gates(s, N, B, N_sites, Δx, Δm², p, x, Δp, ψ, shape_name,L, τ, energy_sign, periodic)
+    gates = create_gates(s, N, B, N_sites, Δx, Δm², p, x, Δp, theta_nu, shape_name,L, τ, energy_sign, periodic)
     # H = Hamiltonian_mpo(s, N, B, N_sites, Δx, Δm², p, x, Δp, shape_name,L, τ, energy_sign, periodic)
     # extract output of p_hat and p_mod for the p vector defined above for all sites. 
     p_mod, p̂ = momentum(p,N_sites) 
