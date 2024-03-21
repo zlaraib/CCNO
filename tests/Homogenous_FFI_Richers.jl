@@ -12,13 +12,13 @@ include("../src/constants.jl")
 """ Richers(2021) Test 3 initial conditions: """
 N_sites_eachflavor= 1 # total sites/particles that evenly spaced "for each (electron) flavor" 
 N_sites = 2* (N_sites_eachflavor) # total particles/sites for all neutrino and anti neutrino electron flavored
-τ = 1.666e-4 # time step from Richers test # sec # variable
+τ = 1.666e-7 # time step from Richers test # sec # variable
 ttotal = 1.666e-2 # total time of evolution # sec #variable
 tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution #variable
-m2 = 0.008596511*eV  # 1.37787191e-8 ergs #  1st mass eigenstate of neutrino
-m1 = 0 # eV  2nd mass eigenstate of neutrino
+m2 = -0.008596511*eV #ergs #1st mass eigenstate of neutrino in Richers(2021)
+m1 = 0*eV   #ergs #2nd mass eigenstate of neutrino in Richers(2021)
 Δm² = (m2^2-m1^2) # mass square difference # (erg^2)
-maxdim = 100 # max bond dimension in MPS truncation
+maxdim = 1 # max bond dimension in MPS truncation
 cutoff = 1e-100 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT) #variable
 L = 1e7 # cm # domain size # (aka big box length)
 n_νₑ =  2.92e24 # cm^-3 # number density of electron flavor neutrino
@@ -64,7 +64,7 @@ end
 p = hcat(generate_px_array(N_sites), generate_py_array(N_sites), generate_pz_array(N_sites))
 
 # Create an array with the first half as 1 and the rest as -1
-energy_sign = [i <= N_sites ÷ 2 ? 1 : 1 for i in 1:N_sites] # half sites are (e) neutrinos with positive 1 entry while other half is anti (e) neutrinos with negative 1 entry
+energy_sign = [i <= N_sites ÷ 2 ? 1 : -1 for i in 1:N_sites] # half sites are (e) neutrinos with positive 1 entry while other half is anti (e) neutrinos with negative 1 entry
 
 # s is an array of spin 1/2 tensor indices (Index objects) which will be the site or physical indices of the MPS.
 # We overload siteinds function, which generates custom Index array with Index objects having the tag of total spin quantum number for all N.
@@ -75,8 +75,7 @@ energy_sign = [i <= N_sites ÷ 2 ? 1 : 1 for i in 1:N_sites] # half sites are (e
 s = siteinds("S=1/2", N_sites; conserve_qns=false) #fixed #switched conserve_qns to false to avoid fluxes error in expect function
 
 # Initialize psi to be a product state (Of all electron flavor neutrino i.e. spin up in Richers notation which is equivalently half spin up and half chain spin down in my TN notation)
-ψ₀ = productMPS(s, n -> n <= N_sites/2 ? "Up" : "Dn")
-# ψ₀= productMPS(s, N_sites -> "Up") 
+ψ₀ = productMPS(s, n -> n <= N_sites/2 ? "Dn" : "Up")
 
 @time main(s, τ, B,L, N_sites, N_sites_eachflavor, tolerance,
                 n_νₑ,n_νₑ̄,Eνₑ,Eνₑ̄,Δx,Δm², p, x, Δp, ψ₀, shape_name, energy_sign, cutoff, maxdim, ttotal,periodic)
