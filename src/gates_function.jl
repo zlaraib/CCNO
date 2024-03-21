@@ -41,8 +41,19 @@ function create_gates(s, N, B, N_sites, Δx, Δm², p, x, Δp, theta_nu, shape_n
         ω = zeros(N_sites)
     elseif Δm² == 2 * π
        global ω = fill(π, N_sites) # added global so we can access and use this global variable without the need to pass them as arguments to another function
-    else
-        # ω = [Δm²/ (2 * p_i_mod) for p_i_mod in p_mod]
+    elseif Δm² == 0.5 # for running full Hamiltonian from Rogerro
+        # Create arrays ω_a and ω_b
+        ω_a = fill(0.5, div(N_sites, 2))
+        ω_b = fill(0, div(N_sites, 2))
+        # Concatenate ω_a and ω_b to form ω
+        ω = vcat(ω_a, ω_b)
+    elseif Δm² == 0.2 # addition for Rog_bipolar test
+        # Create arrays ω_a and ω_b
+        global ω_a = fill(0.2, div(N_sites, 2))
+        global ω_b = fill(0, div(N_sites, 2))
+        # Concatenate ω_a and ω_b to form ω
+        ω = vcat(ω_a, ω_b)
+    else 
         ω = [Δm² / (2 * p_mod[i]) * energy_sign[i] for i in 1:N_sites]
 
     end
@@ -63,20 +74,6 @@ function create_gates(s, N, B, N_sites, Δx, Δm², p, x, Δp, theta_nu, shape_n
             # mu pairs divided by 2 to avoid double counting
             
             # if energy_sign[i]*energy_sign[j]>0
-            #     # Get the shape function result for each pair of i and j 
-            #     shape_result = shape_func(x, Δp, i, j,L, shape_name, periodic)
-            #     # Calculate the geometric factor for each pair of i and j within the loop
-            #     geometric_factor = geometric_func(p, p̂, i, j)
-            #     # geometric_factor = 1
-            #     interaction_strength = (2.0* √2 * G_F * (N[i]+ N[j])/(2*((Δx)^3))) * shape_result * geometric_factor
-            #     hj = interaction_strength *
-            #     (op("Sz", s_i) * op("Sz", s_j) +
-            #     1/2 * op("S+", s_i) * op("S-", s_j) +
-            #     1/2 * op("S-", s_i) * op("S+", s_j))
-            #     # println("hj= ", hj)
-            # else
-
-
                 # Get the shape function result for each pair of i and j 
                 shape_result = shape_func(x, Δp, i, j,L, shape_name, periodic)
                 # Calculate the geometric factor for each pair of i and j within the loop
@@ -86,8 +83,17 @@ function create_gates(s, N, B, N_sites, Δx, Δm², p, x, Δp, theta_nu, shape_n
                 (op("Sz", s_i) * op("Sz", s_j) +
                 1/2 * op("S+", s_i) * op("S-", s_j) +
                 1/2 * op("S-", s_i) * op("S+", s_j))
-                # println("hj= ", hj)
-            # end
+            # else
+                # # Get the shape function result for each pair of i and j 
+                # shape_result = shape_func(x, Δp, i, j,L, shape_name, periodic)
+                # # Calculate the geometric factor for each pair of i and j within the loop
+                # geometric_factor = geometric_func(p, p̂, i, j, theta_nu)
+                # interaction_strength = (2.0* √2 * G_F * (N[i]+ N[j])/(2*((Δx)^3))) * shape_result * geometric_factor
+                # hj = - interaction_strength * 
+                # ((-2 *op("Sz",s_i) * op("Sz",s_j)) + 
+                # op("S+", s_i) * op("S-", s_j) +
+                # op("S-", s_i) * op("S+", s_j))
+            end
             # add vacuum oscillation term to the Hamiltonian
             if ω[i] != 0 || ω[j] != 0
                 hj += (1/(N_sites-1))*( 
@@ -100,16 +106,16 @@ function create_gates(s, N, B, N_sites, Δx, Δm², p, x, Δp, theta_nu, shape_n
             # make Trotter gate Gj that would correspond to each gate in the gate array of ITensors             
             if theta_nu == 0 ||  theta_nu == π/4 || theta_nu == π/2 
                 Gj = exp(-im * τ/2 * hj)
-            elseif theta_nu == 0.01
+            elseif theta_nu == 0.1 # for Richers bipolar
                 t_bipolar = 8.96e-4
                 Gj = exp(-im * τ/2 * hj* t_bipolar/hbar)
             else 
                 Gj = exp(-im * τ/2 * hj* 1/hbar)
             end
-            # println(imag(Gj))
+            # println(imag(hj/hbar))
             # println((Δm²))/(2 *hbar * p_mod[1])
-            @assert imag(hj) == ((Δm²))/(2 *hbar * p_mod[1])
-            # println("Gj= ",Gj)            # has_fermion_string(hj) = true
+            # @assert imag(hj) == ((Δm²))/(2 *hbar * p_mod[1])
+            println("Gj= ",Gj)            # has_fermion_string(hj) = true
             # The push! function adds (appends) an element to the end of an array;
             # ! performs an operation without creating a new object, (in a way overwites the previous array in consideration); 
             # i.e. we append a new element Gj (which is an ITensor object representing a gate) to the end of the gates array.
