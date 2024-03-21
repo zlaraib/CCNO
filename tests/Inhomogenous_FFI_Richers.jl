@@ -15,15 +15,15 @@ N_sites = 2* (N_sites_eachflavor) # total particles/sites for all neutrino and a
 τ = 2E-13 # time step to include 50 steps every 10 picoseconds # sec # variable
 ttotal = 9E-11 # total time of evolution # sec #variable
 tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution #variable
-m1 = 8.6e3 #eV  1st mass eigenstate of neutrino
-m2 = 0 #eV  2nd mass eigenstate of neutrino
+m2 = -0.008596511*eV #eV  1st mass eigenstate of neutrino
+m1 = 0*eV #eV  2nd mass eigenstate of neutrino
 Δm² = (m2^2-m1^2) # mass square difference # (erg^2)
 maxdim = 1 # max bond dimension in MPS truncation
-cutoff = 0 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT) #variable
+cutoff = 1e-100 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT) #variable
 L = 1 # cm # domain size # (aka big box length)
 n_νₑ =  4.891290848285061e+32 # cm^-3 # number density of electron flavor neutrino
 n_νₑ̄ =  4.891290848285061e+32 # cm^-3 # number density of electron flavor antineutrino
-Eνₑ =  50.0e6 # energy of all neutrinos (P.S the its negative is energy of all antineutrinos)
+Eνₑ =  50.0*MeV # energy of all neutrinos (P.S the its negative is energy of all antineutrinos)
 Eνₑ̄ = -1 * Eνₑ # specific to my case only. Since all neutrinos have same energy, except in my case anti neutrinos are moving in opposite direction to give it a negative sign
 Δx = L/N_sites # length of the box of interacting neutrinos at a site in cm  #variable
 
