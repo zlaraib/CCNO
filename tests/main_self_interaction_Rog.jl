@@ -17,7 +17,7 @@ function main()
     ttotal = 5 # total time of evolution #sec # variable.
     tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution # variable.
     Δx = 1E-3 # length of the box of interacting neutrinos at a site in cm  # variable.
-    Δm²= 0.0 # erg^2 # Fixed for rog test case. Please dont play with it. 
+    Δm²= 0.0 # erg^2 # Fixed for rog only self-int test case. Please dont play with it. 
     maxdim = 1000 # max bond dimension in MPS truncation
     L = 1 # cm # not being used in this test but defined to keep the evolve function arguments consistent.
     Δp = L # width of shape function # not being used in this test but defined to keep the evolve function arguments consistent.  
