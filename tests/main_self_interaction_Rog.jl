@@ -40,7 +40,9 @@ function main()
     N = mu .* fill(((Δx)^3 )/(√2 * G_F * N_sites), N_sites)
     
     # Create a B vector which would be same for all N particles 
-    B = [0, 0, -1] # fixed for Rogerro's case
+    theta_nu = 0 # mixing_angle #rad 
+    B = [sin(2*theta_nu), 0, -cos(2*theta_nu)] # is equivalent to B = [0, 0, -1] # fixed for Rogerro's case
+    B = B / norm(B)
 
     x = fill(rand(), N_sites) # variable.
     y = fill(rand(), N_sites) # variable.
@@ -61,7 +63,7 @@ function main()
 
     #extract output for the survival probability values at each timestep
     Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array= evolve(s, τ, N, B,L, N_sites, 
-                    Δx,Δm², p, x, Δp, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, ttotal,periodic)
+                    Δx,Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, ttotal,periodic)
 
 
     # This function scans through the array, compares each element with its neighbors, 
