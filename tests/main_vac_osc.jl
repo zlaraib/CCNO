@@ -37,7 +37,9 @@ function main()
   N = mu.* fill((Δx)^3/(sqrt(2) * G_F), N_sites) 
   
   # Create a B vector which would be same for all N particles 
-  B = [1, 0, 0] # variable. But only other case that can be tested from this file is B = [0,0,-1].
+  theta_nu = π/4 # mixing_angle #rad 
+  B = [sin(2*theta_nu), 0, -cos(2*theta_nu)] # is equivalent to B = [1, 0, 0] # variable. But only other case that can be tested from this file is B = [0,0,-1] for which theta_nu = π/4.
+  B = B / norm(B)
 
   x = fill(rand(), N_sites) # variable.
   y = fill(rand(), N_sites) # variable.
@@ -58,7 +60,7 @@ function main()
 
   #extract output for the survival probability values at each timestep
   Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values,  ρₑₑ_array,ρ_μμ_array= evolve(s, τ, N, B, L, N_sites,
-                                           Δx,Δm², p, x, Δp, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, ttotal)
+                                           Δx,Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, ttotal)
                       
   expected_sz_array = Float64[]
   expected_sz= Float64[]
