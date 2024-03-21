@@ -117,6 +117,9 @@ function main(s, τ, B,L, N_sites, N_sites_eachflavor, tolerance,
     N_1 = fill(N_νₑ / (N_sites ÷ 2), N_sites ÷ 2)
     N_νₑ̄  = n_νₑ̄ * V 
     N_2 = fill(N_νₑ̄/ (N_sites ÷ 2), N_sites ÷ 2)
+    # N_1 = fill(N_νₑ, N_sites ÷ 2)
+    # N_νₑ̄  = n_νₑ̄ * V 
+    # N_2 = fill(N_νₑ̄, N_sites ÷ 2)
     N = vcat(N_1, N_2) # This is the total number of neutrinos. 
 
     
@@ -125,7 +128,7 @@ function main(s, τ, B,L, N_sites, N_sites_eachflavor, tolerance,
 
     #extract output for the survival probability values at each timestep
     Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array= evolve(s, τ, N, B,L, N_sites, 
-                    Δx,Δm², p, x, Δp, ψ₀, shape_name, energy_sign, cutoff, maxdim, datadir, ttotal,periodic)
+                    Δx,Δm², p, x, Δp, theta_nu, ψ₀, shape_name, energy_sign, cutoff, maxdim, datadir, ttotal,periodic)
 
     # Call the function to generate the inputs file in the specified directory
     generate_inputs_file(datadir, "inputs.txt", input_data)
