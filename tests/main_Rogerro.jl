@@ -18,8 +18,12 @@ function main()
     ttotal = 5 # total time of evolution (NEED TO GO TILL 50 for Rog_results)
     tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution
     Δx = 1E-3 # length of the box of interacting neutrinos at a site/shape function width of neutrinos in cm 
+    Δm²= 0.5 # erg^2 # Artifically Fixed for Rog bipolar test #change accordingly in gates_fnction too if need be.
     maxdim = 1000 #bond dimension
-
+    L = 1 # cm # not being used in this test but defined to keep the evolve function arguments consistent.
+    Δp = L # width of shape function # not being used in this test but defined to keep the evolve function arguments consistent.  
+    periodic = true  # true = imposes periodic boundary conditions while false doesn't
+   
     # s is an array of spin 1/2 tensor indices (Index objects) which will be the site or physical indices of the MPS.
     # We overload siteinds function, which generates custom Index array with Index objects having the tag of total spin quantum number for all N_sites.
     # conserve_qns=false doesnt conserve the total spin quantum number "S" in the system as it evolves
@@ -36,27 +40,35 @@ function main()
     # Create an array of dimension N_sites and fill it with the value 1/(sqrt(2) * G_F). This is the number of neutrinos. 
     N = mu .* fill((Δx)^3/(sqrt(2) * G_F), N_sites)
     
-    # Create a B vector which would be same for all N_sites particles 
-    B = [0, 0, -1]
+    theta_nu = 0 # mixing_angle #rad 
+    B = [sin(2*theta_nu), 0, -cos(2*theta_nu)] # is equivalent to B = [0, 0, -1] # fixed for Rogerro's case
+    B = B / norm(B)
 
-    # Create arrays ω_a and ω_b
-    ω_a = fill(0.5, div(N_sites, 2))
-    ω_b = fill(0, div(N_sites, 2))
-
-    # Defining Δω as in Rogerro(2021)
-    Δω = (ω_a - ω_b)/2
-    
-    # Concatenate ω_a and ω_b to form ω
-    ω = vcat(ω_a, ω_b)
+    x = fill(rand(), N_sites) # variable.
+    y = fill(rand(), N_sites) # variable.
+    z = fill(rand(), N_sites) # variable.
 
     ψ = productMPS(s, N -> N <= N_sites/2 ? "Dn" : "Up")
-    energy_sign = [i <= N_sites ÷ 2 ? 1 : 1 for i in 1:N_sites]
+
+    #Select a shape function based on the shape_name variable form the list defined in dictionary in shape_func file
+    shape_name = "none"  # Change this to the desired shape name # variable.
+
+    #generate a momentum array that depicts the energy of neutrinos and anti-neutrinos in opposing beams
+    function generate_p_array(N_sites)                                                                                                                                                                                   
+        half_N_sites = div(N_sites, 2)
+        return [fill(1, half_N_sites); fill(1, half_N_sites)]
+    end
+
+    # p matrix with numbers generated from the p_array for all components (x, y, z)
+    p = hcat(generate_p_array(N_sites),fill(0, N_sites), fill(0, N_sites))
+    energy_sign = [i <= N_sites ÷ 2 ? 1 : 1 for i in 1:N_sites] # all of the sites are neutrinos
 
     # Specify the relative directory path
     datadir = joinpath(@__DIR__, "..","misc","datafiles","Rog", "par_"*string(N_sites), "tt_"*string(ttotal))
-    #extract output from the expect.jl file where the survival probability values were computed at each timestep
-    Sz_array, prob_surv_array = evolve(s, τ, N, ω, B, N_sites, Δx, ψ, energy_sign, cutoff, maxdim, datadir,ttotal)
-
+    #extract output for the survival probability values at each timestep
+    Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array= evolve(s, τ, N, B,L, N_sites, 
+                    Δx,Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, ttotal,periodic)
+    
     # This function scans through the array, compares each element with its neighbors, 
     # and returns the index of the first local minimum it encounters. 
     # If no local minimum is found, it returns -1 to indicate that.
