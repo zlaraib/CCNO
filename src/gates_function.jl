@@ -27,7 +27,7 @@ include("momentum.jl")
 # This file generates the create_gates function that holds ITensors Trotter gates and returns the dimensionless unitary 
 # operators govered by the Hamiltonian which includes effects of the vacuum and self-interaction potential for each site.
 
-function create_gates(s, N, B, N_sites, Δx, Δm², p, x, Δp, ψ, shape_name,L, τ, energy_sign, periodic)
+function create_gates(s, N, B, N_sites, Δx, Δm², p, x, Δp, theta_nu, shape_name,L, τ, energy_sign, periodic)
     
     # Make gates (1,2),(2,3),(3,4),... i.e. unitary gates which act on any (non-neighboring) pairs of sites in the chain.
     # Create an empty ITensors array that will be our Trotter gates
@@ -44,10 +44,7 @@ function create_gates(s, N, B, N_sites, Δx, Δm², p, x, Δp, ψ, shape_name,L,
     else
         # ω = [Δm²/ (2 * p_i_mod) for p_i_mod in p_mod]
         ω = [Δm² / (2 * p_mod[i]) * energy_sign[i] for i in 1:N_sites]
-        # @assert Im(ω) == ((Δm²))/(2 *hbar * Eνₑ)
-        # println("Im(ω)=",Im(ω))
-        # println("p_i_mod= ",p_i_mod)
-        # println("ω ", ω)
+
     end
     println("ω = ", ω)
 
@@ -65,82 +62,53 @@ function create_gates(s, N, B, N_sites, Δx, Δm², p, x, Δp, ψ, shape_name,L,
             # ni and nj are the neutrions at site i and j respectively.
             # mu pairs divided by 2 to avoid double counting
             
-            if energy_sign[i]*energy_sign[j]>0
-                # Get the shape function result for each pair of i and j 
-                shape_result = shape_func(x, Δp, i, j,L, shape_name, periodic)
-                # Calculate the geometric factor for each pair of i and j within the loop
-                # geometric_factor = geometric_func(p, p̂, i, j)
-                geometric_factor = 1
-                interaction_strength = (2.0* √2 * G_F * (N[i]+ N[j])/(2*((Δx)^3))) * shape_result * geometric_factor
-                hj = interaction_strength *
-                (op("Sz", s_i) * op("Sz", s_j) +
-                1/2 * op("S+", s_i) * op("S-", s_j) +
-                1/2 * op("S-", s_i) * op("S+", s_j))
-                # println("hj= ", hj)
-            else
+            # if energy_sign[i]*energy_sign[j]>0
             #     # Get the shape function result for each pair of i and j 
             #     shape_result = shape_func(x, Δp, i, j,L, shape_name, periodic)
             #     # Calculate the geometric factor for each pair of i and j within the loop
             #     geometric_factor = geometric_func(p, p̂, i, j)
+            #     # geometric_factor = 1
             #     interaction_strength = (2.0* √2 * G_F * (N[i]+ N[j])/(2*((Δx)^3))) * shape_result * geometric_factor
-            #     # hj = - interaction_strength * 
-            #     # ((-2 *op("Sz",s_i) * op("Sz",s_j)) + 
-            #     # op("S+", s_i) * op("S-", s_j) +
-            #     # op("S-", s_i) * op("S+", s_j))
-            #     # MF self int hamiltonian
-            #     sz_i = expect(ψ, "Sz"; sites=i)
-            #     sy_i = expect(complex(ψ), "Sy"; sites=i)
-            #     sx_i = expect(ψ, "Sx"; sites=i)
-            #     sz_j = expect(ψ, "Sz"; sites=j)
-            #     sy_j = expect(complex(ψ), "Sy"; sites=j) 
-            #     sx_j = expect(ψ, "Sx"; sites=j)
-                
-            #     interaction_strength = (2.0/N_sites * √2 * G_F * (N[i]+ N[j])/(2* ((Δx)^3)))
-            #     hj = interaction_strength * 
-            #     (
-            #     ((sx_i * op("Id", s_i) * op("Sx", s_j)) + (sy_i * op("Id", s_i) * op("Sy", s_j)) + (sz_i * op("Id", s_i) * op("Sz", s_j))) + 
-            #     ( (op("Sx", s_i) * op("Id", s_j) * sx_j) + (op("Sy", s_i) * op("Id", s_j) * sy_j) + (op("Sz", s_i) * op("Id", s_j) * sz_j) ) - 
-            #     ((sx_i * op("Id", s_i) * op("Id", s_j) * sx_j) + (sy_i * op("Id", s_i) * op("Id", s_j) * sy_j)  + (sz_i * op("Id", s_i) * op("Id", s_j) * sz_j))
-            #     )
+            #     hj = interaction_strength *
+            #     (op("Sz", s_i) * op("Sz", s_j) +
+            #     1/2 * op("S+", s_i) * op("S-", s_j) +
+            #     1/2 * op("S-", s_i) * op("S+", s_j))
+            #     # println("hj= ", hj)
+            # else
+
 
                 # Get the shape function result for each pair of i and j 
                 shape_result = shape_func(x, Δp, i, j,L, shape_name, periodic)
                 # Calculate the geometric factor for each pair of i and j within the loop
-                # geometric_factor = geometric_func(p, p̂, i, j)
-                geometric_factor = 1
+                geometric_factor = geometric_func(p, p̂, i, j, theta_nu)
                 interaction_strength = (2.0* √2 * G_F * (N[i]+ N[j])/(2*((Δx)^3))) * shape_result * geometric_factor
                 hj = interaction_strength *
                 (op("Sz", s_i) * op("Sz", s_j) +
                 1/2 * op("S+", s_i) * op("S-", s_j) +
                 1/2 * op("S-", s_i) * op("S+", s_j))
                 # println("hj= ", hj)
-            end
-            # add vacuum oscillation term to the Hamiltonian
-            # if ω[i] != 0 && ω[j] != 0
-            #     println("p_mod[$i]= ",p_mod[i])
-            #     ω = Δm²/ (2 * p_mod[i])
-            #     println("ω ", ω)
-            #     hj1 = (1/(N_sites-1))* energy_sign[i]*(
-            #         (ω[i] * B[1] * op("Sx", s_i)* op("Id", s_j))  + (ω[i] * B[2] * op("Sy", s_i)* op("Id", s_j))  + (ω[i] * B[3] * op("Sz", s_i)* op("Id", s_j)) )
-            #     hj2 = (1/(N_sites-1))*energy_sign[j]* (
-            #         (ω[j] * B[1] * op("Id", s_i) * op("Sx", s_j)) + (ω[j] * B[2]  * op("Id", s_i)* op("Sy", s_j)) + (ω[j] * B[3]  * op("Id", s_i)* op("Sz", s_j)) )
-            #     hj += hj1+ hj2
             # end
-
+            # add vacuum oscillation term to the Hamiltonian
             if ω[i] != 0 || ω[j] != 0
-                # println("ω[i]* energy_sign[i]=",ω[i]* energy_sign[i])
                 hj += (1/(N_sites-1))*( 
                     (ω[i] * B[1] * op("Sx", s_i)* op("Id", s_j))  + (ω[i] * B[2] * op("Sy", s_i)* op("Id", s_j))  + (ω[i] * B[3] * op("Sz", s_i)* op("Id", s_j)) )
-                    # println("hj= ", hj)
-                # println("ω[j]* energy_sign[j]=",ω[j]* energy_sign[j])
                 hj += (1/(N_sites-1))*(
                     (ω[j] * B[1] * op("Id", s_i) * op("Sx", s_j)) + (ω[j] * B[2]  * op("Id", s_i)* op("Sy", s_j)) + (ω[j] * B[3]  * op("Id", s_i)* op("Sz", s_j)) )
-                    # println("hj= ", hj)
+
             end
             
-
             # make Trotter gate Gj that would correspond to each gate in the gate array of ITensors             
-            Gj = exp(-im * τ/2 * hj)
+            if theta_nu == 0 ||  theta_nu == π/4 || theta_nu == π/2 
+                Gj = exp(-im * τ/2 * hj)
+            elseif theta_nu == 0.01
+                t_bipolar = 8.96e-4
+                Gj = exp(-im * τ/2 * hj* t_bipolar/hbar)
+            else 
+                Gj = exp(-im * τ/2 * hj* 1/hbar)
+            end
+            # println(imag(Gj))
+            # println((Δm²))/(2 *hbar * p_mod[1])
+            @assert imag(hj) == ((Δm²))/(2 *hbar * p_mod[1])
             # println("Gj= ",Gj)            # has_fermion_string(hj) = true
             # The push! function adds (appends) an element to the end of an array;
             # ! performs an operation without creating a new object, (in a way overwites the previous array in consideration); 
