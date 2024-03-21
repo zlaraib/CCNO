@@ -74,8 +74,6 @@ function evolve(s, τ, N, B,L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sha
             sz = expect(ψ, "Sz"; sites=1)
         end 
 
-        # sz_tot = expect(ψ, "Sz")
-        # sz = mean(sz_tot)
         # compute expectation value of sy and sx using S+ and S- (inbuilt operator in ITensors library) at the first site on the chain
         if p == zeros(N_sites, 3) #for rogerro's case only (b/c S+ S- needed to keep conservation of QN number)
             sy = -0.5 *im * (expect(complex(ψ), "S+"; sites=1) - expect(complex(ψ), "S-"; sites=1)) #re-check
@@ -96,13 +94,11 @@ function evolve(s, τ, N, B,L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sha
         # add an element prob_surv to the end of  prob_surv_array 
         push!(prob_surv_array, prob_surv)
 
-        #figure out alternative to this ifelse statement
-        # if B[1] != 0
-        #     println("$t $sz")
-        # else 
-        #     println("$t $prob_surv")
-        # end
-        println("$t $sz")
+        if B[1] == 1
+            println("$t $sz")
+        else 
+            println("$t $prob_surv")
+        end
         
         # recall that in our code sigma_z = 2*Sz so make sure these expressions are consistent with "Sz in ITensors" 
         ρₑₑ = ( (2 * sz) + 1)/2 
@@ -116,7 +112,6 @@ function evolve(s, τ, N, B,L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sha
         # apply each gate in gates(ITensors array) successively to the wavefunction ψ (MPS)(it is equivalent to time evolving psi according to the time-dependent Hamiltonian represented by gates).
         # The apply function is a matrix-vector multiplication operation that is smart enough to determine which site indices each gate has, and then figure out where to apply it to our MPS. 
         # It truncates the MPS according to the set cutoff and maxdim for all the non-nearest-neighbor gates.
-        #ψ = apply(gates, ψ; cutoff, maxdim)
         ψ = apply(gates, ψ; cutoff, maxdim)
         # ψ = tdvp(H, ψ,  -im *τ;   nsweeps=1,
         # reverse_step=true,outputlevel=1)
