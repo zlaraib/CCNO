@@ -38,7 +38,7 @@ function main()
     mu = ones(N_sites) # erg
     
     # Create an array of dimension N_sites and fill it with the value 1/(sqrt(2) * G_F). This is the number of neutrinos. 
-    N = mu .* fill((Δx)^3/(sqrt(2) * G_F), N_sites)
+    N = mu .* fill(((Δx)^3 )/(√2 * G_F * N_sites), N_sites)
 
     # Create a B vector which would be same for all N_sites particles 
     theta_nu= 0.1 #0.5986 #rad # =34.3 degrees

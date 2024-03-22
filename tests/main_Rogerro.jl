@@ -38,7 +38,7 @@ function main()
     mu = ones(N_sites) # erg
     
     # Create an array of dimension N_sites and fill it with the value 1/(sqrt(2) * G_F). This is the number of neutrinos. 
-    N = mu .* fill((Δx)^3/(sqrt(2) * G_F), N_sites)
+    N = mu .* fill(((Δx)^3 )/(√2 * G_F * N_sites), N_sites)
     
     theta_nu = 0 # mixing_angle #rad 
     B = [sin(2*theta_nu), 0, -cos(2*theta_nu)] # is equivalent to B = [0, 0, -1] # fixed for Rogerro's case

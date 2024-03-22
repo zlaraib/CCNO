@@ -29,7 +29,7 @@ function main(N_sites)
     b_t = 0
     c_t = 1.62
     mu = ones(N_sites)
-    N = mu .* fill((Δx)^3/(sqrt(2) * G_F), N_sites)
+    N = mu .* fill(((Δx)^3 )/(√2 * G_F * N_sites), N_sites)
     B = [0, 0, -1]
     ω_a = fill(0.5, div(N_sites, 2))
     ω_b = fill(0, div(N_sites, 2))
