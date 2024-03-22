@@ -12,10 +12,10 @@ include("../src/constants.jl")
 # which is a product state where each site alternates between up and down.
 
 function main()
-    N_sites = 4 # number of sites (NEED TO GO TILL 96 for Rog_results)
+    N_sites = 4 # number of sites 
     cutoff = 1E-14 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT)
-    τ = 0.05 # time step (NEED TO BE 0.05 for Rog_results)
-    ttotal = 5 # total time of evolution (NEED TO GO TILL 50 for Rog_results)
+    τ = 0.05 # time step 
+    ttotal = 5 # total time of evolution 
     tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution
     Δx = 1E-3 # length of the box of interacting neutrinos at a site/shape function width of neutrinos in cm 
     Δm²= 0.5 # erg^2 # Artifically Fixed for Rog bipolar test #change accordingly in gates_fnction too if need be.
@@ -29,7 +29,7 @@ function main()
     # conserve_qns=false doesnt conserve the total spin quantum number "S" in the system as it evolves
     s = siteinds("S=1/2", N_sites; conserve_qns=false)  
 
-    # Constants for Rogerro's fit (only self-interaction term)
+    # Constants for Rogerro's fit (corresponding to Δω = 0.25)
     a_t = 1.224
     b_t = 0
     c_t = 1.62
