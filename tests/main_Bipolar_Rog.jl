@@ -22,7 +22,7 @@ function main()
     maxdim = 1 #bond dimension
     L = 1 # cm # not being used in this test but defined to keep the evolve function arguments consistent.
     Δp = L # width of shape function # not being used in this test but defined to keep the evolve function arguments consistent.  
-    periodic = false  # true = imposes periodic boundary conditions while false doesn't
+    periodic = true  # true = imposes periodic boundary conditions while false doesn't
    
     # s is an array of spin 1/2 tensor indices (Index objects) which will be the site or physical indices of the MPS.
     # We overload siteinds function, which generates custom Index array with Index objects having the tag of total spin quantum number for all N_sites.
@@ -36,7 +36,7 @@ function main()
     N = mu .* fill(((Δx)^3 )/(√2 * G_F * N_sites), N_sites)
 
     # Create a B vector which would be same for all N_sites particles 
-    theta_nu= 0.1 #0.5986 #rad # =34.3 degrees
+    theta_nu= 0.1 #rad # =34.3 degrees
     B = [sin(2 *theta_nu), 0, -cos(2*theta_nu)]
     B = B / norm(B) 
 
@@ -57,7 +57,7 @@ function main()
 
     # p matrix with numbers generated from the p_array for all components (x, y, z)
     p = hcat(generate_p_array(N_sites),fill(0, N_sites), fill(0, N_sites))
-    energy_sign = fill(1, N_sites) # all of the sites are neutrinos
+    energy_sign = [i <= N_sites ÷ 2 ? 1 : 1 for i in 1:N_sites] # all of the sites are neutrinos
 
     # Specify the relative directory path
     datadir = joinpath(@__DIR__, "..","misc","datafiles","Rog_bipolar", "par_"*string(N_sites), "tt_"*string(ttotal), "τ_"*string(τ))
