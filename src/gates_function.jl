@@ -93,14 +93,15 @@ function create_gates(s, N, B, N_sites, Δx, Δm², p, x, Δp, theta_nu, shape_n
                 # ((-2 *op("Sz",s_i) * op("Sz",s_j)) + 
                 # op("S+", s_i) * op("S-", s_j) +
                 # op("S-", s_i) * op("S+", s_j))
-            end
-            # add vacuum oscillation term to the Hamiltonian
+            # end
+
+            # add Vacuum Oscillation Hamiltonian 
             if ω[i] != 0 || ω[j] != 0
+                
                 hj += (1/(N_sites-1))*( 
                     (ω[i] * B[1] * op("Sx", s_i)* op("Id", s_j))  + (ω[i] * B[2] * op("Sy", s_i)* op("Id", s_j))  + (ω[i] * B[3] * op("Sz", s_i)* op("Id", s_j)) )
                 hj += (1/(N_sites-1))*(
                     (ω[j] * B[1] * op("Id", s_i) * op("Sx", s_j)) + (ω[j] * B[2]  * op("Id", s_i)* op("Sy", s_j)) + (ω[j] * B[3]  * op("Id", s_i)* op("Sz", s_j)) )
-
             end
             
             # make Trotter gate Gj that would correspond to each gate in the gate array of ITensors             
@@ -115,7 +116,7 @@ function create_gates(s, N, B, N_sites, Δx, Δm², p, x, Δp, theta_nu, shape_n
             # println(imag(hj/hbar))
             # println((Δm²))/(2 *hbar * p_mod[1])
             # @assert imag(hj) == ((Δm²))/(2 *hbar * p_mod[1])
-            println("Gj= ",Gj)            # has_fermion_string(hj) = true
+            # println("Gj= ",Gj)            # has_fermion_string(hj) = true
             # The push! function adds (appends) an element to the end of an array;
             # ! performs an operation without creating a new object, (in a way overwites the previous array in consideration); 
             # i.e. we append a new element Gj (which is an ITensor object representing a gate) to the end of the gates array.
