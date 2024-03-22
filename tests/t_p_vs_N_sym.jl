@@ -30,7 +30,7 @@ function main(N_sites, Δω)
     b_t = 0
     c_t = 1.62
     mu = ones(N_sites)
-    N = mu .* fill((Δx)^3/(sqrt(2) * G_F), N_sites)
+    N = mu .* fill(((Δx)^3 )/(√2 * G_F * N_sites), N_sites)
     B = [0, 0, -1]
     Δω_array= fill(Δω, div(N_sites, 2))
     # Calculate ω_a and ω_b based on Δω
