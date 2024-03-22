@@ -107,6 +107,8 @@ function create_gates(s, N, B, N_sites, Δx, Δm², p, x, Δp, theta_nu, shape_n
             # make Trotter gate Gj that would correspond to each gate in the gate array of ITensors             
             if theta_nu == 0 ||  theta_nu == π/4 || theta_nu == π/2 
                 Gj = exp(-im * τ/2 * hj)
+            elseif theta_nu == 0.1 && Δm²== 0.2 # for Rog_bipolar
+                Gj = exp(-im * τ/2 * hj)
             elseif theta_nu == 0.1 # for Richers bipolar
                 t_bipolar = 8.96e-4
                 Gj = exp(-im * τ/2 * hj* t_bipolar/hbar)
