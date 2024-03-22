@@ -77,8 +77,6 @@ function main()
 
     # Plotting P_surv vs t
     plot(0.0:τ:τ*(length(prob_surv_array)-1), prob_surv_array, xlabel = "t", ylabel = "Survival Probability p(t)",title = "Running main_Bipolar_Rog script \n for N_sites$(N_sites) with maxdim=1 and cutoff for τ$(τ)", legend = false, size=(700, 600), aspect_ratio=:auto,margin= 10mm, label= ["My_plot_for_N$(N_sites)"]) 
-        scatter!([t_p_Rog],[prob_surv_array[i_first_local_min]], label= ["t_p_Rog"])
-        scatter!([t_min],[prob_surv_array[i_first_local_min]], label= ["My_t_min)"], legendfontsize=5, legend=:bottomleft)
         # Save the plot as a PDF file
         savefig(joinpath(plotdir,"Survival probability vs t (Rog_bipolar)for N_sites$(N_sites) with maxdim=1 and cutoff for τ$(τ).pdf"))
 end 
