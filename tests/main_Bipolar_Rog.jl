@@ -28,11 +28,6 @@ function main()
     # We overload siteinds function, which generates custom Index array with Index objects having the tag of total spin quantum number for all N_sites.
     # conserve_qns=false doesnt conserve the total spin quantum number "S" in the system as it evolves
     s = siteinds("S=1/2", N_sites; conserve_qns=false)  
-
-    # Constants for Rogerro's fit (only self-interaction term)
-    a_t = 1.224
-    b_t = 0
-    c_t = 1.62
     
     # Initialize an array of ones for all N_sites sites
     mu = ones(N_sites) # erg
@@ -57,7 +52,7 @@ function main()
     #generate a momentum array that depicts the energy of neutrinos and anti-neutrinos in opposing beams
     function generate_p_array(N_sites)                                                                                                                                                                                   
         half_N_sites = div(N_sites, 2)
-        return [fill(Eνₑ, half_N_sites); fill(Eνₑ̄, half_N_sites)]
+        return [fill(1, half_N_sites); fill(1, half_N_sites)]
     end
 
     # p matrix with numbers generated from the p_array for all components (x, y, z)
