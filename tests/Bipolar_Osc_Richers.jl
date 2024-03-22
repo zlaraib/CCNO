@@ -12,7 +12,7 @@ include("../src/constants.jl")
 N_sites_eachflavor= 1 # total sites/particles that evenly spaced "for each (electron) flavor" 
 N_sites = 2* (N_sites_eachflavor) # total particles/sites for all neutrino and anti neutrino electron flavored
 t_bipolar = 8.96e-4 #characteristic bipolar time #sec
-τ = 1e-9 / t_bipolar # time step # sec/sec = unitless # variable
+τ = 1e-8 / t_bipolar # time step # sec/sec = unitless # variable # using this time step for faster unit testing in jenkins, actually the bipolar richers results are obtained with timestep= 1e-9/t_bipolar.
 ttotal = 0.01 / t_bipolar # total time of evolution # sec/sec = unitless 
 tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution #variable
 m2 = -0.008596511*eV #ergs #1st mass eigenstate of neutrino in Richers(2021)
