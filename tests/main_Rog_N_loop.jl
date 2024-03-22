@@ -15,9 +15,7 @@ function main(N_sites)
     ttotal = 5
     tolerance  = 5E-1
     Δx = 1E-3
-    Δm²_b= fill(0, div(N_sites, 2)) #0.0 # erg^2 
-    Δm²_a=  fill(4, div(N_sites, 2)) # 4
-    Δm² = vcat(Δm²_a,Δm²_b)
+    Δm² = 2
     maxdim = 1000 #bond dimension
     L = 1 # cm # not being used in this test but defined to keep the evolve function arguments consistent.
     Δp = L # width of shape function # not being used in this test but defined to keep the evolve function arguments consistent.  
@@ -28,15 +26,18 @@ function main(N_sites)
     c_t = 0
     mu = ones(N_sites)
     N = mu .* fill(((Δx)^3 )/(√2 * G_F * N_sites), N_sites)
-    B = [0, 0, -1]
-    p = ones(N_sites, 3) 
-    # ω_a = fill(2, div(N_sites, 2))
-    # ω_b = fill(0, div(N_sites, 2))
-    # Δω = (ω_a - ω_b)/2
+    theta_nu = 0 # mixing_angle #rad 
+    B = [sin(2*theta_nu), 0, -cos(2*theta_nu)] # is equivalent to B = [0, 0, -1] # fixed for Rogerro's case
+    B = B / norm(B)
+    function generate_p_array(N_sites)                                                                                                                                                                                   
+        half_N_sites = div(N_sites, 2)
+        return [fill(1, half_N_sites); fill(1, half_N_sites)]
+    end
+    # p matrix with numbers generated from the p_array for all components (x, y, z)
+    p = hcat(generate_p_array(N_sites),fill(0, N_sites), fill(0, N_sites))
     x = fill(rand(), N_sites) # variable.
     y = fill(rand(), N_sites) # variable.
     z = fill(rand(), N_sites) # variable.
-    # ω = vcat(ω_a, ω_b)
     ψ = productMPS(s, N -> N <= N_sites/2 ? "Dn" : "Up")
     energy_sign = [i <= N_sites ÷ 2 ? 1 : 1 for i in 1:N_sites]
     shape_name = "none"  # Change this to the desired shape name # variable.
@@ -44,9 +45,9 @@ function main(N_sites)
     # Specify the relative directory path
     datadir = joinpath(@__DIR__, "..","misc","datafiles","Rog_N_loop", "par_"*string(N_sites), "tt_"*string(ttotal))
     #extract output from the expect.jl file where the survival probability values were computed at each timestep
-    Sz_array, prob_surv_array = evolve(s, τ, N, B,L, N_sites, 
-    Δx,Δm², p, x, Δp, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, ttotal,periodic)
-
+    Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array= evolve(s, τ, N, B,L, N_sites, 
+                    Δx,Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, ttotal,periodic)
+    
     function find_first_local_minima_index(arr)
         N = length(arr)
         for i in 2:(N-1)
