@@ -37,25 +37,24 @@ function create_gates(s, N, B, N_sites, Δx, Δm², p, x, Δp, theta_nu, shape_n
     p_mod, p̂ = momentum(p,N_sites)  
     
     # define an array of vacuum oscillation frequencies (units of ergs)
-    if Δm² == 0 #specific to self-int only
+    if Δm² == 0 # specific to self-int only
         ω = zeros(N_sites)
-    elseif Δm² == 2 * π
+    elseif Δm² == 2 * π # specific to vac_osc only
        global ω = fill(π, N_sites) # added global so we can access and use this global variable without the need to pass them as arguments to another function
-    elseif Δm² == 0.5 # for running full Hamiltonian from Rogerro
+    elseif (Δm² == 0.5 || Δm² == 0.2 || Δm² == 2) &&  L==1 # addition for full Hamiltonian from main_Rogerro, Rog_bipolar, Rog_N_loop and t_p_vs_N_unsym tests 
         # Create arrays ω_a and ω_b
-        ω_a = fill(0.5, div(N_sites, 2))
-        ω_b = fill(0, div(N_sites, 2))
-        # Concatenate ω_a and ω_b to form ω
-        ω = vcat(ω_a, ω_b)
-    elseif Δm² == 0.2 # addition for Rog_bipolar test
-        # Create arrays ω_a and ω_b
-        global ω_a = fill(0.2, div(N_sites, 2))
+        global ω_a = fill(Δm², div(N_sites, 2))
         global ω_b = fill(0, div(N_sites, 2))
         # Concatenate ω_a and ω_b to form ω
         ω = vcat(ω_a, ω_b)
+    elseif (Δm² == -0.5 || Δm² == 0.0 || Δm² ==0.05 || Δm² ==0.125 || Δm² ==0.25 || Δm² ==0.5 || Δm² ==1.0) && L==10 # addition for t_p_vs_N_sym and t_p_vs_sym_delta_w tests   
+        Δω_array= fill(Δm², div(N_sites, 2))
+        # Calculate ω_a and ω_b based on Δω
+        global ω_a = Δω_array 
+        global ω_b = -Δω_array 
+        ω = vcat(ω_a, ω_b)
     else 
         ω = [Δm² / (2 * p_mod[i]) * energy_sign[i] for i in 1:N_sites]
-
     end
     println("ω = ", ω)
 
