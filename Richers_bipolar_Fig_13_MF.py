@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 
 par = 2
-tt= 11.769784151785716
+tt= 11.160714285714286
 
 file_path1 = f"misc/datafiles/FFI/par_{par}/tt_{tt}/t_ρ_μμ.dat"
 
