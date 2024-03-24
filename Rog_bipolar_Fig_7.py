@@ -60,9 +60,9 @@ fig, ax = plt.subplots(figsize=(10, 8))
 ax.tick_params(axis='both', which='both', direction='in', top=True, right=True)
 ax.minorticks_on()
 
-plt.plot(t1_array, probsurv_τ1, color="orange", label="$\delta =0.002$", linestyle='dotted')
-ax.plot(t2_array, probsurv_τ2, color="blue", label="$\delta =0.05$", linestyle='dashed') 
-ax.plot(t3_array, probsurv_τ3, color="red", label="$\delta =0.25$", linestyle='solid') 
+plt.plot(t1_array, probsurv_τ1, color="orange", label="$\delta =0.002 \mu^{-1}$", linestyle='dotted')
+ax.plot(t2_array, probsurv_τ2, color="blue", label="$\delta =0.05 \mu^{-1}$", linestyle='dashed') 
+ax.plot(t3_array, probsurv_τ3, color="red", label="$\delta =0.25 \mu^{-1}$", linestyle='solid') 
 
 plt.xlabel("Time $t$ [$\mu^{-1}$]")
 plt.ylabel("Survival Probability $p(t)$")
