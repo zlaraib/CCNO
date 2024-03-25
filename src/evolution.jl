@@ -40,7 +40,9 @@ function evolve(s, τ, N, B,L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sha
     pₓ_values = [] # to store px vector values for all sites
     ρₑₑ_array = Float64[] # to store ρₑₑ values
     ρ_μμ_array = Float64[] # to store ρ_μμ values
-
+    ρμₑ_array = Float64[] # to store ρμₑ values
+    ρₑμ_array = Float64[] # to store ρₑμ values
+     
     # extract the gates array generated in the gates_function file
     gates = create_gates(s, N, B, N_sites, Δx, Δm², p, x, Δp, theta_nu, shape_name,L, τ, energy_sign, periodic)
     # H = Hamiltonian_mpo(s, N, B, N_sites, Δx, Δm², p, x, Δp, shape_name,L, τ, energy_sign, periodic)
@@ -105,6 +107,8 @@ function evolve(s, τ, N, B,L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sha
         push!(ρₑₑ_array,abs(ρₑₑ))
         ρ_μμ = ( (-2 * sz) + 1)/2 
         push!(ρ_μμ_array,abs(ρ_μμ))
+        ρₑμ = sqrt(sx^2 + sy^2)
+        push!(ρₑμ_array, ρₑμ)
         # Writing an if statement in a shorthand way that checks whether the current value of t is equal to ttotal, 
         # and if so, it executes the break statement, which causes the loop to terminate early.
         t ≈ ttotal && break
@@ -135,7 +139,9 @@ function evolve(s, τ, N, B,L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sha
     writedlm(fname5, [t_array ρₑₑ_array])
     fname6 = joinpath(datadir, "t_ρ_μμ.dat")
     writedlm(fname6, [t_array ρ_μμ_array])
-    return Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array
+    fname7 = joinpath(datadir, "t_ρₑμ.dat")
+    writedlm(fname7, [t_array ρₑμ_array])
+    return Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρμₑ_array
 end
 
 

@@ -24,6 +24,14 @@ data2 = np.loadtxt(file_path2)
 x2 = data2[:, 0]
 y2 = data2[:, 1]
 
+file_path3 = f"misc/datafiles/FFI/par_{par}/tt_{tt}/t_ρₑμ.dat"
+
+# Read the data from the file
+data3 = np.loadtxt(file_path3)
+
+x3 = data3[:, 0]
+y3 = data3[:, 1]
+
 mpl.rc('text', usetex=True)
 mpl.rcParams['font.size'] = 20
 mpl.rcParams['font.family'] = 'serif'
@@ -44,6 +52,7 @@ ax.tick_params(axis='both', which='both', direction='in', top=True, right=True)
 ax.minorticks_on()
 ax.plot(x, y, color="blue",label="$\\rho_{\mu \mu}$", linestyle='solid') 
 ax.plot(x2, y2, color="red",label="$\\rho_{e e}$", linestyle='solid') 
+ax.plot(x3, y3, color="purple",label="$\\rho_{e \mu}$", linestyle='solid') 
 
 # Setting y-axis scale to logarithmic
 ax.set_yscale('log')
