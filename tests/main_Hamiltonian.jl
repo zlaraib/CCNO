@@ -127,7 +127,7 @@ function main(s, τ, B,L, N_sites, N_sites_eachflavor, tolerance,
     datadir = joinpath(@__DIR__, "..","misc","datafiles","FFI", "par_"*string(N_sites), "tt_"*string(ttotal))
 
     #extract output for the survival probability values at each timestep
-    Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array= evolve(s, τ, N, B,L, N_sites, 
+    Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array = evolve(s, τ, N, B,L, N_sites, 
                     Δx,Δm², p, x, Δp, theta_nu, ψ₀, shape_name, energy_sign, cutoff, maxdim, datadir, ttotal,periodic)
 
     # Call the function to generate the inputs file in the specified directory
@@ -153,6 +153,12 @@ function main(s, τ, B,L, N_sites, N_sites_eachflavor, tolerance,
     left_margin = 20mm, right_margin = 10mm, top_margin = 5mm, bottom_margin = 10mm) 
     # Save the plot as a PDF file
     savefig(joinpath(plotdir, "<ρₑₑ>_vs_t_self-interactions_w_geo+shape_MF_FFI.pdf"))
+    
+    # Plotting ρₑμ vs t
+    plot(0.0:τ:τ*(length(ρₑμ_array)-1), ρₑμ_array, xlabel = "t", ylabel = "<ρₑμ>", legend = false, 
+    left_margin = 20mm, right_margin = 10mm, top_margin = 5mm, bottom_margin = 10mm) 
+    # Save the plot as a PDF file
+    savefig(joinpath(plotdir, "<ρₑμ>_vs_t_self-interactions_w_geo+shape_MF_FFI.pdf"))
 
    # Plotting P_surv vs t
    plot(0.0:τ:τ*(length(prob_surv_array)-1), prob_surv_array, xlabel = "t", ylabel = "Survival Probabillity p(t)",
@@ -195,7 +201,7 @@ function main(s, τ, B,L, N_sites, N_sites_eachflavor, tolerance,
         top_margin = 5mm, bottom_margin = 10mm)
     end
     savefig(joinpath(plotdir,"Particles momentum(pₓ) evolution.pdf"))
-
+    
 end 
 
 
