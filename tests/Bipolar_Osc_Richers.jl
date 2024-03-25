@@ -12,11 +12,11 @@ include("../src/constants.jl")
 N_sites_eachflavor= 1 # total sites/particles that evenly spaced "for each (electron) flavor" 
 N_sites = 2* (N_sites_eachflavor) # total particles/sites for all neutrino and anti neutrino electron flavored
 t_bipolar = 8.96e-4 #characteristic bipolar time #sec
-τ = 1e-9 / t_bipolar # time step # sec/sec = unitless # variable # using this time step for faster unit testing in jenkins, actually the bipolar richers results are obtained with timestep= 1e-9/t_bipolar.
+τ = 1e-8 / t_bipolar # time step # sec/sec = unitless # variable # using this time step for faster unit testing in jenkins, actually the bipolar richers results are obtained with timestep= 1e-9/t_bipolar.
 ttotal = 0.01 / t_bipolar # total time of evolution # sec/sec = unitless 
 tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution #variable
-m2 = -0.008596511*eV #ergs #1st mass eigenstate of neutrino in Richers(2021)
-m1 = 0*eV   #ergs #2nd mass eigenstate of neutrino in Richers(2021)
+m1 = -0.008596511*eV #ergs #1st mass eigenstate of neutrino in Richers(2021)
+m2 = 0*eV   #ergs #2nd mass eigenstate of neutrino in Richers(2021)
 Δm² = (m2^2-m1^2) # mass square difference # (erg^2) #not used in the test
 maxdim = 1 # max bond dimension in MPS truncation
 cutoff = 1e-100 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT) #variable
@@ -31,7 +31,7 @@ shape_name = "none"  # Change this to the desired shape name #variable
 Δp = L # width of shape function  # cm #variable
 periodic = true  # true = imposes periodic boundary conditions while false doesn't
 theta_nu= 0.01 #mixing angle # =34.3 degrees
-B = [sin(2 *theta_nu), 0, -cos(2*theta_nu)] # for inverted mass hierarchy
+B = [-sin(2 *theta_nu), 0, cos(2*theta_nu)] # for inverted mass hierarchy
 B = B / norm(B) 
 # generate x_array such that the first particle is at position L/(2*N_sites) while subsequent particles are at a position incremental by L/N_sites. # grid style
 function generate_x_array(N_sites, L)
@@ -51,7 +51,7 @@ end
 # p matrix with numbers generated from the p_array for all components (x, y, z)
 p = hcat(generate_p_array(N_sites),fill(0, N_sites), fill(0, N_sites))
 # Create an array with the first half as 1 and the rest as -1
-energy_sign = [i <= N_sites ÷ 2 ? 1 : -1 for i in 1:N_sites] # half sites are (e) neutrinos with positive 1 entry while other half is anti (e) neutrinos with negative 1 entry
+energy_sign = [i <= N_sites ÷ 2 ? -1 : 1 for i in 1:N_sites] # half sites are (e) neutrinos with positive 1 entry while other half is anti (e) neutrinos with negative 1 entry
 
 # s is an array of spin 1/2 tensor indices (Index objects) which will be the site or physical indices of the MPS.
 # We overload siteinds function, which generates custom Index array with Index objects having the tag of total spin quantum number for all N.
@@ -61,8 +61,8 @@ energy_sign = [i <= N_sites ÷ 2 ? 1 : -1 for i in 1:N_sites] # half sites are (
 
 s = siteinds("S=1/2", N_sites; conserve_qns=false) #fixed #switched conserve_qns to false to avoid fluxes error in expect function
 
-# Initialize psi to be a product state (Of all electron flavor neutrino i.e. spin up)
-ψ₀= productMPS(s, N -> N <= N_sites/2 ? "Dn" : "Up")
+# Initialize psi to be a product state (Of first half electron flavor neutrino i.e. spin up while other half anti-neutrinos electron flavor i.e. half spin down)
+ψ₀= productMPS(s, N -> N <= N_sites/2 ? "Up" : "Dn")
 
 @time main(s, τ, B,L, N_sites, N_sites_eachflavor, tolerance,
 n_νₑ,n_νₑ̄,Eνₑ,Eνₑ̄,Δx,Δm², p, x, Δp, ψ₀, shape_name, energy_sign, cutoff, maxdim, ttotal,periodic)
