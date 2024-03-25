@@ -34,11 +34,6 @@ pipeline {
 		archiveArtifacts artifacts: 'misc/plots/Rog_self_int/*/*/*.pdf'
     } 
 }
-	stage('Richers(2021)_Homogenous_FFI'){ steps{
-		sh 'julia tests/Homogenous_FFI_Richers.jl'
-		archiveArtifacts artifacts: 'misc/plots/FFI/*/*/*.pdf'
-    } 
-}
 	stage('Rogerro(2021) full Hamiltonian'){ steps{
 		sh 'julia tests/main_Rogerro.jl'
 		archiveArtifacts artifacts: 'misc/plots/Rog/*/*/*.pdf'
