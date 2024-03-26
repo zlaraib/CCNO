@@ -13,7 +13,7 @@ N_sites_eachflavor= 1 # total sites/particles that evenly spaced "for each (elec
 N_sites = 2* (N_sites_eachflavor) # total particles/sites for all neutrino and anti neutrino electron flavored
 t_bipolar = 8.96e-4 #characteristic bipolar time #sec
 τ = 1e-8 / t_bipolar # time step # sec/sec = unitless # variable # using this time step for faster unit testing in jenkins, actually the bipolar richers results are obtained with timestep= 1e-9/t_bipolar.
-ttotal = 0.01 / t_bipolar # total time of evolution # sec/sec = unitless 
+ttotal = 0.005 / t_bipolar # total time of evolution # sec/sec = unitless #using this total time for faster unit testing in jenkins, actually bipolar richers results are produced with ttotal = 0.01 / t_bipolar
 tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution #variable
 m1 = -0.008596511*eV #ergs #1st mass eigenstate of neutrino in Richers(2021)
 m2 = 0*eV   #ergs #2nd mass eigenstate of neutrino in Richers(2021)
@@ -29,6 +29,8 @@ n_νₑ̄ =  n_νₑ # cm^-3 # number density of electron flavor antineutrino
 #Select a shape function based on the shape_name variable form the list defined in dictionary in shape_func file
 shape_name = "none"  # Change this to the desired shape name #variable 
 Δp = L # width of shape function  # cm #variable
+t1 = 0.0084003052 #choose initial time for growth rate calculation
+t2 = 0.011700318 #choose final time for growth rate calculation
 periodic = true  # true = imposes periodic boundary conditions while false doesn't
 theta_nu= 0.01 #mixing angle # =34.3 degrees
 B = [-sin(2 *theta_nu), 0, cos(2*theta_nu)] # for inverted mass hierarchy
