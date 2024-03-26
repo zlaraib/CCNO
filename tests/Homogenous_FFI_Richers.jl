@@ -8,13 +8,13 @@ using Random
 using ITensorTDVP
 include("main_Hamiltonian.jl")
 include("../src/constants.jl")
-#changed things to accomodate Richers I.C's
+
 """ Richers(2021) Test 3 initial conditions: """
 N_sites_eachflavor= 1 # total sites/particles that evenly spaced "for each (electron) flavor" 
 N_sites = 2* (N_sites_eachflavor) # total particles/sites for all neutrino and anti neutrino electron flavored
 τ = 1.666e-7 # time step from Richers test # sec # variable
 ttotal = 1.666e-2 # total time of evolution # sec #variable
-tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution #variable
+tolerance  = 5E-3 # acceptable level of error or deviation from the exact value or solution #variable
 m1 = -0.008596511*eV #ergs #1st mass eigenstate of neutrino in Richers(2021)
 m2 = 0*eV   #ergs #2nd mass eigenstate of neutrino in Richers(2021)
 Δm² = (m2^2-m1^2) # mass square difference # (erg^2)
@@ -33,7 +33,10 @@ B = B / norm(B)
 #Select a shape function based on the shape_name variable form the list defined in dictionary in shape_func file
 shape_name = "none"  # Change this to the desired shape name #variable 
 Δp = L # width of shape function  # cm #variable
+t1 = 0.0084003052 #choose initial time for growth rate calculation
+t2 = 0.011700318 #choose final time for growth rate calculation
 periodic = true  # true = imposes periodic boundary conditions while false doesn't
+analytic_growth_rate=  (abs(m2^2 - m1^2)/ (2*hbar* Eνₑ)) # analytic growth rate 
 
 # generate x_array such that the first particle is at position L/(2*N_sites) while subsequent particles are at a position incremental by L/N_sites. # grid style
 function generate_x_array(N_sites, L)
@@ -79,3 +82,5 @@ s = siteinds("S=1/2", N_sites; conserve_qns=false) #fixed #switched conserve_qns
 
 @time main(s, τ, B,L, N_sites, N_sites_eachflavor, tolerance,
                 n_νₑ,n_νₑ̄,Eνₑ,Eνₑ̄,Δx,Δm², p, x, Δp, ψ₀, shape_name, energy_sign, cutoff, maxdim, ttotal,periodic)
+
+@assert abs((Im_Ω - analytic_growth_rate)/ analytic_growth_rate) < tolerance 
