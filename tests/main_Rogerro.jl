@@ -22,6 +22,8 @@ function main()
     maxdim = 1000 #bond dimension
     L = 1 # cm # not being used in this test but defined to keep the evolve function arguments consistent.
     Δp = L # width of shape function # not being used in this test but defined to keep the evolve function arguments consistent.  
+    t1 = 0.0084003052 #choose initial time for growth rate calculation #variable, not being used in this test
+    t2 = 0.011700318 #choose final time for growth rate calculation #variable, not being used in this test
     periodic = true  # true = imposes periodic boundary conditions while false doesn't
    
     # s is an array of spin 1/2 tensor indices (Index objects) which will be the site or physical indices of the MPS.
@@ -66,8 +68,8 @@ function main()
     # Specify the relative directory path
     datadir = joinpath(@__DIR__, "..","misc","datafiles","Rog", "par_"*string(N_sites), "tt_"*string(ttotal))
     #extract output for the survival probability values at each timestep
-    Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array= evolve(s, τ, N, B,L, N_sites, 
-                    Δx,Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, ttotal,periodic)
+    Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array, Im_Ω = evolve(s, τ, N, B,L, N_sites, 
+                    Δx,Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal,periodic)
     
     # This function scans through the array, compares each element with its neighbors, 
     # and returns the index of the first local minimum it encounters. 

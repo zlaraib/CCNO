@@ -26,6 +26,8 @@ function main(N_sites)
     maxdim = 1000 #bond dimension
     L = 1 # cm # not being used in this test but defined to keep the evolve function arguments consistent.
     Δp = L # width of shape function # not being used in this test but defined to keep the evolve function arguments consistent.  
+    t1 = 0.0084003052 #choose initial time for growth rate calculation #variable, not being used in this test
+    t2 = 0.011700318 #choose final time for growth rate calculation #variable, not being used in this test
     periodic = true  # true = imposes periodic boundary conditions while false doesn't
     s = siteinds("S=1/2", N_sites; conserve_qns=false)
     # check for Δω = 0.25
@@ -50,8 +52,8 @@ function main(N_sites)
     p = hcat(generate_p_array(N_sites),fill(0, N_sites), fill(0, N_sites))
     energy_sign = [i <= N_sites ÷ 2 ? 1 : 1 for i in 1:N_sites]
     datadir = joinpath(@__DIR__, "..","misc","datafiles","Rog_Fig_3b", "par_"*string(N_sites), "tt_"*string(ttotal))
-    Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array= evolve(s, τ, N, B,L, N_sites, 
-                    Δx,Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, ttotal,periodic)
+    Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array, Im_Ω = evolve(s, τ, N, B,L, N_sites, 
+                    Δx,Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal,periodic)
     function find_first_local_minima_index(arr)
         N = length(arr)
         for i in 2:(N-1)
