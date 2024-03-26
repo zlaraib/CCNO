@@ -25,7 +25,7 @@ include("constants.jl")
 # This file generates the evolve function which evolves the ψ state in time and computes the expectation values of Sz at each time step, along 
 # with their survival probabilities. The time evolution utilizes the unitary operators created as gates from the create_gates function.
 # The <Sz> and Survival probabilities output from this function are unitless. 
-function evolve(s, τ, N, B,L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, ttotal, periodic= true)
+function evolve(s, τ, N, B,L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal, periodic= true)
 
     # check if a directory exists, and if it doesn't, create it using mkpath
     isdir(datadir) || mkpath(datadir)
@@ -40,9 +40,12 @@ function evolve(s, τ, N, B,L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sha
     pₓ_values = [] # to store px vector values for all sites
     ρₑₑ_array = Float64[] # to store ρₑₑ values
     ρ_μμ_array = Float64[] # to store ρ_μμ values
-    ρμₑ_array = Float64[] # to store ρμₑ values
     ρₑμ_array = Float64[] # to store ρₑμ values
-     
+    
+    ρₑμ_at_t1 = nothing  # Initialize a variable to store ρₑμ at t1
+    ρₑμ_at_t2 = nothing  # Initialize a variable to store ρₑμ at t2
+    Δt = t2 - t1 #time difference between growth rates 
+
     # extract the gates array generated in the gates_function file
     gates = create_gates(s, N, B, N_sites, Δx, Δm², p, x, Δp, theta_nu, shape_name,L, τ, energy_sign, periodic)
     # H = Hamiltonian_mpo(s, N, B, N_sites, Δx, Δm², p, x, Δp, shape_name,L, τ, energy_sign, periodic)
@@ -109,6 +112,16 @@ function evolve(s, τ, N, B,L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sha
         push!(ρ_μμ_array,abs(ρ_μμ))
         ρₑμ = sqrt(sx^2 + sy^2)
         push!(ρₑμ_array, ρₑμ)
+
+        # Check if the current time is approximately t1
+        if abs(t - t1) < τ / 2
+            ρₑμ_at_t1 = ρₑμ
+        end
+        
+        # Check if the current time is approximately t2
+        if abs(t - t2) < τ / 2
+            ρₑμ_at_t2 = ρₑμ
+        end
         # Writing an if statement in a shorthand way that checks whether the current value of t is equal to ttotal, 
         # and if so, it executes the break statement, which causes the loop to terminate early.
         t ≈ ttotal && break
@@ -126,6 +139,14 @@ function evolve(s, τ, N, B,L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sha
     end
     t_array = 0.0:τ:ttotal
 
+    # After the time evolution loop, calculate and print the growth rate from the ratio if both values have been captured
+    if ρₑμ_at_t1 !== nothing && ρₑμ_at_t2 !== nothing
+        global Im_Ω = (1/Δt ) * log(ρₑμ_at_t2 / ρₑμ_at_t1)
+        println("Growth rate of flavor coherence of ρₑμ at t2 to ρₑμ at t1: $Im_Ω")
+    else
+        println("ρₑμ was not captured at both t1 and t2.")
+    end
+
     # Writing data to files with corresponding headers
     fname1 = joinpath(datadir, "t_<Sz>_<Sy>_<Sx>.dat")
     writedlm(fname1, [t_array Sz_array Sy_array Sx_array])
@@ -141,7 +162,7 @@ function evolve(s, τ, N, B,L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sha
     writedlm(fname6, [t_array ρ_μμ_array])
     fname7 = joinpath(datadir, "t_ρₑμ.dat")
     writedlm(fname7, [t_array ρₑμ_array])
-    return Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρμₑ_array
+    return Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, Im_Ω
 end
 
 
