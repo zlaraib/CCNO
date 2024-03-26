@@ -19,7 +19,9 @@ function main(Δω, N_sites, ttotal)
     Δx = 1E-3
     maxdim = 1000 #bond dimension
     L = 10 # cm # not being used in this test but defined to keep the evolve function arguments consistent.
-    Δp = L # width of shape function # not being used in this test but defined to keep the evolve function arguments consistent.  
+    Δp = L # width of shape function # not being used in this test but defined to keep the evolve function arguments consistent. 
+    t1 = 0.0084003052 #choose initial time for growth rate calculation #variable, not being used in this test
+    t2 = 0.011700318 #choose final time for growth rate calculation #variable, not being used in this test 
     periodic = false 
     if Δω==-0.5
         a_t = 0
@@ -78,8 +80,8 @@ function main(Δω, N_sites, ttotal)
     shape_name = "none"  # Change this to the desired shape name # variable.
     # Specify the relative directory path
     datadir = joinpath(@__DIR__, "..","misc","datafiles","Rog_Table_I", "par_"*string(N_sites), "Δω"*string(Δω))
-    Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array= evolve(s, τ, N, B,L, N_sites, 
-    Δx,Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, ttotal,periodic)
+    Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array, Im_Ω = evolve(s, τ, N, B,L, N_sites, 
+                    Δx,Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal,periodic)
     function find_first_local_minima_index(arr)
         N = length(arr)
         for i in 2:(N-1)

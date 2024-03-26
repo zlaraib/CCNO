@@ -19,6 +19,8 @@ function main(N_sites)
     maxdim = 1000 #bond dimension
     L = 1 # cm # not being used in this test but defined to keep the evolve function arguments consistent.
     Δp = L # width of shape function # not being used in this test but defined to keep the evolve function arguments consistent.  
+    t1 = 0.0084003052 #choose initial time for growth rate calculation #variable, not being used in this test
+    t2 = 0.011700318 #choose final time for growth rate calculation #variable, not being used in this test
     periodic = false  # true = imposes periodic boundary conditions while false doesn't
     s = siteinds("S=1/2", N_sites; conserve_qns=false)
     a_t = 0.965
@@ -45,8 +47,8 @@ function main(N_sites)
     # Specify the relative directory path
     datadir = joinpath(@__DIR__, "..","misc","datafiles","Rog_N_loop", "par_"*string(N_sites), "tt_"*string(ttotal))
     #extract output from the expect.jl file where the survival probability values were computed at each timestep
-    Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array= evolve(s, τ, N, B,L, N_sites, 
-                    Δx,Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, ttotal,periodic)
+    Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array, Im_Ω = evolve(s, τ, N, B,L, N_sites, 
+                    Δx,Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal,periodic)
     
     function find_first_local_minima_index(arr)
         N = length(arr)

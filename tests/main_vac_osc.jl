@@ -25,7 +25,9 @@ function main()
   maxdim = 1000 # max bond dimension in MPS truncation
   L = 1 # cm # not being used in this test but defined to keep the evolve function arguments consistent.
   Δp = L # width of shape function # not being used in this test but defined to keep the evolve function arguments consistent.
-
+  t1 = 0.0084003052 #choose initial time for growth rate calculation #variable, not being used in this test
+  t2 = 0.011700318 #choose final time for growth rate calculation #variable, not being used in this test
+  
   # Make an array of 'site' indices and label as s 
   # conserve_qns=false doesnt conserve the total spin quantum number "S"(in z direction) in the system as it evolves
   s = siteinds("S=1/2", N_sites; conserve_qns=false)  #Fixed
@@ -59,8 +61,8 @@ function main()
   datadir = joinpath(@__DIR__, "..","misc","datafiles","vac_osc", "par_"*string(N_sites), "tt_"*string(ttotal))
 
   #extract output for the survival probability values at each timestep
-  Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values,  ρₑₑ_array,ρ_μμ_array= evolve(s, τ, N, B, L, N_sites,
-                                           Δx,Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, ttotal)
+  Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array, Im_Ω = evolve(s, τ, N, B,L, N_sites, 
+  Δx,Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal)
                       
   expected_sz_array = Float64[]
   expected_sz= Float64[]
