@@ -66,7 +66,7 @@ ax.plot(t3_array, probsurv_τ3, color="red", label="$\delta =0.25 \mu^{-1}$", li
 
 plt.xlabel("Time $t$ [$\mu^{-1}$]")
 plt.ylabel("Survival Probability $p(t)$")
-ax.set_title("Rogerro(2021) Bipolar test Fig. 7 \n Appendix B : Direct Mean-Field Results", fontsize=24) 
+# ax.set_title("Rogerro(2021) Bipolar test Fig. 7 \n Appendix B : Direct Mean-Field Results", fontsize=24) 
 plt.legend(frameon=False)
 ax.grid(False)
 plt.legend(loc='lower center', frameon=False, bbox_to_anchor=(0.45, 0.01))
