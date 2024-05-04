@@ -20,8 +20,8 @@ probabilities_ee = 1 .- probabilities_eμ  # Survival probability for P_ee
 
 # Plot the data with the corrected labels and legend properties
 p = plot(L, probabilities_eμ, label=L"P_{\nu_e \rightarrow \nu_{\mu}}", xlabel="L [km]", ylabel=L"P_{\alpha\beta}(L)",
-         legend=:topright, legend_font=font(15), legend_background_color=RGBA(1, 1, 1, 0.5), color=:silver)
-plot!(L, probabilities_ee, label=L"P_{\nu_e \rightarrow \nu_e}", color=:gold)
+         legend=:topright, legend_font=font(15), legend_background_color=RGBA(1, 1, 1, 0.5), color=:black)
+plot!(L, probabilities_ee, label=L"P_{\nu_e \rightarrow \nu_e}", color=:magenta)
 
 
 # Save the plot as a PDF file
