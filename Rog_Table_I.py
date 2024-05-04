@@ -41,7 +41,7 @@ ax.minorticks_on()
 plt.plot(del_w_array, t_p_array_Rog, label="Rogerro(2021)")
 ax.scatter(del_w_array, t_p_array_mine, color="g", s=70, label="Our results") 
 
-plt.xlabel("$\delta_{\omega}$")
+plt.xlabel("$\delta_{\omega} / \mu$")
 plt.ylabel("Minimum time $t_p$ [$\mu^{-1}$]")
 ax.set_title("Table I. Rogerro(2021)", fontsize=24) 
 plt.legend(frameon=False)
