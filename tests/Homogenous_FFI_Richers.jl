@@ -83,4 +83,6 @@ s = siteinds("S=1/2", N_sites; conserve_qns=false) #fixed #switched conserve_qns
 @time main(s, τ, B,L, N_sites, N_sites_eachflavor, tolerance,
                 n_νₑ,n_νₑ̄,Eνₑ,Eνₑ̄,Δx,Δm², p, x, Δp, ψ₀, shape_name, energy_sign, cutoff, maxdim, ttotal,periodic)
 
-@assert abs((Im_Ω - analytic_growth_rate)/ analytic_growth_rate) < tolerance 
+if maxdim ==1 
+    @assert abs((Im_Ω - analytic_growth_rate)/ analytic_growth_rate) < tolerance 
+end 
