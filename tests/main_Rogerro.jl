@@ -15,7 +15,7 @@ function main()
     N_sites = 4 # number of sites 
     cutoff = 1E-14 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT)
     τ = 0.05 # time step 
-    ttotal = 5 # total time of evolution 
+    ttotal = 10 # total time of evolution 
     tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution
     Δx = 1E-3 # length of the box of interacting neutrinos at a site/shape function width of neutrinos in cm 
     Δm²= 0.5 # erg^2 # Artifically Fixed for Rog bipolar test #change accordingly in gates_fnction too if need be.
@@ -112,11 +112,11 @@ function main()
     isdir(plotdir) || mkpath(plotdir)
 
     # Plotting P_surv vs t
-    plot(0.0:τ:τ*(length(prob_surv_array)-1), prob_surv_array, xlabel = "t", ylabel = "Survival Probabillity p(t)",title = "Running main_Rogerro script \n for N_sites$(N_sites) with maxdim=1 MF for τ$(τ)", legend = false, size=(700, 600), aspect_ratio=:auto,margin= 10mm, label= ["My_plot_for_N$(N_sites)"]) 
+    plot(0.0:τ:τ*(length(prob_surv_array)-1), prob_surv_array, xlabel = "t", ylabel = "Survival Probabillity p(t)",title = "Running main_Rogerro script \n for N_sites$(N_sites) with maxdim=$(maxdim) for τ$(τ)", legend = false, size=(700, 600), aspect_ratio=:auto,margin= 10mm, label= ["My_plot_for_N$(N_sites)"]) 
     scatter!([t_p_Rog],[prob_surv_array[i_first_local_min]], label= ["t_p_Rog"])
     scatter!([t_min],[prob_surv_array[i_first_local_min]], label= ["My_t_min)"], legendfontsize=5, legend=:bottomleft)
     # Save the plot as a PDF file
-    savefig(joinpath(plotdir,"Survival probability vs t (Rog)for N_sites$(N_sites) with maxdim=1 and cutoff for τ$(τ).pdf"))
+    savefig(joinpath(plotdir,"Survival probability vs t (Rog)for N_sites$(N_sites) with maxdim=$(maxdim) and cutoff for τ$(τ).pdf"))
 end 
 
 @time main()
