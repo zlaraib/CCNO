@@ -60,8 +60,8 @@ function create_perturbation_gates(s, B, α, x, L, N_sites, energy_sign, τ)
 
             #println("hj= ", hj)
             # make Trotter gate Gj that would correspond to each gate in the gate array of ITensors             
-
-            Gj = exp(-im * τ/2 * hj)
+            Gj = exp(-im * τ/2 * hj*  1/hbar)
+            # Gj = exp(-im * τ/2 * hj)
             # The push! function adds (appends) an element to the end of an array;
             # ! performs an operation without creating a new object, (in a way overwites the previous array in consideration); 
             # i.e. we append a new element Gj (which is an ITensor object representing a gate) to the end of the gates array.
