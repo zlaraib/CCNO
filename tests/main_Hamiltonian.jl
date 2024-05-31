@@ -110,16 +110,19 @@ function main(s, τ, B,L, N_sites, N_sites_eachflavor, tolerance,
     input_data = extract_initial_conditions()
 
     V = L^3 # volume of the big box containing all sites/particles
-
+    # V_i = Δx^3
     # Create an array of dimension N and fill it half with values of sites containing all electron neutrinos 
     # and other half with sites containing electron anti-neutrino. 
-    N_νₑ  = n_νₑ * V 
-    N_1 = fill(N_νₑ / (N_sites ÷ 2), N_sites ÷ 2)
-    N_νₑ̄  = n_νₑ̄ * V 
-    N_2 = fill(N_νₑ̄/ (N_sites ÷ 2), N_sites ÷ 2)
+    # N_νₑ  = n_νₑ * V_i
     # N_1 = fill(N_νₑ, N_sites ÷ 2)
-    # N_νₑ̄  = n_νₑ̄ * V 
+    # N_νₑ̄  = n_νₑ̄ * V_i
     # N_2 = fill(N_νₑ̄, N_sites ÷ 2)
+
+    # # and other half with sites containing electron anti-neutrino. 
+    N_νₑ  = n_νₑ * V 
+    N_1 = fill(N_νₑ, N_sites ÷ 2)
+    N_νₑ̄  = n_νₑ̄ * V 
+    N_2 = fill(N_νₑ̄, N_sites ÷ 2)
     N = vcat(N_1, N_2) # This is the total number of neutrinos. 
 
     
@@ -142,47 +145,81 @@ function main(s, τ, B,L, N_sites, N_sites_eachflavor, tolerance,
     # Call the function to generate the inputs file in the specified directory
     generate_inputs_file(plotdir, "inputs.txt", input_data)
     
-    # Plotting ρ_μμ vs t
-    plot(0.0:τ:τ*(length(ρ_μμ_array)-1), ρ_μμ_array, xlabel = "t", ylabel = "<ρ_μμ>", legend = false, 
-    left_margin = 20mm, right_margin = 10mm, top_margin = 5mm, bottom_margin = 10mm) 
-    # Save the plot as a PDF file
-    savefig(joinpath(plotdir, "<ρ_μμ>_vs_t_self-interactions_w_geo+shape_MF_FFI.pdf"))
+    if maxdim ==1 
+        # Plotting ρ_μμ vs t
+        plot(0.0:τ:τ*(length(ρ_μμ_array)-1), ρ_μμ_array, xlabel = "t", ylabel = "<ρ_μμ>", legend = false, 
+        left_margin = 20mm, right_margin = 10mm, top_margin = 5mm, bottom_margin = 10mm) 
+        # Save the plot as a PDF file
+        savefig(joinpath(plotdir, "<ρ_μμ>_vs_t_self-interactions_w_geo+shape_MF_FFI.pdf"))
 
-    # Plotting ρ_ee vs t
-    plot(0.0:τ:τ*(length(ρₑₑ_array)-1), ρₑₑ_array, xlabel = "t", ylabel = "<ρₑₑ>", legend = false, 
-    left_margin = 20mm, right_margin = 10mm, top_margin = 5mm, bottom_margin = 10mm) 
-    # Save the plot as a PDF file
-    savefig(joinpath(plotdir, "<ρₑₑ>_vs_t_self-interactions_w_geo+shape_MF_FFI.pdf"))
-    
-    # Plotting ρₑμ vs t
-    plot(0.0:τ:τ*(length(ρₑμ_array)-1), ρₑμ_array, xlabel = "t", ylabel = "<ρₑμ>", legend = false, 
-    left_margin = 20mm, right_margin = 10mm, top_margin = 5mm, bottom_margin = 10mm) 
-    # Save the plot as a PDF file
-    savefig(joinpath(plotdir, "<ρₑμ>_vs_t_self-interactions_w_geo+shape_MF_FFI.pdf"))
+        # Plotting ρ_ee vs t
+        plot(0.0:τ:τ*(length(ρₑₑ_array)-1), ρₑₑ_array, xlabel = "t", ylabel = "<ρₑₑ>", legend = false, 
+        left_margin = 20mm, right_margin = 10mm, top_margin = 5mm, bottom_margin = 10mm) 
+        # Save the plot as a PDF file
+        savefig(joinpath(plotdir, "<ρₑₑ>_vs_t_self-interactions_w_geo+shape_MF_FFI.pdf"))
+        
+        # Plotting ρₑμ vs t
+        plot(0.0:τ:τ*(length(ρₑμ_array)-1), ρₑμ_array, xlabel = "t", ylabel = "<ρₑμ>", legend = false, 
+        left_margin = 20mm, right_margin = 10mm, top_margin = 5mm, bottom_margin = 10mm) 
+        # Save the plot as a PDF file
+        savefig(joinpath(plotdir, "<ρₑμ>_vs_t_self-interactions_w_geo+shape_MF_FFI.pdf"))
 
-   # Plotting P_surv vs t
-   plot(0.0:τ:τ*(length(prob_surv_array)-1), prob_surv_array, xlabel = "t", ylabel = "Survival Probabillity p(t)",
-   legend = false, left_margin = 20mm, right_margin = 10mm, top_margin = 5mm, bottom_margin = 10mm)
-   savefig(joinpath(plotdir,"Survival probability vs t (only self-interaction term)_FFI.pdf"))
+        # Plotting Sz vs t
+        plot(0.0:τ:τ*(length(Sz_array)-1), Sz_array, xlabel = "t", ylabel = "<Sz>", legend = false,
+            left_margin = 25mm, right_margin = 5mm, top_margin = 5mm, bottom_margin = 20mm,margin= 10mm,
+            ylims = (minimum(Sz_array), maximum(Sz_array) + 0.1 * abs(maximum(Sz_array) - minimum(Sz_array))) )
+        # Save the plot as a PDF file
+        savefig(joinpath(plotdir, "<Sz>_vs_t_self-interactions_w_geo+shape_MF_FFI.pdf"))
 
-    # Plotting Sz vs t
-    plot(0.0:τ:τ*(length(Sz_array)-1), Sz_array, xlabel = "t", ylabel = "<Sz>", legend = false,
-        left_margin = 25mm, right_margin = 5mm, top_margin = 5mm, bottom_margin = 20mm,margin= 10mm,
-        ylims = (minimum(Sz_array), maximum(Sz_array) + 0.1 * abs(maximum(Sz_array) - minimum(Sz_array))) )
-    # Save the plot as a PDF file
-    savefig(joinpath(plotdir, "<Sz>_vs_t_self-interactions_w_geo+shape_MF_FFI.pdf"))
+        # Plotting Sy vs t
+        plot(0.0:τ:τ*(length(Sy_array)-1), Sy_array, xlabel = "t", ylabel = "<Sy>", legend = false,
+        left_margin = 40mm, right_margin = 5mm, top_margin = 5mm, bottom_margin = 10mm, margin= 10mm) 
+        #Save the plot as a PDF file
+        savefig(joinpath(plotdir,"<Sy> vs t (self-interactions w geo+shape)_MF_FFI.pdf"))
 
-    # Plotting Sy vs t
-    plot(0.0:τ:τ*(length(Sy_array)-1), Sy_array, xlabel = "t", ylabel = "<Sy>", legend = false,
-    left_margin = 40mm, right_margin = 5mm, top_margin = 5mm, bottom_margin = 10mm, margin= 10mm) 
-    #Save the plot as a PDF file
-    savefig(joinpath(plotdir,"<Sy> vs t (self-interactions w geo+shape)_MF_FFI.pdf"))
+        # Plotting Sx vs t
+        plot(0.0:τ:τ*(length(Sx_array)-1), Sx_array, xlabel = "t", ylabel = "<Sx>", legend = false,
+        left_margin = 40mm, right_margin = 5mm, top_margin = 5mm, bottom_margin = 10mm, margin= 10mm) 
+        #Save the plot as a PDF file
+        savefig(joinpath(plotdir,"<Sx> vs t (self-interactions w geo+shape)_MF_FFI.pdf"))
+    else 
+        # Plotting ρ_μμ vs t
+        plot(0.0:τ:τ*(length(ρ_μμ_array)-1), ρ_μμ_array, xlabel = "t", ylabel = "<ρ_μμ>", legend = false, 
+        left_margin = 20mm, right_margin = 10mm, top_margin = 5mm, bottom_margin = 10mm) 
+        # Save the plot as a PDF file
+        savefig(joinpath(plotdir, "<ρ_μμ>_vs_t_self-interactions_w_geo+shape_MB_FFI.pdf"))
 
-    # Plotting Sx vs t
-    plot(0.0:τ:τ*(length(Sx_array)-1), Sx_array, xlabel = "t", ylabel = "<Sx>", legend = false,
-    left_margin = 40mm, right_margin = 5mm, top_margin = 5mm, bottom_margin = 10mm, margin= 10mm) 
-    #Save the plot as a PDF file
-    savefig(joinpath(plotdir,"<Sx> vs t (self-interactions w geo+shape)_MF_FFI.pdf"))
+        # Plotting ρ_ee vs t
+        plot(0.0:τ:τ*(length(ρₑₑ_array)-1), ρₑₑ_array, xlabel = "t", ylabel = "<ρₑₑ>", legend = false, 
+        left_margin = 20mm, right_margin = 10mm, top_margin = 5mm, bottom_margin = 10mm) 
+        # Save the plot as a PDF file
+        savefig(joinpath(plotdir, "<ρₑₑ>_vs_t_self-interactions_w_geo+shape_MB_FFI.pdf"))
+        
+        # Plotting ρₑμ vs t
+        plot(0.0:τ:τ*(length(ρₑμ_array)-1), ρₑμ_array, xlabel = "t", ylabel = "<ρₑμ>", legend = false, 
+        left_margin = 20mm, right_margin = 10mm, top_margin = 5mm, bottom_margin = 10mm) 
+        # Save the plot as a PDF file
+        savefig(joinpath(plotdir, "<ρₑμ>_vs_t_self-interactions_w_geo+shape_MB_FFI.pdf"))
+
+        # Plotting Sz vs t
+        plot(0.0:τ:τ*(length(Sz_array)-1), Sz_array, xlabel = "t", ylabel = "<Sz>", legend = false,
+            left_margin = 25mm, right_margin = 5mm, top_margin = 5mm, bottom_margin = 20mm,margin= 10mm,
+            ylims = (minimum(Sz_array), maximum(Sz_array) + 0.1 * abs(maximum(Sz_array) - minimum(Sz_array))) )
+        # Save the plot as a PDF file
+        savefig(joinpath(plotdir, "<Sz>_vs_t_self-interactions_w_geo+shape_MB_FFI.pdf"))
+
+        # Plotting Sy vs t
+        plot(0.0:τ:τ*(length(Sy_array)-1), Sy_array, xlabel = "t", ylabel = "<Sy>", legend = false,
+        left_margin = 40mm, right_margin = 5mm, top_margin = 5mm, bottom_margin = 10mm, margin= 10mm) 
+        #Save the plot as a PDF file
+        savefig(joinpath(plotdir,"<Sy> vs t (self-interactions w geo+shape)_MB_FFI.pdf"))
+
+        # Plotting Sx vs t
+        plot(0.0:τ:τ*(length(Sx_array)-1), Sx_array, xlabel = "t", ylabel = "<Sx>", legend = false,
+        left_margin = 40mm, right_margin = 5mm, top_margin = 5mm, bottom_margin = 10mm, margin= 10mm) 
+        #Save the plot as a PDF file
+        savefig(joinpath(plotdir,"<Sx> vs t (self-interactions w geo+shape)_MB_FFI.pdf"))
+    end
 
     # Plotting particles positional evolution
     plot(title="Position Evolution for $N_sites particles", xlabel= "Position (x)",ylabel="Time(s)")
