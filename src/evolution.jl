@@ -53,7 +53,7 @@ function evolve(s, τ, N, B,L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sha
     p_mod, p̂ = momentum(p,N_sites) 
     p̂ₓ= [sub_array[1] for sub_array in p̂]
     
-     # Compute and print survival probability (found from <Sz>) at each time step then apply the gates to go to the next time
+    # Compute and print survival probability (found from <Sz>) at each time step then apply the gates to go to the next time
      for t in 0.0:τ:ttotal
         push!(x_values, copy(x))  # Record x values at each time step
         px = p[:, 1]  # Extracting the first column (which corresponds to px values)
@@ -70,14 +70,25 @@ function evolve(s, τ, N, B,L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sha
             end
         end
         
-        if shape_name!=="none" #specfic to the inhomogenous case Test4
-            # compute the avg expectation value of Sz at all sites
-            sz_tot = expect(ψ, "Sz")
-            sz = mean(sz_tot)
-        else 
+        # if shape_name!=="none" #specfic to the inhomogenous case Test4
+        #     # compute the avg expectation value of Sz at all sites
+        #     sz_tot = expect(ψ, "Sz")
+        #     sz = mean(sz_tot)
+        # else 
+            # compute expectation value of Sz (inbuilt operator in ITensors library) at the first site on the chain
+            # sz = expect(ψ, "Sz"; sites=1)
+        # end 
+
+        # if shape_name!=="none" #specfic to the inhomogenous case Test4
+        #     # compute the avg expectation value of Sz at all sites
+        #     sz_tot = expect(ψ, "Sz")  # Compute Sz for each site and store the values in sz_tot
+        #     half_N = div(N_sites, 2)  # Calculate half of the number of sites
+        #     sz = mean(sz_tot[1:half_N])  # Take the mean of the first half of the sz_tot array
+        
+        # else 
             # compute expectation value of Sz (inbuilt operator in ITensors library) at the first site on the chain
             sz = expect(ψ, "Sz"; sites=1)
-        end 
+        # end 
 
         # compute expectation value of sy and sx using S+ and S- (inbuilt operator in ITensors library) at the first site on the chain
         if p == zeros(N_sites, 3) #for rogerro's case only (b/c S+ S- needed to keep conservation of QN number)
