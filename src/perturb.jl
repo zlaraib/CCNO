@@ -22,7 +22,7 @@ include("momentum.jl")
 # Then, this file generates the evolve_perturbation function which utilizes the unitary operators created as perturb_gates from the 
 # create_perturbation_gates function to evolve the initial ψ state in time and return the normalized perturbed state after evolution.
 
-function create_perturbation_gates(s, B, α, x, L, N_sites, energy_sign, τ)
+function create_perturbation_gates(s, B_pert, α, x, L, N_sites, energy_sign, τ)
     
     # Make gates (1,2),(2,3),(3,4),... i.e. unitary gates which act on any (non-neighboring) pairs of sites in the chain.
     # Create an empty ITensors array that will be our Trotter gates
@@ -51,10 +51,10 @@ function create_perturbation_gates(s, B, α, x, L, N_sites, energy_sign, τ)
             # ((ω_pert[i] * B[3] * op("Sz", s_i)* op("Id", s_j))  + (ω_pert[j] * B[3] * op("Sz", s_j) * op("Id", s_i))) 
             # )
             hj= (1/(N_sites-1))* (
-                (ω_pert[i] * B[1] * op("Sx", s_i)* op("Id", s_j))  + (ω_pert[i] * B[2] * op("Sy", s_i)* op("Id", s_j))  + (ω_pert[i] * B[3] * op("Sz", s_i)* op("Id", s_j)) )
+                (ω_pert[i] * B_pert[1] * op("Sx", s_i)* op("Id", s_j))  + (ω_pert[i] * B_pert[2] * op("Sy", s_i)* op("Id", s_j))  + (ω_pert[i] * B_pert[3] * op("Sz", s_i)* op("Id", s_j)) )
                 # println("hj1= ", hj1) 
             hj += (1/(N_sites-1))* (
-                (ω_pert[j] * B[1] * op("Id", s_i) * op("Sx", s_j)) + (ω_pert[j] * B[2]  * op("Id", s_i)* op("Sy", s_j)) + (ω_pert[j] * B[3]  * op("Id", s_i)* op("Sz", s_j)) )
+                (ω_pert[j] * B_pert[1] * op("Id", s_i) * op("Sx", s_j)) + (ω_pert[j] * B_pert[2]  * op("Id", s_i)* op("Sy", s_j)) + (ω_pert[j] * B_pert[3]  * op("Id", s_i)* op("Sz", s_j)) )
                 # println("hj2= ", hj2)
             
 
@@ -78,10 +78,10 @@ function create_perturbation_gates(s, B, α, x, L, N_sites, energy_sign, τ)
 end
 
 
-function evolve_perturbation(s, τ, B, α, x, L, N_sites, ψ, cutoff, maxdim, energy_sign,ttotal)
+function evolve_perturbation(s, τ, B_pert, α, x, L, N_sites, ψ, cutoff, maxdim, energy_sign,ttotal)
 
     # extract the gates array generated in the gates_function file
-    perturb_gates = create_perturbation_gates(s, B, α, x, L, N_sites, energy_sign, τ)
+    perturb_gates = create_perturbation_gates(s, B_pert, α, x, L, N_sites, energy_sign, τ)
 
      # Compute and print survival probability (found from <Sz>) at each time step then apply the gates to go to the next time
      for t in 0.0:τ:ttotal  #perhaps not perturn till the end? stop somewhere in the mid 
