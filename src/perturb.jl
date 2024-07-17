@@ -30,8 +30,8 @@ function create_perturbation_gates(s, B, α, x, L, N_sites, energy_sign, τ)
     k = 2π/ L
     # define an array of oscillation frequencies (units of ergs) of perturbation
     # ω_pert = [10^(-28)* energy_sign[i] for i in 1:N_sites]
-    ω_pert = fill(2π*(10^(-26)), N_sites) 
-    # ω_pert = α^3  * asin.([α * sin(k*x[i])* energy_sign[i] for i in 1:N_sites])
+    # ω_pert = fill(2π*(10^(-26)), N_sites) 
+    ω_pert = α^3  * asin.([α * sin(k*x[i])* energy_sign[i] for i in 1:N_sites])
     println("perturb_ω = ", ω_pert)
 
     for i in 1:(N_sites-1)
@@ -50,13 +50,13 @@ function create_perturbation_gates(s, B, α, x, L, N_sites, energy_sign, τ)
             # ((ω_pert[i] * B[2] * op("Sy", s_i)* op("Id", s_j))  + (ω_pert[j] * B[2] * op("Sy", s_j) * op("Id", s_i))) +
             # ((ω_pert[i] * B[3] * op("Sz", s_i)* op("Id", s_j))  + (ω_pert[j] * B[3] * op("Sz", s_j) * op("Id", s_i))) 
             # )
-            hj1 = (1/(N_sites-1))* (
+            hj= (1/(N_sites-1))* (
                 (ω_pert[i] * B[1] * op("Sx", s_i)* op("Id", s_j))  + (ω_pert[i] * B[2] * op("Sy", s_i)* op("Id", s_j))  + (ω_pert[i] * B[3] * op("Sz", s_i)* op("Id", s_j)) )
                 # println("hj1= ", hj1) 
-            hj2 = (1/(N_sites-1))* (
+            hj += (1/(N_sites-1))* (
                 (ω_pert[j] * B[1] * op("Id", s_i) * op("Sx", s_j)) + (ω_pert[j] * B[2]  * op("Id", s_i)* op("Sy", s_j)) + (ω_pert[j] * B[3]  * op("Id", s_i)* op("Sz", s_j)) )
                 # println("hj2= ", hj2)
-            hj= hj1 + hj2
+            
 
             #println("hj= ", hj)
             # make Trotter gate Gj that would correspond to each gate in the gate array of ITensors             
@@ -88,8 +88,8 @@ function evolve_perturbation(s, τ, B, α, x, L, N_sites, ψ, cutoff, maxdim, en
 
         # Writing an if statement in a shorthand way that checks whether the current value of t is equal to τ, 
         # and if so, it executes the break statement, which causes the loop to terminate early.
-        # t ≈ τ && break
-        t ≈ ttotal && break
+        t ≈ τ && break
+        # t ≈ ttotal && break
         # apply each gate in gates(ITensors array) successively to the wavefunction ψ (MPS)(it is equivalent to time evolving psi according to the time-dependent Hamiltonian represented by gates).
         # The apply function is a matrix-vector multiplication operation that is smart enough to determine which site indices each gate has, and then figure out where to apply it to our MPS. 
         # It truncates the MPS according to the set cutoff and maxdim for all the non-nearest-neighbor gates.
