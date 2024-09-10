@@ -25,10 +25,7 @@ include("constants.jl")
 # This file generates the evolve function which evolves the ψ state in time and computes the expectation values of Sz at each time step, along 
 # with their survival probabilities. The time evolution utilizes the unitary operators created as gates from the create_gates function.
 # The <Sz> and Survival probabilities output from this function are unitless. 
-function evolve(s, τ, N, B,L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal, periodic= true)
-
-    # check if a directory exists, and if it doesn't, create it using mkpath
-    isdir(datadir) || mkpath(datadir)
+function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal, save_data::Bool, periodic=true)
 
     # Create empty array s to...
     Sz_array = Float64[] # to store sz values 
@@ -158,22 +155,32 @@ function evolve(s, τ, N, B,L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sha
         println("ρₑμ was not captured at both t1 and t2.")
     end
 
-    # Writing data to files with corresponding headers
-    fname1 = joinpath(datadir, "t_<Sz>_<Sy>_<Sx>.dat")
-    writedlm(fname1, [t_array Sz_array Sy_array Sx_array])
-    fname2 = joinpath(datadir, "t_probsurv.dat")
-    writedlm(fname2, [t_array prob_surv_array])
-    fname3 = joinpath(datadir, "t_xsiteval.dat")
-    writedlm(fname3, [t_array x_values])
-    fname4 = joinpath(datadir, "t_pxsiteval.dat")
-    writedlm(fname4, [t_array pₓ_values])
-    fname5 = joinpath(datadir, "t_ρₑₑ.dat")
-    writedlm(fname5, [t_array ρₑₑ_array])
-    fname6 = joinpath(datadir, "t_ρ_μμ.dat")
-    writedlm(fname6, [t_array ρ_μμ_array])
-    fname7 = joinpath(datadir, "t_ρₑμ.dat")
-    writedlm(fname7, [t_array ρₑμ_array])
-    return Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, Im_Ω
+    if save_data
+        save_data = isdir(datadir) || mkpath(datadir)
+        # Writing data to files with corresponding headers
+        fname1 = joinpath(datadir, "t_<Sz>_<Sy>_<Sx>.dat")
+        writedlm(fname1, [t_array Sz_array Sy_array Sx_array])
+        
+        fname2 = joinpath(datadir, "t_probsurv.dat")
+        writedlm(fname2, [t_array prob_surv_array])
+        
+        fname3 = joinpath(datadir, "t_xsiteval.dat")
+        writedlm(fname3, [t_array x_values])
+        
+        fname4 = joinpath(datadir, "t_pxsiteval.dat")
+        writedlm(fname4, [t_array pₓ_values])
+        
+        fname5 = joinpath(datadir, "t_ρₑₑ.dat")
+        writedlm(fname5, [t_array ρₑₑ_array])
+        
+        fname6 = joinpath(datadir, "t_ρ_μμ.dat")
+        writedlm(fname6, [t_array ρ_μμ_array])
+        
+        fname7 = joinpath(datadir, "t_ρₑμ.dat")
+        writedlm(fname7, [t_array ρₑμ_array])
+    end
+    
+    return Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, Im_Ω 
 end
 
 
