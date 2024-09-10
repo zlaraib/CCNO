@@ -98,8 +98,8 @@ N = Neutrino_number(s, τ, B,L, N_sites, N_sites_eachflavor, tolerance,
 datadir = joinpath(@__DIR__,"datafiles","FFI", "par_"*string(N_sites), "tt_"*string(ttotal))
 
 #extract output for the survival probability values at each timestep
-Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array, Im_Ω = evolve(s, τ, N, B,L, N_sites, 
-                Δx,Δm², p, x, Δp, theta_nu, ψ₀, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal,periodic)
+Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, Im_Ω = evolve(
+    s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ₀, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal, save_data , periodic)
 
 @assert abs((Im_Ω - analytic_growth_rate)/  analytic_growth_rate) < tolerance 
 
