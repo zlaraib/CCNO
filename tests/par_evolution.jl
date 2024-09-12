@@ -4,9 +4,6 @@
     using Measures
     using LinearAlgebra
     using DelimitedFiles
-    include("/home/zohalaraib/Oscillatrino/src/constants.jl")
-    include("/home/zohalaraib/Oscillatrino/src/momentum.jl")
-
 
     """
     For github unit tests runs: 
