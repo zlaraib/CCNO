@@ -65,11 +65,17 @@ function generate_x_array(N_sites, L)
     return [(i - 0.5) * L / N_sites for i in 1:N_sites]
 end
 
-#generate a momentum array in px direction that depicts the energy of neutrinos and anti-neutrinos in opposing beams
-function generate_px_array(N_sites)                                                                                                                                                                                   
+#generate a momentum array that depicts the energy of neutrinos and anti-neutrinos in opposing beams # for bipolar rogerro test 
+function generate_p_array(N_sites)                                                                                                                                                                                   
+    half_N_sites = div(N_sites, 2)
+    return [fill(1, half_N_sites); fill(1, half_N_sites)]
+end
+
+function generate_px_array(N_sites, Eνₑ, Eνₑ̄)                                                                                                                                                                                   
     half_N_sites = div(N_sites, 2)
     return [fill(Eνₑ, half_N_sites); fill(Eνₑ̄, half_N_sites)]
 end
+
 
 function generate_py_array(N_sites)                                                                                                                                                                                   
     half_N_sites = div(N_sites, 2)
