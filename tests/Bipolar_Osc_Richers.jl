@@ -68,7 +68,7 @@ x = generate_x_array(N_sites, L)
 y = fill(0, N_sites) #variable
 z = fill(0, N_sites) #variable
 
-p = hcat(generate_px_array(N_sites), generate_py_array(N_sites), generate_pz_array(N_sites))
+p = hcat(generate_px_array(N_sites, Eνₑ, Eνₑ̄), generate_py_array(N_sites), generate_pz_array(N_sites))
 
 # Create an array with the first half as 1 and the rest as -1
 energy_sign = [i <= N_sites ÷ 2 ? -1 : 1 for i in 1:N_sites] # half sites are (e) neutrinos with positive 1 entry while other half is anti (e) neutrinos with negative 1 entry
