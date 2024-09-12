@@ -74,7 +74,7 @@ y = generate_x_array(N_sites, L)
 z = generate_x_array(N_sites, L)
 
 # p matrix with numbers generated from the p_array for all components (x, y, z) #sherood has 
-p = hcat(generate_px_array(N_sites), generate_py_array(N_sites), generate_pz_array(N_sites))
+p = hcat(generate_px_array(N_sites, Eνₑ, Eνₑ̄), generate_py_array(N_sites), generate_pz_array(N_sites))
 
 # Create an array with the first half as 1 and the rest as -1
 energy_sign = [i <= N_sites ÷ 2 ? -1 : 1 for i in 1:N_sites] # half sites are (e) neutrinos with positive 1 entry while other half is anti (e) neutrinos with negative 1 entry
@@ -122,3 +122,8 @@ if save_plots_flag
     generate_inputs_file(plotdir, "inputs.txt", input_data)
 end
 
+# Plotting ρₑμ vs t # for jenkins file 
+plot(0.0:τ:τ*(length(ρₑμ_array)-1), ρₑμ_array, xlabel = "t", ylabel = "<ρₑμ>", legend = false, 
+left_margin = 20mm, right_margin = 10mm, top_margin = 5mm, bottom_margin = 10mm) 
+# Save the plot as a PDF file
+savefig( "Homo_MF_<ρₑμ>_vs_t for $N_sites particles.pdf")
