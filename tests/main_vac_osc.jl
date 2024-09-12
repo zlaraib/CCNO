@@ -4,10 +4,34 @@ using Measures
 using LinearAlgebra
 using DelimitedFiles
 using DelimitedFiles
-include("../src/evolution.jl")
-include("../src/constants.jl")
-include("../src/shape_func.jl")
-include("../src/momentum.jl")
+
+"""
+For github unit tests runs: 
+src_dir = ../
+save_data and save_plots_flag should be false to run test files. 
+"""
+
+src_dir = "../"
+save_data = false  # true = saves datafiles for science runs while false doesn't. So change it to false for jenkins test runs
+save_plots_flag = false # true = saves plots for science runs while false doesn't. So change it to false for jenkins test runs
+
+
+"""
+For science runs: 
+src_dir = /home/zohalaraib/Oscillatrino/ # should be changed to users PATH
+save_data and save_plots_flag should be true to run test files. 
+
+"""
+# src_dir= "/home/zohalaraib/Oscillatrino/" # should be changed to users PATH
+# save_data = true  # true = saves datafiles for science runs while false doesn't. So change it to false for jenkins test runs
+# save_plots_flag = true # true = saves plots for science runs while false doesn't. So change it to false for jenkins test runs
+    
+
+include(src_dir * "src/evolution.jl")
+include(src_dir * "src/constants.jl")
+include(src_dir * "src/momentum.jl")
+include(src_dir * "Utilities/save_plots.jl")
+
 
 # We are simulating the time evolution of a 1D spin chain with N_sites sites, where each site is a spin-1/2 particle. 
 # The simulation is done by applying a sequence of unitary gates to an initial state of the system, 
@@ -58,12 +82,12 @@ function main()
   ψ = productMPS(s, N -> N <= N_sites/2 ? "Dn" : "Up") # Fixed to produce consistent results for the test assert conditions 
 
   # Specify the relative directory path
-  datadir = joinpath(@__DIR__, "..","misc","datafiles","vac_osc", "par_"*string(N_sites), "tt_"*string(ttotal))
+  datadir = joinpath(@__DIR__, "datafiles", "par_"*string(N_sites), "tt_"*string(ttotal))
 
   #extract output for the survival probability values at each timestep
-  Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array, Im_Ω = evolve(s, τ, N, B,L, N_sites, 
-  Δx,Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal)
-                      
+  Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, Im_Ω = evolve(
+      s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal, save_data)
+         
   expected_sz_array = Float64[]
   expected_sz= Float64[]
   
@@ -92,28 +116,20 @@ function main()
   # for B vector in -z, it checks that the value of Sz at the firstspin site never oscillates from -0.5 
   @assert all(abs.(Sz_array .- expected_sz_array) .< tolerance)
   
-  # Specify the relative directory path
-  plotdir = joinpath(@__DIR__, "..","misc","plots","vac_osc", "par_"*string(N_sites), "tt_"*string(ttotal))
-  
-  # check if a directory exists, and if it doesn't, create it using mkpath
-  isdir(plotdir) || mkpath(plotdir)
+  if save_plots_flag
+    # Specify the relative directory path
+    plotdir = joinpath(@__DIR__, "plots", "par_"*string(N_sites), "tt_"*string(ttotal))
+    save_plots(τ, N_sites, ttotal,Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array, plotdir, save_plots_flag)
+
+  end 
   plot(0.0:τ:τ*(length(Sz_array)-1), Sz_array, xlabel = "t", ylabel = "<Sz>", title = "Running main_vac_osc script",
   legend = true, size=(700, 600), aspect_ratio=:auto,left_margin = 20mm, right_margin = 5mm, top_margin = 5mm, 
   bottom_margin = 10mm, label = "My_sz") 
   plot!(0.0:τ:τ*(length(Sz_array)-1), expected_sz_array, xlabel = "t", ylabel = "<Sz>", title = "Running main_vac_osc script", 
   legendfontsize=8, legend=:topright, label = "Expected_sz from Sakurai") 
-  # Save the plot as a PDF file
-  savefig(joinpath(plotdir,"<Sz> vs t(vac_osc).pdf"))
+  # Save the plot as a PDF file # for jenkins archive 
+  savefig("<Sz> vs t.pdf")
 
-  plot(0.0:τ:τ*(length(Sy_array)-1), Sy_array, xlabel = "t", ylabel = "<Sy>", legend = false, size=(800, 600),left_margin = 20mm,
-   right_margin = 5mm, top_margin = 5mm, bottom_margin = 10mm, aspect_ratio=:auto,margin= 10mm) 
-  #Save the plot as a PDF file
-  savefig(joinpath(plotdir,"<Sy> vs t(vac_osc).pdf"))
-
-  plot(0.0:τ:τ*(length(Sx_array)-1), Sx_array, xlabel = "t", ylabel = "<Sx>", legend = false, size=(800, 600),left_margin = 20mm,
-   right_margin = 5mm, top_margin = 5mm, bottom_margin = 10mm, aspect_ratio=:auto,margin= 10mm) 
-  #Save the plot as a PDF file
-  savefig(joinpath(plotdir,"<Sx> vs t(vac_osc).pdf"))
 end
 
 @time main()

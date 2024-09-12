@@ -25,10 +25,7 @@ include("constants.jl")
 # This file generates the evolve function which evolves the ψ state in time and computes the expectation values of Sz at each time step, along 
 # with their survival probabilities. The time evolution utilizes the unitary operators created as gates from the create_gates function.
 # The <Sz> and Survival probabilities output from this function are unitless. 
-function evolve(s, τ, N, B,L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal, periodic= true)
-
-    # check if a directory exists, and if it doesn't, create it using mkpath
-    isdir(datadir) || mkpath(datadir)
+function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal, save_data::Bool, periodic=true)
 
     # Create empty array s to...
     Sz_array = Float64[] # to store sz values 
@@ -53,7 +50,7 @@ function evolve(s, τ, N, B,L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sha
     p_mod, p̂ = momentum(p,N_sites) 
     p̂ₓ= [sub_array[1] for sub_array in p̂]
     
-     # Compute and print survival probability (found from <Sz>) at each time step then apply the gates to go to the next time
+    # Compute and print survival probability (found from <Sz>) at each time step then apply the gates to go to the next time
      for t in 0.0:τ:ttotal
         push!(x_values, copy(x))  # Record x values at each time step
         px = p[:, 1]  # Extracting the first column (which corresponds to px values)
@@ -70,14 +67,25 @@ function evolve(s, τ, N, B,L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sha
             end
         end
         
-        if shape_name!=="none" #specfic to the inhomogenous case Test4
-            # compute the avg expectation value of Sz at all sites
-            sz_tot = expect(ψ, "Sz")
-            sz = mean(sz_tot)
-        else 
+        # if shape_name!=="none" #specfic to the inhomogenous case Test4
+        #     # compute the avg expectation value of Sz at all sites
+        #     sz_tot = expect(ψ, "Sz")
+        #     sz = mean(sz_tot)
+        # else 
+            # compute expectation value of Sz (inbuilt operator in ITensors library) at the first site on the chain
+            # sz = expect(ψ, "Sz"; sites=1)
+        # end 
+
+        # if shape_name!=="none" #specfic to the inhomogenous case Test4
+        #     # compute the avg expectation value of Sz at all sites
+        #     sz_tot = expect(ψ, "Sz")  # Compute Sz for each site and store the values in sz_tot
+        #     half_N = div(N_sites, 2)  # Calculate half of the number of sites
+        #     sz = mean(sz_tot[1:half_N])  # Take the mean of the first half of the sz_tot array
+        
+        # else 
             # compute expectation value of Sz (inbuilt operator in ITensors library) at the first site on the chain
             sz = expect(ψ, "Sz"; sites=1)
-        end 
+        # end 
 
         # compute expectation value of sy and sx using S+ and S- (inbuilt operator in ITensors library) at the first site on the chain
         if p == zeros(N_sites, 3) #for rogerro's case only (b/c S+ S- needed to keep conservation of QN number)
@@ -147,22 +155,32 @@ function evolve(s, τ, N, B,L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sha
         println("ρₑμ was not captured at both t1 and t2.")
     end
 
-    # Writing data to files with corresponding headers
-    fname1 = joinpath(datadir, "t_<Sz>_<Sy>_<Sx>.dat")
-    writedlm(fname1, [t_array Sz_array Sy_array Sx_array])
-    fname2 = joinpath(datadir, "t_probsurv.dat")
-    writedlm(fname2, [t_array prob_surv_array])
-    fname3 = joinpath(datadir, "t_xsiteval.dat")
-    writedlm(fname3, [t_array x_values])
-    fname4 = joinpath(datadir, "t_pxsiteval.dat")
-    writedlm(fname4, [t_array pₓ_values])
-    fname5 = joinpath(datadir, "t_ρₑₑ.dat")
-    writedlm(fname5, [t_array ρₑₑ_array])
-    fname6 = joinpath(datadir, "t_ρ_μμ.dat")
-    writedlm(fname6, [t_array ρ_μμ_array])
-    fname7 = joinpath(datadir, "t_ρₑμ.dat")
-    writedlm(fname7, [t_array ρₑμ_array])
-    return Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, Im_Ω
+    if save_data
+        save_data = isdir(datadir) || mkpath(datadir)
+        # Writing data to files with corresponding headers
+        fname1 = joinpath(datadir, "t_<Sz>_<Sy>_<Sx>.dat")
+        writedlm(fname1, [t_array Sz_array Sy_array Sx_array])
+        
+        fname2 = joinpath(datadir, "t_probsurv.dat")
+        writedlm(fname2, [t_array prob_surv_array])
+        
+        fname3 = joinpath(datadir, "t_xsiteval.dat")
+        writedlm(fname3, [t_array x_values])
+        
+        fname4 = joinpath(datadir, "t_pxsiteval.dat")
+        writedlm(fname4, [t_array pₓ_values])
+        
+        fname5 = joinpath(datadir, "t_ρₑₑ.dat")
+        writedlm(fname5, [t_array ρₑₑ_array])
+        
+        fname6 = joinpath(datadir, "t_ρ_μμ.dat")
+        writedlm(fname6, [t_array ρ_μμ_array])
+        
+        fname7 = joinpath(datadir, "t_ρₑμ.dat")
+        writedlm(fname7, [t_array ρₑμ_array])
+    end
+    
+    return Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, Im_Ω 
 end
 
 

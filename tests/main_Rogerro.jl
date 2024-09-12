@@ -3,9 +3,32 @@ using Plots
 using Measures
 using ITensorTDVP
 using DelimitedFiles
-# using TimeEvoMPS
-include("../src/evolution.jl")
-include("../src/constants.jl")
+
+"""
+For github unit tests runs: 
+src_dir = ../
+save_data and save_plots_flag should be false to run test files. 
+"""
+
+src_dir = "../"
+save_data = false  # true = saves datafiles for science runs while false doesn't. So change it to false for jenkins test runs
+save_plots_flag = false # true = saves plots for science runs while false doesn't. So change it to false for jenkins test runs
+
+
+"""
+For science runs: 
+src_dir = /home/zohalaraib/Oscillatrino/ # should be changed to users PATH
+save_data and save_plots_flag should be true to run test files. 
+
+"""
+# src_dir= "/home/zohalaraib/Oscillatrino/" # should be changed to users PATH
+# save_data = true  # true = saves datafiles for science runs while false doesn't. So change it to false for jenkins test runs
+# save_plots_flag = true # true = saves plots for science runs while false doesn't. So change it to false for jenkins test runs
+    
+include(src_dir * "src/evolution.jl")
+include(src_dir * "src/constants.jl")
+include(src_dir * "Utilities/save_plots.jl")
+include(src_dir * "Initializations/initial_cond.jl")
 
 # We are simulating the time evolution of a 1D spin chain with N_sites sites, where each site is a spin-1/2 particle. 
 # The simulation is done by applying a sequence of unitary gates to an initial state of the system, 
@@ -55,21 +78,15 @@ function main()
     #Select a shape function based on the shape_name variable form the list defined in dictionary in shape_func file
     shape_name = "none"  # Change this to the desired shape name # variable.
 
-    #generate a momentum array that depicts the energy of neutrinos and anti-neutrinos in opposing beams
-    function generate_p_array(N_sites)                                                                                                                                                                                   
-        half_N_sites = div(N_sites, 2)
-        return [fill(1, half_N_sites); fill(1, half_N_sites)]
-    end
-
     # p matrix with numbers generated from the p_array for all components (x, y, z)
     p = hcat(generate_p_array(N_sites),fill(0, N_sites), fill(0, N_sites))
     energy_sign = [i <= N_sites ÷ 2 ? 1 : 1 for i in 1:N_sites] # all of the sites are neutrinos
 
     # Specify the relative directory path
-    datadir = joinpath(@__DIR__, "..","misc","datafiles","Rog", "par_"*string(N_sites), "tt_"*string(ttotal))
+    datadir = joinpath(@__DIR__, "datafiles","Rog", "par_"*string(N_sites), "tt_"*string(ttotal))
     #extract output for the survival probability values at each timestep
-    Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array, Im_Ω = evolve(s, τ, N, B,L, N_sites, 
-                    Δx,Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal,periodic)
+    Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, Im_Ω = evolve(
+        s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal, save_data , periodic)
     
     # This function scans through the array, compares each element with its neighbors, 
     # and returns the index of the first local minimum it encounters. 
@@ -105,18 +122,19 @@ function main()
     # Check that our time of first minimum survival probability compared to Rogerro(2021) remains within the timestep and tolerance.
     @assert abs(t_min - t_p_Rog) <  τ + tolerance 
 
-    # Specify the relative directory path
-    plotdir = joinpath(@__DIR__, "..","misc","plots","Rog", "par_"*string(N_sites), "tt_"*string(ttotal))
+    if save_plots_flag
+        # Specify the relative directory path
+        plotdir = joinpath(@__DIR__, "plots","Rog", "par_"*string(N_sites), "tt_"*string(ttotal))
 
-    # check if a directory exists, and if it doesn't, create it using mkpath
-    isdir(plotdir) || mkpath(plotdir)
-
+        save_plots(τ, N_sites, ttotal,Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array, plotdir, save_plots_flag)
+    end
     # Plotting P_surv vs t
     plot(0.0:τ:τ*(length(prob_surv_array)-1), prob_surv_array, xlabel = "t", ylabel = "Survival Probabillity p(t)",title = "Running main_Rogerro script \n for N_sites$(N_sites) with maxdim=1 MF for τ$(τ)", legend = false, size=(700, 600), aspect_ratio=:auto,margin= 10mm, label= ["My_plot_for_N$(N_sites)"]) 
     scatter!([t_p_Rog],[prob_surv_array[i_first_local_min]], label= ["t_p_Rog"])
     scatter!([t_min],[prob_surv_array[i_first_local_min]], label= ["My_t_min)"], legendfontsize=5, legend=:bottomleft)
     # Save the plot as a PDF file
-    savefig(joinpath(plotdir,"Survival probability vs t (Rog)for N_sites$(N_sites) with maxdim=1 and cutoff for τ$(τ).pdf"))
+    savefig("Survival probability vs t (Rog)for N_sites$(N_sites) with maxdim=1 and cutoff for τ$(τ).pdf")
+
 end 
 
 @time main()
