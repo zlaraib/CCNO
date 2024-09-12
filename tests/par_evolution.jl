@@ -4,9 +4,35 @@
     using Measures
     using LinearAlgebra
     using DelimitedFiles
-    include("../src/momentum.jl")
-    include("../src/constants.jl")
+    include("/home/zohalaraib/Oscillatrino/src/constants.jl")
+    include("/home/zohalaraib/Oscillatrino/src/momentum.jl")
 
+
+    """
+    For github unit tests runs: 
+    src_dir = ../
+    save_data and save_plots_flag should be false to run test files. 
+    """
+
+    src_dir = "../"
+    save_data = false  # true = saves datafiles for science runs while false doesn't. So change it to false for jenkins test runs
+    save_plots_flag = false # true = saves plots for science runs while false doesn't. So change it to false for jenkins test runs
+
+
+    """
+    For science runs: 
+    src_dir = /home/zohalaraib/Oscillatrino/ # should be changed to users PATH
+    save_data and save_plots_flag should be true to run test files. 
+
+    """
+    # src_dir= "/home/zohalaraib/Oscillatrino/" # should be changed to users PATH
+    # save_data = true  # true = saves datafiles for science runs while false doesn't. So change it to false for jenkins test runs
+    # save_plots_flag = true # true = saves plots for science runs while false doesn't. So change it to false for jenkins test runs
+    
+    include(src_dir * "src/constants.jl")
+    include(src_dir * "src/momentum.jl")
+    include(src_dir * "Initializations/initial_cond.jl")
+    include(src_dir * "Utilities/save_plots.jl")
 
     """
     Expected (CGS) units of the quantities defined in the files in tests directory that are being used in the evolve function.                                                                            
@@ -31,42 +57,17 @@
     antineutrino_energy = -1 * neutrino_energy # specific to my case only. Since all neutrinos have same energy, except in my case anti neutrinos are moving in opposite direction to give it a negative sign
 
     # Specify the relative directory path
-    datadir = joinpath(@__DIR__, "..","misc","datafiles","evol", "par_"*string(N_sites), "tt_"*string(ttotal))
-    # Specify the relative directory path
-    plotdir = joinpath(@__DIR__, "..","misc","plots","evol", "par_"*string(N_sites), "tt_"*string(ttotal))
+    datadir = joinpath(@__DIR__, "datafiles", "par_"*string(N_sites), "tt_"*string(ttotal))
 
-    # check if a directory exists, and if it doesn't, create it using mkpath
-    isdir(plotdir) || mkpath(plotdir)
-    # check if a directory exists, and if it doesn't, create it using mkpath
-    isdir(datadir) || mkpath(datadir)
-    # generate x_array such that the first particle is at position L/(2*N_sites) while subsequent particles are at a position incremental by L/N_sites. # grid style
-    function generate_x_array(N_sites, L)
-        return [(i - 0.5) * L / N_sites for i in 1:N_sites]
-    end
     x = generate_x_array(N_sites, L)
     println("Initial positions of the particles=",x)
-
-
-    function generate_px_array(N_sites)
-        half_N_sites = div(N_sites, 2)
-        return [fill(neutrino_energy, half_N_sites); fill(antineutrino_energy, half_N_sites)]
-    end
-
-    function generate_py_array(N_sites)                                                                                                                                                                                   
-        half_N_sites = div(N_sites, 2)
-        return [fill(0, half_N_sites); fill(0, half_N_sites)]
-    end
     
-    function generate_pz_array(N_sites)                                                                                                                                                                                   
-        half_N_sites = div(N_sites, 2)
-        return [fill(0, half_N_sites); fill(0, half_N_sites)]
-    end
-    
-    # p matrix with numbers generated from the p_array for all components (x, y, z)
-    p = hcat(generate_px_array(N_sites), generate_py_array(N_sites), generate_pz_array(N_sites))
+    # p matrix with numbers generated from the p_array for all components (x, y, z) #sherood has 
+    p = hcat(generate_px_array(N_sites, neutrino_energy, antineutrino_energy), generate_py_array(N_sites), generate_pz_array(N_sites))
+
     println("Initial p_vector of all particles=",p)
 
-function evolve(τ, L, N_sites, p, x, ttotal,periodic)
+function evolve(τ, L, N_sites, p, x, ttotal,save_data, periodic)
     x_values = []
     px_values = []
     p_mod, p_hat = momentum(p, N_sites)
@@ -105,13 +106,17 @@ function evolve(τ, L, N_sites, p, x, ttotal,periodic)
         t ≈ ttotal && break
     end
     t_array = 0.0:τ:ttotal
-    fname3 = joinpath(datadir, "t_xsiteval.dat")
-    writedlm(fname3, [t_array x_values])
-    fname4 = joinpath(datadir, "t_pxsiteval.dat")
-    writedlm(fname4, [t_array px_values])
+    if save_data
+        save_data = isdir(datadir) || mkpath(datadir)
+        fname3 = joinpath(datadir, "t_xsiteval.dat")
+        writedlm(fname3, [t_array x_values])
+        fname4 = joinpath(datadir, "t_pxsiteval.dat")
+        writedlm(fname4, [t_array px_values])
+
+    end
     return x_values, px_values
 end
-x_values,px_values = evolve(τ, L, N_sites, p, x, ttotal,periodic)
+x_values,px_values = evolve(τ, L, N_sites, p, x, ttotal,save_data, periodic)
 #println(x_values)
 
 plot(title="Particle Position Evolution", xlabel= "Position (x)",ylabel="Time")
@@ -120,7 +125,7 @@ for site in 1:N_sites
     plot!(site_positions, 0.0:τ:ttotal, label="Site $site",left_margin = 25mm, right_margin = 5mm, top_margin = 5mm, bottom_margin = 10mm)
 end
 
-savefig(joinpath(plotdir,"Particles position(x) evolution.pdf"))
+savefig("Particles position(x) evolution.pdf")
 
 plot(title="Particle Momentum Evolution", xlabel= "Momentum in x direction(p_x)",ylabel="Time")
 for site in 1:N_sites
@@ -128,4 +133,13 @@ for site in 1:N_sites
     plot!(site_momentum, 0.0:τ:ttotal, label="Site $site",left_margin = 25mm, right_margin = 5mm, top_margin = 5mm, bottom_margin = 10mm)
 end
 
-savefig(joinpath(plotdir,"Particles momentum(p_x) evolution.pdf"))
+savefig("Particles momentum(p_x) evolution.pdf")
+
+
+if save_plots_flag 
+    # Specify the relative directory path
+    plotdir = joinpath(@__DIR__, "plots", "par_"*string(N_sites), "tt_"*string(ttotal))
+    save_plot_flag = isdir(plotdir) || mkpath(plotdir)
+    savefig(joinpath(plotdir,"Particles position(x) evolution.pdf"))
+    savefig(joinpath(plotdir,"Particles momentum(p_x) evolution.pdf"))
+end 
