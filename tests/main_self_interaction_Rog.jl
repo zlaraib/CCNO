@@ -2,9 +2,33 @@ using ITensors
 using Plots
 using Measures
 using LinearAlgebra
-include("../src/evolution.jl")
-include("../src/constants.jl")
-include("../src/shape_func.jl")
+
+"""
+For github unit tests runs: 
+src_dir = ../
+save_data and save_plots_flag should be false to run test files. 
+"""
+
+src_dir = "../"
+save_data = false  # true = saves datafiles for science runs while false doesn't. So change it to false for jenkins test runs
+save_plots_flag = false # true = saves plots for science runs while false doesn't. So change it to false for jenkins test runs
+
+
+"""
+For science runs: 
+src_dir = /home/zohalaraib/Oscillatrino/ # should be changed to users PATH
+save_data and save_plots_flag should be true to run test files. 
+
+"""
+# src_dir= "/home/zohalaraib/Oscillatrino/" # should be changed to users PATH
+# save_data = true  # true = saves datafiles for science runs while false doesn't. So change it to false for jenkins test runs
+# save_plots_flag = true # true = saves plots for science runs while false doesn't. So change it to false for jenkins test runs
+    
+
+include(src_dir * "src/evolution.jl")
+include(src_dir * "src/constants.jl")
+include(src_dir * "src/shape_func.jl")
+include(src_dir * "Utilities/save_plots.jl")
 
 # We are simulating the time evolution of a 1D spin chain with N sites, where each site is a spin-1/2 particle. 
 # The simulation is done by applying a sequence of unitary gates to an initial state of the system, 
@@ -61,13 +85,12 @@ function main()
     energy_sign = fill(1, N_sites) # all of the sites are neutrinos
 
     # Specify the relative directory path
-    datadir = joinpath(@__DIR__, "..","misc","datafiles","Rog_self_int", "par_"*string(N_sites), "tt_"*string(ttotal))
+    datadir = joinpath(@__DIR__, "datafiles", "par_"*string(N_sites), "tt_"*string(ttotal))
 
     #extract output for the survival probability values at each timestep
-    Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array, Im_Ω = evolve(s, τ, N, B,L, N_sites, 
-                    Δx,Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal,periodic)
-
-
+    Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, Im_Ω = evolve(
+        s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal, save_data , periodic)
+    
     # This function scans through the array, compares each element with its neighbors, 
     # and returns the index of the first local minimum it encounters. 
     # If no local minimum is found, it returns -1 to indicate that.
@@ -102,35 +125,21 @@ function main()
     # Check that our time of first minimum survival probability compared to Rogerro(2021) remains within the timestep and tolerance.
     @assert abs(t_min - t_p_Rog) <  τ + tolerance 
 
-    # Specify the relative directory path
-    plotdir = joinpath(@__DIR__, "..","misc","plots","Rog_self_int", "par_"*string(N_sites), "tt_"*string(ttotal))
-    
-    # check if a directory exists, and if it doesn't, create it using mkpath
-    isdir(plotdir) || mkpath(plotdir)
-
+    if save_plots_flag
+        # Specify the relative directory path
+        plotdir = joinpath(@__DIR__, "plots", "par_"*string(N_sites), "tt_"*string(ttotal))
+        
+        save_plots(τ, N_sites, ttotal,Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array, plotdir, save_plots_flag)
+    end 
     # Plotting P_surv vs t
     plot(0.0:τ:τ*(length(prob_surv_array)-1), prob_surv_array, xlabel = "t", ylabel = "Survival Probabillity p(t)",
     title = "Running main_self_interaction_Rog script", legend = true, size=(800, 600), aspect_ratio=:auto,margin= 10mm, 
     label= ["My_plot_for_N_sites$(N_sites)"]) 
     scatter!([t_p_Rog],[prob_surv_array[i_first_local_min]], label= ["t_p_Rog"])
     scatter!([t_min],[prob_surv_array[i_first_local_min]], label= ["My_t_min)"], legendfontsize=5, legend=:topright)
-    # Save the plot as a PDF file
-    savefig(joinpath(plotdir,"Survival probability vs t (only self-interaction term plot)_Rog for N_sites$(N_sites).pdf"))
+    # Save the plot as a PDF file # for jenkins archive 
+    savefig("Survival probability vs t for N_sites$(N_sites).pdf")
 
-    plot(0.0:τ:τ*(length(Sz_array)-1), Sz_array, xlabel = "t", ylabel = "<Sz>", legend = false, size=(800, 600), 
-    left_margin = 20mm, right_margin = 5mm, top_margin = 5mm, bottom_margin = 10mm, aspect_ratio=:auto,margin= 10mm) 
-    #Save the plot as a PDF file
-    savefig(joinpath(plotdir,"<Sz> vs t (Rog_self-int).pdf"))
-
-    plot(0.0:τ:τ*(length(Sy_array)-1), Sy_array, xlabel = "t", ylabel = "<Sy>", legend = false, size=(800, 600), 
-    left_margin = 20mm, right_margin = 5mm, top_margin = 5mm, bottom_margin = 10mm, aspect_ratio=:auto,margin= 10mm) 
-    #Save the plot as a PDF file
-    savefig(joinpath(plotdir,"<Sy> vs t (Rog_self_int).pdf"))
-
-    plot(0.0:τ:τ*(length(Sx_array)-1), Sx_array, xlabel = "t", ylabel = "<Sx>", legend = false, size=(800, 600), 
-    left_margin = 20mm, right_margin = 5mm, top_margin = 5mm, bottom_margin = 10mm, aspect_ratio=:auto,margin= 10mm) 
-    #Save the plot as a PDF file
-    savefig(joinpath(plotdir,"<Sx> vs t (Rog_self_int).pdf"))
 end 
 
 @time main()

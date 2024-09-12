@@ -3,8 +3,32 @@ using Plots
 using Measures
 using DelimitedFiles
 
-include("../src/evolution.jl")
-include("../src/constants.jl")
+"""
+For github unit tests runs: 
+src_dir = ../
+save_data and save_plots_flag should be false to run test files. 
+"""
+
+src_dir = "../"
+save_data = false  # true = saves datafiles for science runs while false doesn't. So change it to false for jenkins test runs
+save_plots_flag = false # true = saves plots for science runs while false doesn't. So change it to false for jenkins test runs
+
+
+"""
+For science runs: 
+src_dir = /home/zohalaraib/Oscillatrino/ # should be changed to users PATH
+save_data and save_plots_flag should be true to run test files. 
+
+"""
+# src_dir= "/home/zohalaraib/Oscillatrino/" # should be changed to users PATH
+# save_data = true  # true = saves datafiles for science runs while false doesn't. So change it to false for jenkins test runs
+# save_plots_flag = true # true = saves plots for science runs while false doesn't. So change it to false for jenkins test runs
+    
+include(src_dir * "src/evolution.jl")
+include(src_dir * "src/constants.jl")
+include(src_dir * "Utilities/save_plots.jl")
+include(src_dir * "Initializations/initial_cond.jl")
+
 
 # this file plots δω on x axis while minimum time tp on y axis and compares
 # the values of our calculations with Rogerros calculations in Table I.
@@ -65,10 +89,7 @@ function main(Δω, N_sites, ttotal)
     theta_nu = 0 # mixing_angle #rad 
     B = [sin(2*theta_nu), 0, -cos(2*theta_nu)] # is equivalent to B = [0, 0, -1] # fixed for Rogerro's case
     B = B / norm(B)
-    function generate_p_array(N_sites)                                                                                                                                                                                   
-        half_N_sites = div(N_sites, 2)
-        return [fill(1, half_N_sites); fill(1, half_N_sites)]
-    end
+
     # p matrix with numbers generated from the p_array for all components (x, y, z)
     p = hcat(generate_p_array(N_sites),fill(0, N_sites), fill(0, N_sites))
     x = fill(rand(), N_sites) # variable.
@@ -79,9 +100,9 @@ function main(Δω, N_sites, ttotal)
     energy_sign = [i <= N_sites ÷ 2 ? 1 : 1 for i in 1:N_sites]
     shape_name = "none"  # Change this to the desired shape name # variable.
     # Specify the relative directory path
-    datadir = joinpath(@__DIR__, "..","misc","datafiles","Rog_Table_I", "par_"*string(N_sites), "Δω"*string(Δω))
-    Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array, Im_Ω = evolve(s, τ, N, B,L, N_sites, 
-                    Δx,Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal,periodic)
+    datadir = joinpath(@__DIR__, "datafiles","Rog_Table_I", "par_"*string(N_sites), "Δω"*string(Δω))
+    Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, Im_Ω = evolve(
+        s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal, save_data , periodic)
     function find_first_local_minima_index(arr)
         N = length(arr)
         for i in 2:(N-1)
@@ -112,22 +133,28 @@ end
 t_p_Rog_array = Float64[]
 t_min_array = Float64[]
 
-datadir = joinpath(@__DIR__, "..","misc","datafiles","Rog", "par_"*string(N_sites), "tt_"*string(ttotal))
-isdir(datadir) || mkpath(datadir)
+datadir = joinpath(@__DIR__, "datafiles","Rog_Table_I", "par_"*string(N_sites), "tt_"*string(ttotal))
+
 for Δω in Δω_values
     t_p_Rog, t_min = main(Δω, N_sites, ttotal)
     push!(t_p_Rog_array, t_p_Rog)
     push!(t_min_array, t_min)
 end
-fname1 = joinpath(datadir, "δω_tpRog_tpmine.dat")
-writedlm(fname1, [Δω_values t_p_Rog_array t_min_array])
-
-plotdir = joinpath(@__DIR__, "..","misc","plots","Rog", "par_"*string(N_sites), "tt_"*string(ttotal))
-    
-# check if a directory exists, and if it doesn't, create it using mkpath
-isdir(plotdir) || mkpath(plotdir)
-
+if save_data
+    save_data= isdir(datadir) || mkpath(datadir)
+    fname1 = joinpath(datadir, "δω_tpRog_tpmine.dat")
+    writedlm(fname1, [Δω_values t_p_Rog_array t_min_array])
+end 
+if save_plots_flag
+    plotdir = joinpath(@__DIR__, "plots","Rog_Table_I", "par_"*string(N_sites), "tt_"*string(ttotal))
+    # check if a directory exists, and if it doesn't, create it using mkpath
+    save_plots_flag = isdir(plotdir) || mkpath(plotdir)
+    # Create the plot
+    plot(Δω_values, t_p_Rog_array, label="Rogerro(2021)", xlabel="δω", ylabel="Minimum Time(tₚ)", title="Table I. Rogerro(2021) ", aspect_ratio=:auto,margin= 10mm)
+    plot!(Δω_values, t_min_array, label="Our results")
+    savefig(joinpath(plotdir,"t_p_vs_symmetric del_omega for N_sites$(N_sites).pdf"))
+end 
 # Create the plot
 plot(Δω_values, t_p_Rog_array, label="Rogerro(2021)", xlabel="δω", ylabel="Minimum Time(tₚ)", title="Table I. Rogerro(2021) ", aspect_ratio=:auto,margin= 10mm)
 plot!(Δω_values, t_min_array, label="Our results")
-savefig(joinpath(plotdir,"t_p_vs_symmetric del_omega for N_sites$(N_sites).pdf"))
+savefig("t_p_vs_symmetric del_omega for N_sites$(N_sites).pdf")
