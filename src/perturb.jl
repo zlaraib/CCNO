@@ -31,7 +31,7 @@ function create_perturbation_gates(s, B_pert, α, x, L, N_sites, energy_sign, τ
     # define an array of oscillation frequencies (units of ergs) of perturbation
     # ω_pert = [10^(-28)* energy_sign[i] for i in 1:N_sites]
     # ω_pert = fill(2π*(10^(-26)), N_sites) 
-    ω_pert = α^3  * asin.([α * sin(k*x[i])* energy_sign[i] for i in 1:N_sites])
+    ω_pert = asin.([α * sin(k*x[i])* energy_sign[i] for i in 1:N_sites])
     println("perturb_ω = ", ω_pert)
 
     for i in 1:(N_sites-1)
@@ -78,7 +78,7 @@ function create_perturbation_gates(s, B_pert, α, x, L, N_sites, energy_sign, τ
 end
 
 
-function evolve_perturbation(s, τ, B_pert, α, x, L, N_sites, ψ, cutoff, maxdim, energy_sign,ttotal)
+function evolve_perturbation(s, τ_pert, B_pert, α, x, L, N_sites, ψ, cutoff, maxdim, energy_sign,ttotal)
 
     # extract the gates array generated in the gates_function file
     perturb_gates = create_perturbation_gates(s, B_pert, α, x, L, N_sites, energy_sign, τ)
@@ -88,7 +88,7 @@ function evolve_perturbation(s, τ, B_pert, α, x, L, N_sites, ψ, cutoff, maxdi
 
         # Writing an if statement in a shorthand way that checks whether the current value of t is equal to τ, 
         # and if so, it executes the break statement, which causes the loop to terminate early.
-        t ≈ τ && break
+        t ≈ τ_pert && break
         # t ≈ ttotal && break
         # apply each gate in gates(ITensors array) successively to the wavefunction ψ (MPS)(it is equivalent to time evolving psi according to the time-dependent Hamiltonian represented by gates).
         # The apply function is a matrix-vector multiplication operation that is smart enough to determine which site indices each gate has, and then figure out where to apply it to our MPS. 
