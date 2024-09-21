@@ -22,12 +22,12 @@ include("momentum.jl")
 # Then, this file generates the evolve_perturbation function which utilizes the unitary operators created as perturb_gates from the 
 # create_perturbation_gates function to evolve the initial ψ state in time and return the normalized perturbed state after evolution.
 
-function create_perturbation_gates(s, B_pert, α, x, L, N_sites, energy_sign, τ)
+function create_perturbation_gates(s, k, B_pert, α, x, L, N_sites, energy_sign, τ)
     
     # Make gates (1,2),(2,3),(3,4),... i.e. unitary gates which act on any (non-neighboring) pairs of sites in the chain.
     # Create an empty ITensors array that will be our Trotter gates
     gates = ITensor[] 
-    k = 2π/ L
+
     # define an array of oscillation frequencies (units of ergs) of perturbation
     # ω_pert = [10^(-28)* energy_sign[i] for i in 1:N_sites]
     # ω_pert = fill(2π*(10^(-26)), N_sites) 
@@ -78,10 +78,10 @@ function create_perturbation_gates(s, B_pert, α, x, L, N_sites, energy_sign, τ
 end
 
 
-function evolve_perturbation(s, τ_pert, B_pert, α, x, L, N_sites, ψ, cutoff, maxdim, energy_sign,ttotal)
+function evolve_perturbation(s,k, τ_pert, B_pert, α, x, L, N_sites, ψ, cutoff, maxdim, energy_sign,ttotal)
 
     # extract the gates array generated in the gates_function file
-    perturb_gates = create_perturbation_gates(s, B_pert, α, x, L, N_sites, energy_sign, τ)
+    perturb_gates = create_perturbation_gates(s,k, B_pert, α, x, L, N_sites, energy_sign, τ)
 
      # Compute and print survival probability (found from <Sz>) at each time step then apply the gates to go to the next time
      for t in 0.0:τ:ttotal  #perhaps not perturn till the end? stop somewhere in the mid 
