@@ -34,6 +34,7 @@ function extract_initial_conditions()
         "Eνₑ" => Eνₑ,
         "Eνₑ̄" => Eνₑ̄,
         "B" => B,
+        "N" => N,
         "shape_name" => shape_name,
         "Δp" => Δp,
         "periodic" => periodic
