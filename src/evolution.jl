@@ -43,8 +43,7 @@ function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sh
     ρₑμ_at_t2 = nothing  # Initialize a variable to store ρₑμ at t2
     Δt = t2 - t1 #time difference between growth rates 
 
-    # extract the gates array generated in the gates_function file
-    gates = create_gates(s, ψ,N, B, N_sites, Δx, Δm², p, x, Δp, theta_nu, shape_name,L, τ, energy_sign, periodic)
+
     # H = Hamiltonian_mpo(s, N, B, N_sites, Δx, Δm², p, x, Δp, shape_name,L, τ, energy_sign, periodic)
     # extract output of p_hat and p_mod for the p vector defined above for all sites. 
     p_mod, p̂ = momentum(p,N_sites) 
@@ -52,6 +51,8 @@ function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sh
     
     # Compute and print survival probability (found from <Sz>) at each time step then apply the gates to go to the next time
      for t in 0.0:τ:ttotal
+        # extract the gates array generated in the gates_function file
+        gates = create_gates(s, ψ,N, B, N_sites, Δx, Δm², p, x, Δp, theta_nu, shape_name,L, τ, energy_sign, periodic)
         push!(x_values, copy(x))  # Record x values at each time step
         px = p[:, 1]  # Extracting the first column (which corresponds to px values)
         push!(pₓ_values, copy(px)) # Record px values at each time step
