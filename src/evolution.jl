@@ -179,6 +179,9 @@ function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sh
         
         fname7 = joinpath(datadir, "t_ρₑμ.dat")
         writedlm(fname7, [t_array ρₑμ_array])
+
+        fname8 = joinpath(datadir, "Im_Ω.dat")
+        writedlm(fname8, [Im_Ω])
     end
     
     return Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, Im_Ω 
