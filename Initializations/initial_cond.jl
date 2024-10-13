@@ -49,14 +49,17 @@ function Neutrino_number(s, τ, B,L, N_sites, N_sites_eachflavor, tolerance,
 
     # Create an array of dimension N and fill it half with values of sites containing all electron neutrinos 
     # and other half with sites containing electron anti-neutrino. 
-    N_νₑ  = n_νₑ * V 
-    N_1 = fill(N_νₑ / (N_sites ÷ 2), N_sites ÷ 2)
-    N_νₑ̄  = n_νₑ̄ * V 
-    N_2 = fill(N_νₑ̄/ (N_sites ÷ 2), N_sites ÷ 2)
-    # N_1 = fill(N_νₑ, N_sites ÷ 2)
+    # N_νₑ  = n_νₑ * V 
+    # N_1 = fill(N_νₑ / (N_sites ÷ 2), N_sites ÷ 2)
     # N_νₑ̄  = n_νₑ̄ * V 
-    # N_2 = fill(N_νₑ̄, N_sites ÷ 2)
-    N = vcat(N_1, N_2) # This is the total number of neutrinos. 
+    # N_2 = fill(N_νₑ̄/ (N_sites ÷ 2), N_sites ÷ 2)
+    
+    N_νₑ  = n_νₑ * (Δx)^3 
+    N_1 = fill(N_νₑ, N_sites ÷ 2)
+    N_νₑ̄  = n_νₑ̄ * (Δx)^3 
+    N_2 = fill(N_νₑ̄, N_sites ÷ 2)
+
+    N = vcat(N_1, N_2) # This is the total number of neutrinos in a unit cell
     return N 
 
 end
