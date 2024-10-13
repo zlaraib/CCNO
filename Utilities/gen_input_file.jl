@@ -1,4 +1,4 @@
-
+include("../Initializations/initial_cond.jl") 
 # This file extracts the initial condition from the test script and generates an input file
 
 function generate_inputs_file(directory, filename, data)
@@ -24,16 +24,17 @@ function extract_initial_conditions()
         "Δm²" => Δm²,
         "maxdim" => maxdim,
         "cutoff" => cutoff,
-        "x" => x,
         "p" => p,
         "ψ₀" => ψ₀,
         "L" => L,
+        "initial_x" => generate_x_array(N_sites_eachflavor, L),
         "Δx" => Δx,
         "n_νₑ" => n_νₑ,
         "n_νₑ̄" => n_νₑ̄,
         "Eνₑ" => Eνₑ,
         "Eνₑ̄" => Eνₑ̄,
         "B" => B,
+        "N" => N,
         "shape_name" => shape_name,
         "Δp" => Δp,
         "periodic" => periodic

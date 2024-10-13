@@ -1,7 +1,6 @@
 using ITensors
 using Plots
 using Measures
-using ITensorTDVP
 using DelimitedFiles
 
 """
