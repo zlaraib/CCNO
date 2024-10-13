@@ -69,9 +69,12 @@ t2 = 0.011700318 #choose final time for growth rate calculation
 periodic = true  # true = imposes periodic boundary conditions while false doesn't
 analytic_growth_rate=  (abs(m2^2 - m1^2)/ (2*hbar* Eνₑ)) # analytic growth rate 
 
-x = generate_x_array(N_sites, L)
-y = generate_x_array(N_sites, L)
-z = generate_x_array(N_sites, L)
+# x = generate_x_array(N_sites, L)
+# y = generate_x_array(N_sites, L)
+# z = generate_x_array(N_sites, L)
+x = generate_x_array(N_sites_eachflavor, L)
+y = generate_x_array(N_sites_eachflavor, L)
+z = generate_x_array(N_sites_eachflavor, L)
 
 # p matrix with numbers generated from the p_array for all components (x, y, z) #sherood has 
 p = hcat(generate_px_array(N_sites, Eνₑ, Eνₑ̄), generate_py_array(N_sites), generate_pz_array(N_sites))
