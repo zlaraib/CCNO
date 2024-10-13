@@ -64,7 +64,7 @@ theta_nu= 0.01 #mixing angle # =34.3 degrees
 B = [-sin(2 *theta_nu), 0, cos(2*theta_nu)] # for inverted mass hierarchy
 B = B / norm(B) 
 
-x = generate_x_array(N_sites, L)
+x = generate_x_array(N_siteseachflavor, L)
 y = fill(0, N_sites) #variable
 z = fill(0, N_sites) #variable
 
