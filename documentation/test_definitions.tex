@@ -1,0 +1,131 @@
+\documentclass{article}
+\usepackage{amsmath}
+
+
+\title{Oscillatrino Test Definitions}
+
+\begin{document}
+
+\section{Shape Function}
+
+There are currently two options for the shape function. The choice of shape function will return a variable ``{\tt shape\_result}'', which contains the weighting based on the distance between two particles.
+
+\begin{itemize}
+  \item {\tt ``none''} : {\tt shape\_result = 1}
+  \item {\tt ``flat\_top''} : {\tt shape\_result} $= \frac{1}{\Delta p} \Theta(0.5-|\xi|)$
+    \item {\tt ``triangular''} : {\tt shape\_result} $= \frac{1}{\Delta p} (1-|\xi|)\Theta(1-|\xi|)$
+\end{itemize}
+
+\section{Vacuum Oscillations}
+\begin{equation}
+H_{vac} = \sum_{k=1}^{N} \omega_k \vec{B} \cdot  \frac{{\vec\sigma}_k}{2} \end{equation}
+where $ \omega_k = \frac{\Delta m^2}{2E_k} $ is the oscillation frequency of the neutrino beams propagating in vacuum. This $\Delta m^2 = m^2_2 - m^2_1 $ is the mass difference between neutrino mass basis.
+
+For future reference: ITensor tries to align the indices by their id and quantum numbers, so ensure that their indices match before adding two ITensors. (If the indices are not in the same order, you might need to permute the indices of one of the tensors before addition.) This means that for each index in hamiltonian gate on site i (hj1), there must be a corresponding index in hamiltonian gate on site j (hj2) with the same id and type (prime level, direction, etc.). When the indices match, the addition is performed element-wise, meaning each element in hj1 is added to the corresponding element in hj2. The resulting tensor hj  should have the same index structure as hj1 and hj2, with values being the sums of corresponding elements.
+
+\section{Self-interactions}
+\begin{equation}
+H_{self-interaction} =  \frac{\mu}{2N} \sum_{i<j}^{N} J_{ij} S_{ij}  \vec{\sigma}_i \cdot \vec{\sigma}_j 
+\end{equation}
+The geometry of the problem is encoded in the two-body coupling matrix \( J_{ij} = (1 - \hat{p}_i \cdot \hat{p}_k) \) with \( \hat{p}_k = \frac{\vec{p}_k}{|\vec{p}_k|} \), the momentum of the \(k\)th neutrino. This $J_{ij}$ is referred to as the `{\tt geometric\_factor}'' in the code. While $S_{ij}$ is the chosen``{\tt shape\_function}''. $\mu$ is the interaction strength given by  $ \sqrt{2} G_F {n_{\nu_e}}$.
+
+\section{Roggero}
+ \begin{center} $ H = H_{vac} + H_{self-interaction}$ \end{center} 
+\begin{equation}
+H = -\delta_{\omega} (J^A_z - J^B_z) + \frac{\mu}{N} J^2
+\end{equation}
+where $\delta_{\omega} = (\omega_A - \omega_B)/2 $. This test introduces the total spin operator \(\vec{J} = \sum_i \frac{\vec{\sigma}_i}{2}\) and correspondingly \(\vec{J}^A\) and \(\vec{J}^B\) for the neutrinos in the two beams, where A and B are sets of indices for the neutrinos in the A and B beam respectively. This test is performed under isotropic (i.e. $J_{ij}= 1$ or equivalently $\hat{p}_i \cdot \hat{p}_k = 0 $ ) and homogeneous ($S_{ij}= 1$ or shape\_result= "none") conditions. 
+% HOMOGENEOUS FFI %
+\section{Homogeneous FFI}
+This test runs the $H$ with  $H_{vac} + H_{self-interaction} $ under anisotropic (i.e. $J_{ij}\neq 1$ or equivalently $\hat{p}_i \cdot \hat{p}_k \neq 0 $) and homogeneous ($S_{ij}= 1$ or shape\_result= "none") conditions. The goal of this test is to reproduce the results of ``Particle-in-Cell Simulation of the Neutrino Fast Flavor Instability'' Figure 14.
+
+Parameters used in the Emu test:
+\begin{itemize}
+\item $L_x=L_y=L_z=10^7\,\mathrm{cm}$
+\item $\Delta x = L = 10^7\,\mathrm{cm} $
+\item CFL factor = 0.5. This means $\Delta t = 0.5 \frac{\Delta x}{c}$ or $\Delta t = 1.666 \times10^{-4}\,\mathrm{s}$.
+\item One neutrino particle and one antineutrino particle.
+\item Periodic boundary conditions
+\item Run 100 steps
+\item Matter density $\rho=0$
+\item Two neutrino flavors
+\item shape function width: $\Delta p=L=10^7\,\mathrm{cm}$
+\item $\theta_{12}=10^{-6 \circ}$
+\item $m_1 = 0.008596511\,\mathrm{eV}$
+\item $m_2 = 0$
+\item $n_{\nu_e}=(m_2^2-m_1^2) c^4/ (4 \sqrt{2} G_F h\nu)=2.92 \times10^{24}\,\mathrm{cm}^{-3}$, meaning $N=n_{\nu_e}V=2.92\times10^{45}$ for the electron neutrino particle
+\item $n_{\bar{\nu}_e} = n_{\nu_e}$
+\item $h\nu=50\,\mathrm{MeV}$
+\item $\hat{p}_{\nu_e} = \hat{z}$
+\item $\hat{p}_{\bar{\nu}_e} = -\hat{z}$
+\item $x_i = L_i/2$ where $i\in{x,y,z}$
+\end{itemize}
+
+Parameters used in the Oscillatrino test:
+\begin{itemize}
+\item $L_x=L_y=L_z=10^7\,\mathrm{cm}$
+\item $\Delta x = L= 10^7\,\mathrm{cm}$
+\item $\Delta t = 1.666 \times10^{-4}\,\mathrm{s}$
+\item One neutrino particle and one antineutrino particle.
+\item Periodic boundary conditions
+\item Run 100 steps
+\item Two neutrino flavors
+\item shape function width: $\Delta p=L=10^7\,\mathrm{cm}$
+\item $\theta_{12}= 1.74532925 \times 10^{-8}$ rad 
+\item $m_1 = -0.008596511\,\mathrm{eV}$ \textbf{CHECK THE SIGN}
+\item $m_2 = 0$
+\item $n_{\nu_e}=(m_2^2-m_1^2) c^4/ (4 \sqrt{2} G_F h\nu)=2.92 \times10^{24}\,\mathrm{cm}^{-3}$, meaning $N=n_{\nu_e}V=2.92\times10^{45}$ for the electron neutrino particle
+\item $n_{\bar{\nu}_e} = n_{\nu_e}$
+\item $h\nu=50\,\mathrm{MeV}$
+\item $\hat{p}_{\nu_e} = \hat{x}$
+\item $\hat{p}_{\bar{\nu}_e} = -\hat{x}$
+\item $x_i = L_i/2$ where $i\in{x,y,z}$
+\end{itemize}
+
+
+\section{Inhomogeneous FFI}
+This test runs the $H$ with  $H_{vac} + H_{self-interaction} $ under anisotropic (i.e. $J_{ij}\neq 1$ or equivalently $\hat{p}_i \cdot \hat{p}_k \neq 0 $) and inhomogeneous ($S_{ij} \neq 1$ or $shape\_result\neq"none"$) conditions. The goal of this test is to reproduce the results of ``Particle-in-Cell Simulation of the Neutrino Fast Flavor Instability'' Figure 15.
+Parameters used in the Emu test:
+\begin{itemize}
+\item $L_x=L_y=L_z=1\,\mathrm{cm}$
+\item $\Delta x = L/100 = 0.01 $ \textbf{CHECK}
+\item CFL factor = 0.5. This means $\Delta t = 0.5 \frac{\Delta x}{c}$ or $\Delta t = 3.33333 \times10^{-13}\,\mathrm{s}$. \textbf{CHECK}
+\item 50 neutrino particles and 50 antineutrino particle.
+\item Periodic boundary conditions
+\item Run 270 steps \textbf{CHECK}
+\item Matter density $\rho=0$
+\item Two neutrino flavors
+\item shape function width: $\Delta p=L=1\,\mathrm{cm}$ \textbf{CHECK}
+\item $\theta_{12}=10^{-6 \circ}$
+\item $m_1 = -0.008596511\,\mathrm{eV}$ \textbf{CHECK THE SIGN}
+\item $m_2 = 0$
+\item $n_{\nu_e}= \frac{(m_2^2 - m_1^2) c^4 / (2h\nu) + hck}{2\sqrt{2G_F}} = 4.89 \times 10^{32}\,\mathrm{cm}^{-3}$, meaning $N=n_{\nu_e}V=4.89 \times 10^{32}$ for the electron neutrino particle \textbf{CHECK}
+\item $n_{\bar{\nu}_e} = n_{\nu_e}$
+\item $h\nu=50\,\mathrm{MeV}$
+\item $\hat{p}_{\nu_e} = \hat{z}$
+\item $\hat{p}_{\bar{\nu}_e} = -\hat{z}$
+\item $x_i = L_i/100$ where $i\in{x,y,z}$ \textbf{CHECK}
+\end{itemize}
+
+Parameters used in the Oscillatrino test:
+\begin{itemize}
+\item $L_x=L_y=L_z=1\,\mathrm{cm}$
+\item $\Delta x = L/100 = 0.01 $ 
+\item $\Delta t = 3.33333 \times10^{-13}\,\mathrm{s}$
+\item 50 neutrino particles and 50 antineutrino particles.
+\item Periodic boundary conditions
+\item Run 270 steps
+\item Two neutrino flavors
+\item shape function width: $\Delta p=L=1\,\mathrm{cm}$
+\item $\theta_{12}=10^{-6 \circ}$
+\item $m_1 = -0.008596511\,\mathrm{eV}$ \textbf{CHECK THE SIGN}
+\item $m_2 = 0$
+\item $n_{\nu_e}= \frac{(m_2^2 - m_1^2) c^4 / (2h\nu) + hck}{2\sqrt{2G_F}} = 4.89 \times 10^{32}\,\mathrm{cm}^{-3}$, meaning $N=n_{\nu_e}V=4.89 \times 10^{32}$ for the electron neutrino particle \textbf{CHECK}
+\item $n_{\bar{\nu}_e} = n_{\nu_e}$
+\item $h\nu=50\,\mathrm{MeV}$
+\item $\hat{p}_{\nu_e} = \hat{x}$
+\item $\hat{p}_{\bar{\nu}_e} = -\hat{x}$
+\item $x_i = L_i/100$ where $i\in{x,y,z}$ \textbf{CHECK}
+\end{itemize}
+
+\end{document}
