@@ -5,8 +5,6 @@ using LinearAlgebra
 using DelimitedFiles
 using Statistics
 using Random
-using ITensorTDVP
-
 
 """
 For github unit tests runs: 
