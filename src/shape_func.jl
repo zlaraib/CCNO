@@ -6,11 +6,11 @@ include("heaviside.jl")
 """
 
 function flat_top(Δp, ξ)
-    return 1 / Δp * heaviside(1/2 - abs(ξ))
+    return heaviside(1/2 - abs(ξ))
 end
 
 function triangular(Δp, ξ)
-    return 1 / Δp * (1 - abs(ξ)) * heaviside(1 - abs(ξ))
+    return (1 - abs(ξ)) * heaviside(1 - abs(ξ))
 end
 
 function none(Δp, ξ)
