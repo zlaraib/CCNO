@@ -78,6 +78,7 @@ function create_gates(s, ψ, N, B, N_sites, Δx, Δm², p, x, Δp, theta_nu, sha
                 # Calculate the geometric factor for each pair of i and j within the loop
                 geometric_factor = geometric_func(p, p̂, i, j, theta_nu)
                 interaction_strength = (2.0* √2 * G_F * (N[i]+ N[j])/(2*((Δx)^3))) * shape_result * geometric_factor
+                # println(x[i] ," ",x[j] ," ", interaction_strength)
                 hj = interaction_strength *
                 (op("Sz", s_i) * op("Sz", s_j) +
                 1/2 * op("S+", s_i) * op("S-", s_j) +
