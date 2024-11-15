@@ -25,7 +25,7 @@ include("constants.jl")
 # This file generates the evolve function which evolves the ψ state in time and computes the expectation values of Sz at each time step, along 
 # with their survival probabilities. The time evolution utilizes the unitary operators created as gates from the create_gates function.
 # The <Sz> and Survival probabilities output from this function are unitless. 
-function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal, save_data::Bool, periodic=true)
+function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal, save_data::Bool, periodic=true, checkpoint_every)
 
     # Create empty array s to...
     Sz_array = Float64[] # to store sz values 
@@ -42,6 +42,8 @@ function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sh
     ρₑμ_at_t1 = nothing  # Initialize a variable to store ρₑμ at t1
     ρₑμ_at_t2 = nothing  # Initialize a variable to store ρₑμ at t2
     Δt = t2 - t1 #time difference between growth rates 
+
+    iteration = 0
 
 
     # H = Hamiltonian_mpo(s, N, B, N_sites, Δx, Δm², p, x, Δp, shape_name,L, τ, energy_sign, periodic)
@@ -145,6 +147,8 @@ function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sh
         # The normalize! function is used to ensure that the MPS is properly normalized after each application of the time evolution gates. 
         # This is necessary to ensure that the MPS represents a valid quantum state.
         normalize!(ψ)
+
+        iteration = iteration + 1
     end
     t_array = 0.0:τ:ttotal
 
