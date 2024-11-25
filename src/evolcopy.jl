@@ -22,160 +22,91 @@ include("constants.jl")
     periodic = boolean indicating whether boundary conditions should be periodic
 """
 
-
-# function checkpoint_simulation(checkpoint_filename, s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, t1, t2, ttotal, t, iteration)
-#     io = open(checkpoint_filename, "w")
-#     # io = open("hello.txt", "w")
-#     # println(io, s)
-#     # println(io,τ)
-#     # println(io,N )
-#     # println(io,B)
-#     # println(io,L)
-#     # println(io,N_sites)
-#     # println(io,Δx )
-#     # println(io,Δm² )
-#     # println(io,p )
-#     # println(io,x )
-    
-#     # println(io,Δp )
-#     # println(io,theta_nu)
-#     # println(io,ψ)
-#     # println(io,shape_name)
-#     # println(io,energy_sign)
-#     # println(io,cutoff)
-#     # println(io,maxdim)
-#     # println(io,t1)
-#     # println(io,t2)
-#     # println(io, ttotal)
-#     println(io, t)
-#     println(io, iteration)
-#     println("checkpoint t: ", t)
-#     close(io)
-
-#     # Save the MPS ψ separately as a binary file
-#     # write("$(checkpoint_filename)_psi.itensor", ψ)
-# end
-
-function checkpoint_simulation_hdf5(checkpoint_filename, ψ, t, iteration)
-    # Open HDF5 file to write checkpoint
+function checkpoint_simulation_hdf5(checkpoint_filename, s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, gates, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, t1, t2, ttotal, t, iteration)
+    # Open an HDF5 file for writing (or create it if it doesn't exist)
     f = h5open(checkpoint_filename, "w")
     
-    # Save ψ (MPS) in ITensor format
-    write(f, "psi", ψ)
-    
-    # Save other checkpoint metadata like `t` and `iteration`
+    # Write scalar values
+    write(f, "τ", τ)
+    write(f, "L", L)
+    write(f, "N_sites", N_sites)
+    write(f, "Δx", Δx)
+    write(f, "Δm²", Δm²)
+    write(f, "Δp", Δp)
+    write(f, "theta_nu", theta_nu)
+    write(f, "cutoff", cutoff)
+    write(f, "maxdim", maxdim)
+    write(f, "t1", t1)
+    write(f, "t2", t2)
+    # write(f, "ttotal", ttotal)
     write(f, "t", t)
     write(f, "iteration", iteration)
     
-    # Close the file after writing
+    # Write arrays and vectors
+    write(f, "s", s)
+    write(f, "N", N)
+    write(f, "B", B)
+    write(f, "p", p)
+    write(f, "x", x)
+    write(f, "energy_sign", energy_sign)
+    
+    # Write string values
+    write(f, "shape_name", shape_name)
+
+    # Write MPS ψ (ITensor type)
+    write(f, "ψ", ψ)
+    # write(f, "gates", gates)
+
+    # Close the HDF5 file after writing
     close(f)
     
-    println("Checkpoint created at iteration $iteration, time $t")
+    println("Checkpoint created at $checkpoint_filename, iteration $iteration, time $t")
 end
 
 function recover_checkpoint_hdf5(checkpoint_filename)
-    
-    # Open HDF5 file to read checkpoint
+    # Open the HDF5 file for reading
     f = h5open(checkpoint_filename, "r")
     
-    # Read ψ (MPS) from ITensor format
-    ψ = read(f, "psi", MPS)
-    
-    # Read other checkpoint metadata like `t` and `iteration`
+    # Read scalar values
+    τ = read(f, "τ")
+    L = read(f, "L")
+    N_sites = read(f, "N_sites")
+    Δx = read(f, "Δx")
+    Δm² = read(f, "Δm²")
+    Δp = read(f, "Δp")
+    theta_nu = read(f, "theta_nu")
+    cutoff = read(f, "cutoff")
+    maxdim = read(f, "maxdim")
+    t1 = read(f, "t1")
+    t2 = read(f, "t2")
+    # ttotal = read(f, "ttotal")
+
     t_initial = read(f, "t")
     iteration = read(f, "iteration")
     
+    # Read arrays and vectors
+    s = read(f, "s")
+    N = read(f, "N")
+    B = read(f, "B")
+    p = read(f, "p")
+    x = read(f, "x")
+    energy_sign = read(f, "energy_sign")
+    
+    # Read string values
+    shape_name = read(f, "shape_name")
+    
+    # Read MPS ψ (ITensor type)
+    ψ = read(f, "ψ", MPS)
+    
+    # gates = read(f, "gates")
     # Close the file after reading
     close(f)
     
-    println("Recovered from checkpoint at iteration $iteration, time $t_initial")
-    
-    return ψ, t_initial, iteration
+    println("Recovered checkpoint from $checkpoint_filename, iteration $iteration, time $t_initial")
+
+    # return s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, gates, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, t1, t2, ttotal, t_initial, iteration
+    return s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, t1, t2, t_initial, iteration
 end
-
-
-# function checkpoint_simulation_hdf5(checkpoint_filename, s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, t1, t2, ttotal, t, iteration)
-#     # Open an HDF5 file for writing (or create it if it doesn't exist)
-#     f = h5open(checkpoint_filename, "w")
-    
-#     # Write scalar values
-#     write(f, "τ", τ)
-#     write(f, "L", L)
-#     write(f, "N_sites", N_sites)
-#     write(f, "Δx", Δx)
-#     write(f, "Δm²", Δm²)
-#     write(f, "Δp", Δp)
-#     write(f, "theta_nu", theta_nu)
-#     write(f, "cutoff", cutoff)
-#     write(f, "maxdim", maxdim)
-#     write(f, "t1", t1)
-#     write(f, "t2", t2)
-#     write(f, "ttotal", ttotal)
-#     write(f, "t", t)
-#     write(f, "iteration", iteration)
-    
-#     # Write arrays and vectors
-#     write(f, "s", s)
-#     write(f, "N", N)
-#     write(f, "B", B)
-#     write(f, "p", p)
-#     write(f, "x", x)
-#     write(f, "energy_sign", energy_sign)
-    
-#     # Write string values
-#     write(f, "shape_name", shape_name)
-
-#     # Write MPS ψ (ITensor type)
-#     write(f, "ψ", ψ)
-    
-#     # Close the HDF5 file after writing
-#     close(f)
-    
-#     println("Checkpoint created at $checkpoint_filename, iteration $iteration, time $t")
-# end
-
-# function recover_checkpoint_hdf5(checkpoint_filename)
-#     # Open the HDF5 file for reading
-#     f = h5open(checkpoint_filename, "r")
-    
-#     # Read scalar values
-#     τ = read(f, "τ")
-#     L = read(f, "L")
-#     N_sites = read(f, "N_sites")
-#     Δx = read(f, "Δx")
-#     Δm² = read(f, "Δm²")
-#     Δp = read(f, "Δp")
-#     theta_nu = read(f, "theta_nu")
-#     cutoff = read(f, "cutoff")
-#     maxdim = read(f, "maxdim")
-#     t1 = read(f, "t1")
-#     t2 = read(f, "t2")
-#     ttotal = read(f, "ttotal")
-#     # t = read(f, "t")
-#     t_initial = read(f, "t")
-#     iteration = read(f, "iteration")
-    
-#     # Read arrays and vectors
-#     s = read(f, "s")
-#     N = read(f, "N")
-#     B = read(f, "B")
-#     p = read(f, "p")
-#     x = read(f, "x")
-#     energy_sign = read(f, "energy_sign")
-    
-#     # Read string values
-#     shape_name = read(f, "shape_name")
-    
-#     # Read MPS ψ (ITensor type)
-#     ψ = read(f, "ψ", MPS)
-    
-#     # Close the file after reading
-#     close(f)
-    
-#     println("Recovered checkpoint from $checkpoint_filename, iteration $iteration, time $t_initial")
-
-#     return s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, t1, t2, ttotal, t_initial, iteration
-# end
 
 # This file generates the evolve function which evolves the ψ state in time and computes the expectation values of Sz at each time step, along 
 # with their survival probabilities. The time evolution utilizes the unitary operators created as gates from the create_gates function.
@@ -184,67 +115,18 @@ function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sh
 
     t_initial = 0.0
     iteration = 0
-
-    # if do_recover
-    #     if recover_type == "auto"
-    #         println("auto recovery")
-    #         f = open("/home/zohalaraib/Oscillatrino/tests/checkpoints/checkpoint.chkpt.it000004.txt", "r")
-            
-
-    #         t_initial = 0.2
-    #         iteration = 2
-
-    #         in_vals = readlines(f)
-    #         println("in_vals", in_vals)
-    #         t_initial = parse(Float64, in_vals[1])
-    #         iteration = parse(Int, in_vals[2])
-    #         # ψ = parse(Complex{Float64}, in_vals[3])  
-    #         #println(readlines(f))
-    #         # for lines in readlines(f)
-    #         #     # print the line
-    #         #     println("t_initial", lines)
-    #         #     t_initial = parse(Float64, lines) 
-    #         #     println("iteration", lines)
-    #         #     iteration = parse(Int, lines)      
-            
-    #         # end
-    #         close(f)
-    #         # # Recover the MPS ψ from the binary file using ITensor's read function
-    #         # psi_filename = "/home/zohalaraib/Oscillatrino/tests/checkpoints/checkpoint.chkpt.it000004.txt_psi.itensor"
-    #         # if isfile(psi_filename)
-    #         #     ψ = read(psi_filename, MPS)
-    #         # else
-    #         #     error("Checkpoint MPS file not found at $psi_filename. Ensure the checkpoint was saved properly.")
-    #         # end
-    #     elseif recover_type == "manual"
-    #         println("recovery from iteration ", recover_iteration)
-    #     end
-    # end
+    t_recover = 0.0  # Variable to store the initial recovery time 
 
     if do_recover
         if recover_type == "auto"
             println("auto recovery")
             checkpoint_filename = "/home/zohalaraib/Oscillatrino/tests/checkpoints/checkpoint.chkpt.it000004.h5"
-            ψ, t_initial, iteration = recover_checkpoint_hdf5(checkpoint_filename)
-            # s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, t1, t2, ttotal, t_initial, iteration = recover_checkpoint_hdf5(checkpoint_filename)
+            s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, t1, t2, t_initial, iteration = recover_checkpoint_hdf5(checkpoint_filename)
+            # s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, gates, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, t1, t2, ttotal, t_initial, iteration = recover_checkpoint_hdf5(checkpoint_filename)
             # Increment t_initial by τ to ensure it starts from the next expected value
             t_initial += τ
-            # Reinitialize necessary parameters based on recovered ψ
-            @assert length(siteinds(ψ)) == N_sites "Mismatch in number of sites between recovered ψ and N_sites"
-            println("Recovered ψ with length: ", length(siteinds(ψ)))
+            s = siteinds(ψ)
 
-            # Normalize ψ to make sure it's valid after recovery
-            normalize!(ψ)
-
-            # Regenerate gates for the recovered ψ
-            println("Generating recovery gates for recovered ψ...")
-            gates_recover = create_gates(s, ψ, N, B, N_sites, Δx, Δm², p, x, Δp, theta_nu, shape_name, L, τ, energy_sign, periodic)
-
-            # Ensure gates are properly generated
-            println("Number of recovered gates: ", length(gates_recover))
-            if length(gates_recover) == 0
-                error("Recovered gates are empty. Please ensure the gates are correctly generated.")
-            end
         elseif recover_type == "manual"
             println("recovery from iteration ", recover_iteration)
             # Optionally, add manual recovery logic for a specific iteration
@@ -273,10 +155,18 @@ function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sh
     p_mod, p̂ = momentum(p,N_sites) 
     p̂ₓ= [sub_array[1] for sub_array in p̂]
     
+    # Main evolution loop
+    is_first_iteration = true  # Flag to mark the first iteration of the loop
     # Compute and print survival probability (found from <Sz>) at each time step then apply the gates to go to the next time
-     for t in t_initial:τ:ttotal
+    for t in t_initial:τ:ttotal
+        # Save `t_recover` only once during the first iteration of the loop
+        if is_first_iteration
+            t_recover = t
+            is_first_iteration = false
+        end
         # extract the gates array generated in the gates_function file
-        # gates = create_gates(s, ψ,N, B, N_sites, Δx, Δm², p, x, Δp, theta_nu, shape_name,L, τ, energy_sign, periodic)
+        gates = create_gates(s, ψ,N, B, N_sites, Δx, Δm², p, x, Δp, theta_nu, shape_name,L, τ, energy_sign, periodic)
+        # println(typeof(gates))
         push!(x_values, copy(x))  # Record x values at each time step
         px = p[:, 1]  # Extracting the first column (which corresponds to px values)
         push!(pₓ_values, copy(px)) # Record px values at each time step
@@ -363,48 +253,38 @@ function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sh
         # The apply function is a matrix-vector multiplication operation that is smart enough to determine which site indices each gate has, and then figure out where to apply it to our MPS. 
         # It truncates the MPS according to the set cutoff and maxdim for all the non-nearest-neighbor gates.
 
-        # Apply recovered gates if in recovery mode
-        if do_recover && recover_type == "auto"
-            println("Applying recovered gates...")
-            @assert length(gates_recover) > 0 "Recovered gates are empty. Cannot proceed with empty gates."
-            ψ = apply(gates_recover, ψ; cutoff, maxdim)
-        else
-            # Generate new gates for the current ψ
-            println("Generating new gates for current ψ...")
-            gates = create_gates(s, ψ, N, B, N_sites, Δx, Δm², p, x, Δp, theta_nu, shape_name, L, τ, energy_sign, periodic)
+        # # Apply recovered gates if in recovery mode
+        # if do_recover && recover_type == "auto"
+        #     println("Applying recovered gates...")
+        #     @assert length(gates_recover) > 0 "Recovered gates are empty. Cannot proceed with empty gates."
+        #     ψ = apply(gates_recover, ψ; cutoff, maxdim)
+        # else
+        #     # Generate new gates for the current ψ
+        #     println("Generating new gates for current ψ...")
+        #     gates = create_gates(s, ψ, N, B, N_sites, Δx, Δm², p, x, Δp, theta_nu, shape_name, L, τ, energy_sign, periodic)
     
-            # Ensure gates are properly generated before applying
-            if length(gates) == 0
-                error("Generated gates are empty. Please check the gate creation process.")
-            end
+        #     # Ensure gates are properly generated before applying
+        #     if length(gates) == 0
+        #         error("Generated gates are empty. Please check the gate creation process.")
+        #     end
     
-            ψ = apply(gates, ψ; cutoff, maxdim)
-        end
+        #     ψ = apply(gates, ψ; cutoff, maxdim)
+        # end
 
-            
-        # ψ = apply(gates, ψ; cutoff, maxdim)
+        ψ = apply(gates, ψ; cutoff, maxdim)
         # ψ = tdvp(H, ψ,  -im *τ;   nsweeps=1,
         # reverse_step=true,outputlevel=1)
 
         # The normalize! function is used to ensure that the MPS is properly normalized after each application of the time evolution gates. 
         # This is necessary to ensure that the MPS represents a valid quantum state.
         normalize!(ψ)
-        # println(typeof(ψ))
+
         println("iteration: ",  iteration, "  ", iteration % checkpoint_every)
-        # if iteration % checkpoint_every == 0 
-        #     println("CREATE CHECKPOINT AT ITERATION = ", iteration, " TIME = ", t)
-        #     #checkpoint_filename = joinpath("checkpoint.chkpt.it.", lpad(iteration,6,"0"), ".txt")
-        #     checkpoint_filename = joinpath(chkptdir, "checkpoint.chkpt.it" * lpad(iteration,6,"0") * ".txt")
-        #     println("checkpoint_filename:", checkpoint_filename)
-        #     checkpoint_simulation(checkpoint_filename, s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, t1, t2, ttotal, t, iteration)
-        #     println("checkpoint 2 t:", t)
-        #     # println(ψ)
-        # end
+
         if iteration % checkpoint_every == 0 
             println("CREATE CHECKPOINT AT ITERATION = ", iteration, " TIME = ", t)
             checkpoint_filename = joinpath(chkptdir, "checkpoint.chkpt.it" * lpad(iteration, 6, "0") * ".h5")
-            checkpoint_simulation_hdf5(checkpoint_filename, ψ, t, iteration)
-            # checkpoint_simulation_hdf5(checkpoint_filename, s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, t1, t2, ttotal, t, iteration)
+            checkpoint_simulation_hdf5(checkpoint_filename, s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, gates, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, t1, t2, ttotal, t, iteration)
         end
 
         iteration = iteration + 1
@@ -417,6 +297,8 @@ function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sh
         println("Growth rate of flavor coherence of ρₑμ at t2 to ρₑμ at t1: $Im_Ω")
     else
         println("ρₑμ was not captured at both t1 and t2.")
+        # global Im_Ω = 1
+        # return Im_Ω 
     end
 
     if save_data
@@ -446,8 +328,8 @@ function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sh
         fname8 = joinpath(datadir, "Im_Ω.dat")
         writedlm(fname8, [Im_Ω])
     end
-    
-    return Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, Im_Ω 
+
+    return Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, Im_Ω, t_recover
 end
 
 
