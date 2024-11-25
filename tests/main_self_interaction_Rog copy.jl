@@ -38,7 +38,7 @@ function main()
     N_sites = 4 # number of sites (NEED TO GO TILL 96 for Rog_results) # variable.
     cutoff = 1E-14 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT) # variable.
     τ = 0.05 # time step3 #sec #fixed for Rogerros result
-    ttotal = 1.0 # total time of evolution #sec # variable.
+    ttotal = 5 # total time of evolution #sec # variable.
     tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution # variable.
     Δx = 1E-3 # length of the box of interacting neutrinos at a site in cm  # variable.
     Δm²= 0.0 # erg^2 # Fixed for rog only self-int test case. Please dont play with it. 
@@ -48,7 +48,13 @@ function main()
     t1 = 0.0084003052 #choose initial time for growth rate calculation #variable, not being used in this test
     t2 = 0.011700318 #choose final time for growth rate calculation #variable, not being used in this test
     periodic = false  # true = imposes periodic boundary conditions while false doesn't
-    # s is an array of spin 1/2 tensor indices (Index objects) which will be the site or physical indices of the MPS.
+    
+    checkpoint_every = 4
+    do_recover = true
+    recover_type = "auto" 
+    recover_iteration = -1
+    
+        # s is an array of spin 1/2 tensor indices (Index objects) which will be the site or physical indices of the MPS.
     # We overload siteinds function, which generates custom Index array with Index objects having the tag of total spin quantum number for all N.
     # conserve_qns=true conserves the total spin quantum number "S" in the system as it evolves
     s = siteinds("S=1/2", N_sites; conserve_qns=true)  #fixed
@@ -90,15 +96,11 @@ function main()
     chkptdir = joinpath(@__DIR__, "checkpoints")
     isdir(chkptdir) || mkpath(chkptdir)
 
-    checkpoint_every = 4
-    do_recover = true
-    recover_type = "auto" 
-    recover_iteration = -1
 
     #extract output for the survival probability values at each timestep
-    Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, Im_Ω = evolve(
+    Sz_array, Sy_array, Sx_array,  prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, Im_Ω, t_recover = evolve(
         s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal,chkptdir, checkpoint_every,  do_recover, recover_type, recover_iteration, save_data , periodic)
-    
+
     # This function scans through the array, compares each element with its neighbors, 
     # and returns the index of the first local minimum it encounters. 
     # If no local minimum is found, it returns -1 to indicate that.
@@ -123,7 +125,14 @@ function main()
     end
 
     # Time at which the first mimimum survival probability is reached
-    t_min = τ * i_first_local_min - τ
+
+    if do_recover 
+        println(t_recover)
+        # s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, t1, t2, t_initial, iteration = recover_checkpoint_hdf5(checkpoint_filename)
+        t_min = (τ * i_first_local_min) - τ + t_recover
+    else  
+        t_min = τ * i_first_local_min - τ
+    end
     println("Corresponding time of first minimum index= ", t_min)
 
     # Rogerro(2021)'s fit for the first minimum of the survival probability reached for a time t_p 
