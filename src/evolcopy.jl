@@ -79,7 +79,7 @@ function recover_checkpoint_hdf5(checkpoint_filename)
     maxdim = read(f, "maxdim")
     t1 = read(f, "t1")
     t2 = read(f, "t2")
-    # ttotal = read(f, "ttotal")
+    # recover_ttotal = read(f, "ttotal")
 
     t_initial = read(f, "t")
     iteration = read(f, "iteration")
@@ -117,10 +117,53 @@ function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sh
     iteration = 0
     t_recover = 0.0  # Variable to store the initial recovery time 
 
+
+    # if save_data
+    #     save_data = isdir(datadir) || mkpath(datadir)
+    #     # Update `ttotal` to the new value if provided (e.g., for accomodating the extended simulation)
+    #     # new_ttotal = recover_checkpoint_hdf5(checkpoint_filename)   # Assuming this value is updated externally
+    #     _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, new_ttotal, _, _ = recover_checkpoint_hdf5(checkpoint_filename)
+    #     # Check if `new_ttotal` is different from current `ttotal`
+    #     if new_ttotal != ttotal
+    #         # Rename the existing `datadir` to reflect the new `ttotal`
+    #         new_datadir = joinpath(@__DIR__, "datafiles", "par_" * string(N_sites), "tt_" * string(new_ttotal))
+    #         println("Renaming datadir from $datadir to $new_datadir")
+            
+    #         if isdir(datadir)
+    #             mv(datadir, new_datadir)
+    #         else
+    #             error("Old datadir not found: $datadir")
+    #         end
+
+    #         # Update `datadir` and `chkptdir` to the new paths
+    #         datadir = new_datadir
+    #         chkptdir = joinpath(datadir, "checkpoints")
+    #         isdir(chkptdir) || mkpath(chkptdir)
+
+    #         # Update `ttotal` to the new value
+    #         ttotal = new_ttotal
+    #     end
+
+    #     # isdir(chkptdir) || mkpath(chkptdir)
+    # end
+
     if do_recover
+        
         if recover_type == "auto"
-            println("auto recovery")
-            checkpoint_filename = "/home/zohalaraib/Oscillatrino/tests/checkpoints/checkpoint.chkpt.it000004.h5"
+            println("auto recovery: recovering from last iteration")
+            recover_iteration = -1
+            checkpoint_files = readdir(chkptdir)
+            checkpoint_files = filter(f -> endswith(f, ".h5"), checkpoint_files)
+            checkpoint_files = sort(checkpoint_files)
+
+            if !isempty(checkpoint_files)
+                latest_checkpoint_file = checkpoint_files[end]
+                checkpoint_filename = joinpath(chkptdir, latest_checkpoint_file)
+            else
+                error("No checkpoint files found in directory: $chkptdir. Unable to recover.")
+            end
+            # checkpoint_filename = "/home/zohalaraib/Oscillatrino/tests/checkpoints/checkpoint.chkpt.it000004.h5"
+            # s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, t1, t2, t_initial, iteration = recover_checkpoint_hdf5(checkpoint_filename)
             s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, t1, t2, t_initial, iteration = recover_checkpoint_hdf5(checkpoint_filename)
             # s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, gates, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, t1, t2, ttotal, t_initial, iteration = recover_checkpoint_hdf5(checkpoint_filename)
             # Increment t_initial by τ to ensure it starts from the next expected value
@@ -128,9 +171,24 @@ function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sh
             s = siteinds(ψ)
 
         elseif recover_type == "manual"
-            println("recovery from iteration ", recover_iteration)
-            # Optionally, add manual recovery logic for a specific iteration
+            println("Manual recovery from iteration ", recover_iteration)
+            
+            # Create the checkpoint filename for the specified iteration
+            checkpoint_filename = joinpath(chkptdir, "checkpoint.chkpt.it" * lpad(recover_iteration, 6, "0") * ".h5")
+            
+            if isfile(checkpoint_filename)
+                println("Recovering from checkpoint: $checkpoint_filename")
+                # Recover data from the specified checkpoint
+                s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, t1, t2, t_initial, iteration = recover_checkpoint_hdf5(checkpoint_filename)
+                
+                # Increment t_initial by τ to ensure it starts from the next expected value
+                t_initial += τ
+                s = siteinds(ψ)
+            else
+                error("Checkpoint file not found for iteration $recover_iteration in directory: $chkptdir.")
+            end
         end
+     
     end    
 
     # Create empty array s to... 
@@ -149,7 +207,93 @@ function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sh
     ρₑμ_at_t2 = nothing  # Initialize a variable to store ρₑμ at t2
     Δt = t2 - t1 #time difference between growth rates 
 
+    # if do_recover && save_data 
+    #     save_data = isdir(datadir) || mkpath(datadir)
+    #     chkptdir = joinpath(datadir, "checkpoints")
+    #     isdir(chkptdir) || mkpath(chkptdir)
+    #     if recover_type == "auto"
+    #         println("Auto recovery: recovering from last iteration")
+    #         recover_iteration = -1
+    #         checkpoint_files = readdir(chkptdir)
+    #         checkpoint_files = filter(f -> endswith(f, ".h5"), checkpoint_files)
+    #         checkpoint_files = sort(checkpoint_files)
     
+    #         if !isempty(checkpoint_files)
+    #             latest_checkpoint_file = checkpoint_files[end]
+    #             checkpoint_filename = joinpath(chkptdir, latest_checkpoint_file)
+    #         else
+    #             error("No checkpoint files found in directory: $chkptdir. Unable to recover.")
+    #         end
+    
+    #         # Recover data from the checkpoint file
+    #         s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, t1, t2, new_ttotal, t_initial, iteration = recover_checkpoint_hdf5(checkpoint_filename)
+
+    #         # Check if the recovered `new_ttotal` is different from the current `ttotal`
+    #         if new_ttotal != ttotal
+    #             # Rename the existing `datadir` to reflect the new `ttotal`
+    #             new_datadir = joinpath(@__DIR__, "datafiles", "par_" * string(N_sites), "tt_" * string(new_ttotal))
+    #             println("Renaming datadir from $datadir to $new_datadir")
+
+    #             if isdir(datadir)
+    #                 mv(datadir, new_datadir)
+    #             else
+    #                 error("Old datadir not found: $datadir")
+    #             end
+
+    #             # Update `datadir` and `chkptdir` to the new paths
+    #             datadir = new_datadir
+    #             chkptdir = joinpath(datadir, "checkpoints")
+    #             isdir(chkptdir) || mkpath(chkptdir)
+
+    #             # Update `ttotal` to the new value
+    #             ttotal = new_ttotal
+    #         end
+
+    #         # Increment `t_initial` by `τ` to ensure it starts from the next expected value
+    #         t_initial += τ
+    #         s = siteinds(ψ)
+    
+    #     elseif recover_type == "manual"
+    #         println("Manual recovery from iteration ", recover_iteration)
+    
+    #         # Create the checkpoint filename for the specified iteration
+    #         checkpoint_filename = joinpath(chkptdir, "checkpoint.chkpt.it" * lpad(recover_iteration, 6, "0") * ".h5")
+    
+    #         if isfile(checkpoint_filename)
+    #             println("Recovering from checkpoint: $checkpoint_filename")
+    #             # Recover data from the specified checkpoint
+    #             s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, t1, t2, new_ttotal, t_initial, iteration = recover_checkpoint_hdf5(checkpoint_filename)
+
+    #             # Check if the recovered `new_ttotal` is different from the current `ttotal`
+    #             if new_ttotal != ttotal
+    #                 # Rename the existing `datadir` to reflect the new `ttotal`
+    #                 new_datadir = joinpath(@__DIR__, "datafiles", "par_" * string(N_sites), "tt_" * string(new_ttotal))
+    #                 println("Renaming datadir from $datadir to $new_datadir")
+
+    #                 if isdir(datadir)
+    #                     mv(datadir, new_datadir)
+    #                 else
+    #                     error("Old datadir not found: $datadir")
+    #                 end
+
+    #                 # Update `datadir` and `chkptdir` to the new paths
+    #                 datadir = new_datadir
+    #                 chkptdir = joinpath(datadir, "checkpoints")
+    #                 isdir(chkptdir) || mkpath(chkptdir)
+
+    #                 # Update `ttotal` to the new value
+    #                 ttotal = new_ttotal
+    #             end
+
+    #             # Increment `t_initial` by `τ` to ensure it starts from the next expected value
+    #             t_initial += τ
+    #             s = siteinds(ψ)
+    #         else
+    #             error("Checkpoint file not found for iteration $recover_iteration in directory: $chkptdir.")
+    #         end
+    #     end
+    # end  
+
     # H = Hamiltonian_mpo(s, N, B, N_sites, Δx, Δm², p, x, Δp, shape_name,L, τ, energy_sign, periodic)
     # extract output of p_hat and p_mod for the p vector defined above for all sites. 
     p_mod, p̂ = momentum(p,N_sites) 
@@ -279,17 +423,19 @@ function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sh
         # This is necessary to ensure that the MPS represents a valid quantum state.
         normalize!(ψ)
 
-        println("iteration: ",  iteration, "  ", iteration % checkpoint_every)
+        if save_data
+            isdir(chkptdir) || mkpath(chkptdir)
+            println("iteration: ",  iteration, "  ", iteration % checkpoint_every)
+            if iteration % checkpoint_every == 0 
+                println("CREATE CHECKPOINT AT ITERATION = ", iteration, " TIME = ", t)
+                checkpoint_filename = joinpath(chkptdir, "checkpoint.chkpt.it" * lpad(iteration, 6, "0") * ".h5")
+                checkpoint_simulation_hdf5(checkpoint_filename, s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, gates, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, t1, t2, ttotal, t, iteration)
+            end
 
-        if iteration % checkpoint_every == 0 
-            println("CREATE CHECKPOINT AT ITERATION = ", iteration, " TIME = ", t)
-            checkpoint_filename = joinpath(chkptdir, "checkpoint.chkpt.it" * lpad(iteration, 6, "0") * ".h5")
-            checkpoint_simulation_hdf5(checkpoint_filename, s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, gates, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, t1, t2, ttotal, t, iteration)
+            iteration = iteration + 1
         end
-
-        iteration = iteration + 1
     end
-    t_array = 0.0:τ:ttotal
+    t_array = t_initial:τ:ttotal
 
     # After the time evolution loop, calculate and print the growth rate from the ratio if both values have been captured
     if ρₑμ_at_t1 !== nothing && ρₑμ_at_t2 !== nothing
@@ -297,11 +443,9 @@ function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sh
         println("Growth rate of flavor coherence of ρₑμ at t2 to ρₑμ at t1: $Im_Ω")
     else
         println("ρₑμ was not captured at both t1 and t2.")
-        # global Im_Ω = 1
-        # return Im_Ω 
     end
 
-    if save_data
+    if save_data && !do_recover
         save_data = isdir(datadir) || mkpath(datadir)
         # Writing data to files with corresponding headers
         fname1 = joinpath(datadir, "t_<Sz>_<Sy>_<Sx>.dat")
@@ -327,8 +471,151 @@ function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sh
 
         fname8 = joinpath(datadir, "Im_Ω.dat")
         writedlm(fname8, [Im_Ω])
+    
+    
+    elseif save_data && do_recover
+       ### maybe need to put an assert condition to check whether the first checkpoint_every enteries after recovery
+       ## matches the last checkpoint_every enteries beofre recovery (from the if save_data && !do_recover loop above)
+
+        # Determine the start index for appending data
+        start_index = iteration >= checkpoint_every ? checkpoint_every + 1 : 0
+    
+        # Function to append data as new rows to the existing file after every `checkpoint_every` values
+        function append_data(filename, new_data)
+            open(filename, "a") do f
+                writedlm(f, new_data)
+            end
+        end
+    
+        # Append new values for each of the saved files, starting from the appropriate index
+        if start_index > 0
+            fname1 = joinpath(datadir, "t_<Sz>_<Sy>_<Sx>.dat")
+            append_data(fname1, [t_array[start_index:end] Sz_array[start_index:end] Sy_array[start_index:end] Sx_array[start_index:end]])
+    
+            fname2 = joinpath(datadir, "t_probsurv.dat")
+            append_data(fname2, [t_array[start_index:end] prob_surv_array[start_index:end]])
+    
+            fname3 = joinpath(datadir, "t_xsiteval.dat")
+            append_data(fname3, [t_array[start_index:end] x_values[start_index:end]])
+    
+            fname4 = joinpath(datadir, "t_pxsiteval.dat")
+            append_data(fname4, [t_array[start_index:end] pₓ_values[start_index:end]])
+    
+            fname5 = joinpath(datadir, "t_ρₑₑ.dat")
+            append_data(fname5, [t_array[start_index:end] ρₑₑ_array[start_index:end]])
+    
+            fname6 = joinpath(datadir, "t_ρ_μμ.dat")
+            append_data(fname6, [t_array[start_index:end] ρ_μμ_array[start_index:end]])
+    
+            fname7 = joinpath(datadir, "t_ρₑμ.dat")
+            append_data(fname7, [t_array[start_index:end] ρₑμ_array[start_index:end]])
+    
+            # Assuming you want to save just a single value here, append it as a new row
+            fname8 = joinpath(datadir, "Im_Ω.dat")
+            open(fname8, "a") do f
+                writedlm(f, [Im_Ω])
+            end
+        end
     end
 
+        
+    # if save_data && do_recover
+    #     ### Assert condition to check whether the first `checkpoint_every` entries after recovery
+    #     ### match the last `checkpoint_every` entries before recovery (from the if save_data && !do_recover loop above)
+    
+    #     function read_data(filename)
+    #         if isfile(filename)
+    #             return readdlm(filename)
+    #         else
+    #             error("File not found: $filename")
+    #         end
+    #     end
+    
+    #     # Define the list of files for comparison and read data from files
+    #     fname1 = joinpath(datadir, "t_<Sz>_<Sy>_<Sx>.dat")
+    #     data1 = read_data(fname1)
+    
+    #     fname2 = joinpath(datadir, "t_probsurv.dat")
+    #     data2 = read_data(fname2)
+    
+    #     fname3 = joinpath(datadir, "t_xsiteval.dat")
+    #     data3 = read_data(fname3)
+    
+    #     fname4 = joinpath(datadir, "t_pxsiteval.dat")
+    #     data4 = read_data(fname4)
+    
+    #     fname5 = joinpath(datadir, "t_ρₑₑ.dat")
+    #     data5 = read_data(fname5)
+    
+    #     fname6 = joinpath(datadir, "t_ρ_μμ.dat")
+    #     data6 = read_data(fname6)
+    
+    #     fname7 = joinpath(datadir, "t_ρₑμ.dat")
+    #     data7 = read_data(fname7)
+    
+    #     # Assuming last `checkpoint_every` entries before recovery
+    #     last_entries = checkpoint_every
+    
+    #     # Assertions for matching recovered values with the previous data
+    #     @assert all(data1[end-last_entries+1:end, 2:end] .== hcat(Sz_array[1:last_entries], Sy_array[1:last_entries], Sx_array[1:last_entries])) "Mismatch in t_<Sz>_<Sy>_<Sx>.dat after recovery"
+    
+    #     @assert all(data2[end-last_entries+1:end, 2] .== prob_surv_array[1:last_entries]) "Mismatch in t_probsurv.dat after recovery"
+    
+    #     @assert all(data3[end-last_entries+1:end, 2:end] .== x_values[1:last_entries]) "Mismatch in t_xsiteval.dat after recovery"
+    
+    #     @assert all(data4[end-last_entries+1:end, 2:end] .== pₓ_values[1:last_entries]) "Mismatch in t_pxsiteval.dat after recovery"
+    
+    #     @assert all(data5[end-last_entries+1:end, 2:end] .== ρₑₑ_array[1:last_entries]) "Mismatch in t_ρₑₑ.dat after recovery"
+    
+    #     @assert all(data6[end-last_entries+1:end, 2:end] .== ρ_μμ_array[1:last_entries]) "Mismatch in t_ρ_μμ.dat after recovery"
+    
+    #     @assert all(data7[end-last_entries+1:end, 2:end] .== ρₑμ_array[1:last_entries]) "Mismatch in t_ρₑμ.dat after recovery"
+    
+    #     println("Assertion passed: All recovered values match the existing data files for the last checkpoint entries.")
+    
+    #     # Determine the start index for appending data
+    #     start_index = iteration >= checkpoint_every ? checkpoint_every + 1 : 0
+    
+    #     # Function to append data as new rows to the existing file after every `checkpoint_every` values
+    #     function append_data(filename, new_data)
+    #         open(filename, "a") do f
+    #             writedlm(f, new_data)
+    #         end
+    #     end
+    
+    #     # Append new values for each of the saved files, starting from the appropriate index
+    #     if start_index > 0
+    #         fname1 = joinpath(datadir, "t_<Sz>_<Sy>_<Sx>.dat")
+    #         append_data(fname1, [t_array[start_index:end] Sz_array[start_index:end] Sy_array[start_index:end] Sx_array[start_index:end]])
+    
+    #         fname2 = joinpath(datadir, "t_probsurv.dat")
+    #         append_data(fname2, [t_array[start_index:end] prob_surv_array[start_index:end]])
+    
+    #         fname3 = joinpath(datadir, "t_xsiteval.dat")
+    #         append_data(fname3, [t_array[start_index:end] x_values[start_index:end]])
+    
+    #         fname4 = joinpath(datadir, "t_pxsiteval.dat")
+    #         append_data(fname4, [t_array[start_index:end] pₓ_values[start_index:end]])
+    
+    #         fname5 = joinpath(datadir, "t_ρₑₑ.dat")
+    #         append_data(fname5, [t_array[start_index:end] ρₑₑ_array[start_index:end]])
+    
+    #         fname6 = joinpath(datadir, "t_ρ_μμ.dat")
+    #         append_data(fname6, [t_array[start_index:end] ρ_μμ_array[start_index:end]])
+    
+    #         fname7 = joinpath(datadir, "t_ρₑμ.dat")
+    #         append_data(fname7, [t_array[start_index:end] ρₑμ_array[start_index:end]])
+    
+    #         # Assuming you want to save just a single value here, append it as a new row
+    #         fname8 = joinpath(datadir, "Im_Ω.dat")
+    #         open(fname8, "a") do f
+    #             writedlm(f, [Im_Ω])
+    #         end
+    #     end
+    # end
+    
+    
+        
     return Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, Im_Ω, t_recover
 end
 
