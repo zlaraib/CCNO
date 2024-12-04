@@ -41,35 +41,39 @@ include(src_dir * "Utilities/save_plots.jl")
 """ Richers(2021) Test 4 initial conditions for many-body dynamics: """
 N_sites_eachflavor= 5 # total sites/particles that evenly spaced "for each (electron) flavor" 
 N_sites = 2* (N_sites_eachflavor) # total particles/sites for all neutrino and anti neutrino electron flavored
-τ = 2E-13 # time step to include 50 steps every 10 picoseconds # sec # variable
-ttotal = 9E-11 # total time of evolution # sec #variable
+τ = 5E-13 # time step to include 50 steps every 10 picoseconds # sec # variable
+τ_pert = 10^-8 # time step for perturbation evolution
+ttotal = 9.0E-11 # total time of evolution # sec #variable
 tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution #variable
-m2 = -0.008596511*eV #eV  1st mass eigenstate of neutrino
-m1 = 0*eV #eV  2nd mass eigenstate of neutrino
+m1 = -0.008596511*eV #eV  1st mass eigenstate of neutrino
+m2 = 0*eV #eV  2nd mass eigenstate of neutrino
 Δm² = (m2^2-m1^2) # mass square difference # (erg^2)
 maxdim = 1000 # max bond dimension in MPS truncation
 cutoff = 1e-100 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT) #variable
 L = 1 # cm # domain size # (aka big box length)
 n_νₑ =  4.891290848285061e+32 # cm^-3 # number density of electron flavor neutrino
-n_νₑ̄ =  4.891290848285061e+32 # cm^-3 # number density of electron flavor antineutrino
+n_νₑ̄ =  n_νₑ # cm^-3 # number density of electron flavor antineutrino
 Eνₑ =  50.0*MeV # energy of all neutrinos (P.S the its negative is energy of all antineutrinos)
 Eνₑ̄ = -1 * Eνₑ # specific to my case only. Since all neutrinos have same energy, except in my case anti neutrinos are moving in opposite direction to give it a negative sign
-Δx = L/N_sites # length of the box of interacting neutrinos at a site in cm  #variable
-
+# Δx = L/N_sites # length of the box of interacting neutrinos at a site in cm  #variable
+Δx = L/N_sites_eachflavor
 theta_nu = 1.74532925E-8 # mixing_angle
 B = [-sin(2*theta_nu), 0, cos(2*theta_nu)] # actual b vector that activates the vacuum oscillation term in Hamiltonian
 B = B / norm(B) 
 #Select a shape function based on the shape_name variable form the list defined in dictionary in shape_func file
 shape_name = "triangular"  # Change this to the desired shape name #variable 
 Δp = Δx  # width of shape function  # cm #variable
-t1 = 33e-15 #choose initial time for growth rate calculation
-t2 = 53e-15 #choose final time for growth rate calculation
+# Δp = L
+t1 = 33e-12 #choose initial time for growth rate calculation
+t2 = 53e-12 #choose final time for growth rate calculation
 periodic = true  # true = imposes periodic boundary conditions while false doesn't
-# analytic_growth_rate=  (abs(m2^2 - m1^2)/ (2*hbar* Eνₑ)) # analytic growth rate #fix it for inhomo from paper
+k = 2*pi / (L)
+analytic_growth_rate=  (abs(m2^2 - m1^2)/ (2*hbar* Eνₑ)) + (c* k)  # analytic growth rate #fix it for inhomo from paper
+println("analytic_growth_rate=", analytic_growth_rate)
 
-x = generate_x_array(N_sites, L)
-y = generate_x_array(N_sites, L)
-z = generate_x_array(N_sites, L)
+x = generate_x_array(N_sites_eachflavor, L)
+y = generate_x_array(N_sites_eachflavor, L)
+z = generate_x_array(N_sites_eachflavor, L)
 
 # p matrix with numbers generated from the p_array for all components (x, y, z) #sherood has 
 p = hcat(generate_px_array(N_sites, Eνₑ, Eνₑ̄), generate_py_array(N_sites), generate_pz_array(N_sites))
@@ -100,7 +104,7 @@ function generate_B_pert(α)
     return [x_pert, y_pert, z_pert]
 end
 
-α = 1e-6 # perturbation strength as mentioned in the paper
+α = 1e-6 # perturbation strength as mentioned in the paper for the inhomogenous Richers test 
 # Generate the perturbed B vector scaled by α  as mentioned in the paper
 B_pert = generate_B_pert(α)
 
@@ -109,7 +113,7 @@ B_pert = B_pert / norm(B_pert)
 # println("B_pert= ", B_pert)  
 
 # Perturb the state via one-body Hamiltonian
-ψ₀= evolve_perturbation(s, τ, B_pert, α, x, L, N_sites, ψ, cutoff, maxdim, energy_sign,ttotal)
+ψ₀= evolve_perturbation(s,k, τ_pert, B_pert, α, x, L, N_sites, ψ, cutoff, maxdim, energy_sign,ttotal)
 
 N = Neutrino_number(s, τ, B,L, N_sites, N_sites_eachflavor, tolerance,
                 n_νₑ,n_νₑ̄,Eνₑ,Eνₑ̄,Δx,Δm², p, x, Δp, ψ₀, shape_name, energy_sign, cutoff, maxdim, ttotal,periodic)
@@ -121,7 +125,7 @@ datadir = joinpath(@__DIR__,"datafiles","FFI", "par_"*string(N_sites), "tt_"*str
 Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, Im_Ω = evolve(
     s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ₀, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal, save_data , periodic)
 
-# insert assert condition here 
+# @assert abs((Im_Ω - analytic_growth_rate)/  analytic_growth_rate) < tolerance 
 
 if save_data
     # Generate input data
@@ -130,7 +134,6 @@ if save_data
     # Call the function to generate the inputs file in the specified directory
     generate_inputs_file(datadir, "inputs.txt", input_data)
 end
-
 
 if save_plots_flag 
     # Specify the relative directory path

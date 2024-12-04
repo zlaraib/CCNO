@@ -43,8 +43,7 @@ function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sh
     ρₑμ_at_t2 = nothing  # Initialize a variable to store ρₑμ at t2
     Δt = t2 - t1 #time difference between growth rates 
 
-    # extract the gates array generated in the gates_function file
-    gates = create_gates(s, N, B, N_sites, Δx, Δm², p, x, Δp, theta_nu, shape_name,L, τ, energy_sign, periodic)
+
     # H = Hamiltonian_mpo(s, N, B, N_sites, Δx, Δm², p, x, Δp, shape_name,L, τ, energy_sign, periodic)
     # extract output of p_hat and p_mod for the p vector defined above for all sites. 
     p_mod, p̂ = momentum(p,N_sites) 
@@ -52,6 +51,8 @@ function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sh
     
     # Compute and print survival probability (found from <Sz>) at each time step then apply the gates to go to the next time
      for t in 0.0:τ:ttotal
+        # extract the gates array generated in the gates_function file
+        gates = create_gates(s, ψ,N, B, N_sites, Δx, Δm², p, x, Δp, theta_nu, shape_name,L, τ, energy_sign, periodic)
         push!(x_values, copy(x))  # Record x values at each time step
         px = p[:, 1]  # Extracting the first column (which corresponds to px values)
         push!(pₓ_values, copy(px)) # Record px values at each time step
@@ -76,16 +77,16 @@ function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sh
             # sz = expect(ψ, "Sz"; sites=1)
         # end 
 
-        # if shape_name!=="none" #specfic to the inhomogenous case Test4
-        #     # compute the avg expectation value of Sz at all sites
-        #     sz_tot = expect(ψ, "Sz")  # Compute Sz for each site and store the values in sz_tot
-        #     half_N = div(N_sites, 2)  # Calculate half of the number of sites
-        #     sz = mean(sz_tot[1:half_N])  # Take the mean of the first half of the sz_tot array
+        if shape_name!=="none" #specfic to the inhomogenous case Test4
+            # compute the avg expectation value of Sz at all sites
+            sz_tot = expect(ψ, "Sz")  # Compute Sz for each site and store the values in sz_tot
+            half_N = div(N_sites, 2)  # Calculate half of the number of sites
+            sz = mean(sz_tot[1:half_N])  # Take the mean of the first half of the sz_tot array
         
-        # else 
+        else 
             # compute expectation value of Sz (inbuilt operator in ITensors library) at the first site on the chain
             sz = expect(ψ, "Sz"; sites=1)
-        # end 
+        end 
 
         # compute expectation value of sy and sx using S+ and S- (inbuilt operator in ITensors library) at the first site on the chain
         if p == zeros(N_sites, 3) #for rogerro's case only (b/c S+ S- needed to keep conservation of QN number)
@@ -178,6 +179,9 @@ function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sh
         
         fname7 = joinpath(datadir, "t_ρₑμ.dat")
         writedlm(fname7, [t_array ρₑμ_array])
+
+        fname8 = joinpath(datadir, "Im_Ω.dat")
+        writedlm(fname8, [Im_Ω])
     end
     
     return Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, Im_Ω 

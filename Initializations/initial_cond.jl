@@ -49,21 +49,37 @@ function Neutrino_number(s, τ, B,L, N_sites, N_sites_eachflavor, tolerance,
 
     # Create an array of dimension N and fill it half with values of sites containing all electron neutrinos 
     # and other half with sites containing electron anti-neutrino. 
-    N_νₑ  = n_νₑ * V 
-    N_1 = fill(N_νₑ / (N_sites ÷ 2), N_sites ÷ 2)
-    N_νₑ̄  = n_νₑ̄ * V 
-    N_2 = fill(N_νₑ̄/ (N_sites ÷ 2), N_sites ÷ 2)
-    # N_1 = fill(N_νₑ, N_sites ÷ 2)
+    # N_νₑ  = n_νₑ * V 
+    # N_1 = fill(N_νₑ / (N_sites ÷ 2), N_sites ÷ 2)
     # N_νₑ̄  = n_νₑ̄ * V 
-    # N_2 = fill(N_νₑ̄, N_sites ÷ 2)
-    N = vcat(N_1, N_2) # This is the total number of neutrinos. 
+    # N_2 = fill(N_νₑ̄/ (N_sites ÷ 2), N_sites ÷ 2)
+    
+    N_νₑ  = n_νₑ * (Δx)^3 
+    N_1 = fill(N_νₑ, N_sites ÷ 2)
+    N_νₑ̄  = n_νₑ̄ * (Δx)^3 
+    N_2 = fill(N_νₑ̄, N_sites ÷ 2)
+
+    N = vcat(N_1, N_2) # This is the total number of neutrinos in a unit cell
     return N 
 
 end
-# generate x_array such that the first particle is at position L/(2*N_sites) while subsequent particles are at a position incremental by L/N_sites. # grid style
-function generate_x_array(N_sites, L)
-    return [(i - 0.5) * L / N_sites for i in 1:N_sites]
+# # generate x_array such that the first particle is at position L/(2*N_sites) while subsequent particles are at a position incremental by L/N_sites. # grid style
+# function generate_x_array(N_sites, L)
+#     return [(i - 0.5) * L / N_sites for i in 1:N_sites]
+# end
+
+# generate x_array such that the first particle is at position L/(2*N_sites_eachflavor) while subsequent particles are at a position incremental by L/N_sites_eachflavor. # grid style
+function generate_mu_x_array(N_sites_eachflavor, L)
+    return [(i - 0.5) * L / N_sites_eachflavor for i in 1:N_sites_eachflavor]
 end
+function generate_antimu_x_array(N_sites_eachflavor, L)
+    return [(i - 0.5) * L / N_sites_eachflavor for i in 1:N_sites_eachflavor]
+end
+# concatenate the arrays for both mu and anti-mu particles into a single array.
+function generate_x_array(N_sites_eachflavor, L) 
+    x_array = vcat(generate_mu_x_array(N_sites_eachflavor, L), generate_antimu_x_array(N_sites_eachflavor, L))
+    return x_array 
+end 
 
 #generate a momentum array that depicts the energy of neutrinos and anti-neutrinos in opposing beams # for bipolar rogerro test 
 function generate_p_array(N_sites)                                                                                                                                                                                   
