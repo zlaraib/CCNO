@@ -74,6 +74,21 @@ pipeline {
 		archiveArtifacts artifacts: '*.pdf'
     } 
 }
+	stage('Homogenous_FFI_MB'){ steps{
+		sh 'julia tests/Homo_FFI_MB.jl'
+		archiveArtifacts artifacts: '*.pdf'
+    } 
+}
+	stage('Richers(2021)_Inhomogenous_FFI'){ steps{
+		sh 'julia tests/Inhomogenous_FFI_MF_Richers.jl'
+		archiveArtifacts artifacts: '*.pdf'
+    } 
+}
+	stage('Inhomogenous_FFI_MB'){ steps{
+		sh 'julia tests/Inhomo_FFI_MB.jl'
+		archiveArtifacts artifacts: '*.pdf'
+    } 
+}
 }// stages{
 
     post {
