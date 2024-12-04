@@ -9,33 +9,33 @@ function checkpoint_simulation_hdf5(checkpoint_filename, s, τ, N, B, L, N_sites
     f = h5open(checkpoint_filename, "w")
     
     # Write scalar values
-    write(f, "τ", τ)
-    write(f, "L", L)
-    write(f, "N_sites", N_sites)
-    write(f, "Δx", Δx)
-    write(f, "Δm²", Δm²)
-    write(f, "Δp", Δp)
-    write(f, "theta_nu", theta_nu)
-    write(f, "cutoff", cutoff)
-    write(f, "maxdim", maxdim)
-    write(f, "t1", t1)
-    write(f, "t2", t2)
-    write(f, "t", t)
-    write(f, "iteration", iteration)
+    write(f, "τ(sec)", τ)
+    write(f, "L(cm)", L)
+    write(f, "N_sites(unitless const)", N_sites)
+    write(f, "Δx(cm)", Δx)
+    write(f, "Δm²(erg^2)", Δm²)
+    write(f, "Δp(cm)", Δp)
+    write(f, "theta_nu(rad)", theta_nu)
+    write(f, "cutoff(unitless const)", cutoff)
+    write(f, "maxdim(unitless const)", maxdim)
+    write(f, "t1(sec)", t1)
+    write(f, "t2(sec)", t2)
+    write(f, "t(sec)", t)
+    write(f, "iteration(unitless const)", iteration)
     
     # Write arrays and vectors
-    write(f, "s", s)
-    write(f, "N", N)
-    write(f, "B", B)
-    write(f, "p", p)
-    write(f, "x", x)
-    write(f, "energy_sign", energy_sign)
+    write(f, "s(unitless array)", s)
+    write(f, "N(unitless array)", N)
+    write(f, "B(unitless array)", B)
+    write(f, "p(erg)", p)
+    write(f, "x(cm)", x)
+    write(f, "energy_sign(unitless array)", energy_sign)
     
     # Write string values
-    write(f, "shape_name", shape_name)
+    write(f, "shape_name(unitless string)", shape_name)
 
     # Write MPS ψ (ITensor type)
-    write(f, "ψ", ψ)
+    write(f, "ψ(unitless ITensor)", ψ)
 
     # Close the HDF5 file after writing
     close(f)
@@ -47,35 +47,34 @@ function recover_checkpoint_hdf5(checkpoint_filename)
     # Open the HDF5 file for reading
     f = h5open(checkpoint_filename, "r")
     
-    # Read scalar values
-    τ = read(f, "τ")
-    L = read(f, "L")
-    N_sites = read(f, "N_sites")
-    Δx = read(f, "Δx")
-    Δm² = read(f, "Δm²")
-    Δp = read(f, "Δp")
-    theta_nu = read(f, "theta_nu")
-    cutoff = read(f, "cutoff")
-    maxdim = read(f, "maxdim")
-    t1 = read(f, "t1")
-    t2 = read(f, "t2")
-
-    t_initial = read(f, "t")
-    iteration = read(f, "iteration")
+    # Read scalar values with units
+    τ = read(f, "τ(sec)")
+    L = read(f, "L(cm)")
+    N_sites = read(f, "N_sites(unitless const)")
+    Δx = read(f, "Δx(cm)")
+    Δm² = read(f, "Δm²(erg^2)")
+    Δp = read(f, "Δp(cm)")
+    theta_nu = read(f, "theta_nu(rad)")
+    cutoff = read(f, "cutoff(unitless const)")
+    maxdim = read(f, "maxdim(unitless const)")
+    t1 = read(f, "t1(sec)")
+    t2 = read(f, "t2(sec)")
+    t_initial = read(f, "t(sec)")
+    iteration = read(f, "iteration(unitless const)")
     
-    # Read arrays and vectors
-    s = read(f, "s")
-    N = read(f, "N")
-    B = read(f, "B")
-    p = read(f, "p")
-    x = read(f, "x")
-    energy_sign = read(f, "energy_sign")
+    # Read arrays and vectors with units
+    s = read(f, "s(unitless array)")
+    N = read(f, "N(unitless array)")
+    B = read(f, "B(unitless array)")
+    p = read(f, "p(erg)")
+    x = read(f, "x(cm)")
+    energy_sign = read(f, "energy_sign(unitless array)")
     
     # Read string values
-    shape_name = read(f, "shape_name")
+    shape_name = read(f, "shape_name(unitless string)")
     
     # Read MPS ψ (ITensor type)
-    ψ = read(f, "ψ", MPS)
+    ψ = read(f, "ψ(unitless ITensor)", MPS)
     
     # Close the file after reading
     close(f)
