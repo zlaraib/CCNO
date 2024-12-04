@@ -72,7 +72,7 @@ function evolve_perturbation(s,k, τ_pert, B_pert, α, x, L, N_sites, ψ, cutoff
     perturb_gates = create_perturbation_gates(s,k, B_pert, α, x, L, N_sites, energy_sign, τ_pert)
 
      # Compute and print survival probability (found from <Sz>) at each time step then apply the gates to go to the next time
-     for t in 0.0:τ:ttotal  #perhaps not perturn till the end? stop somewhere in the mid 
+     for t in 0.0:τ_pert:ttotal  #perhaps not perturn till the end? stop somewhere in the mid 
 
         # Writing an if statement in a shorthand way that checks whether the current value of t is equal to τ_pert, 
         # and if so, it executes the break statement, which causes the loop to terminate early.
