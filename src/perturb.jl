@@ -38,7 +38,7 @@ function create_perturbation_gates(s, k, B_pert, α, x, L, N_sites, energy_sign,
             s_i = s[i]                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
             s_j = s[j]
             # assert B vector to have a magnitude of 1 while preserving its direction.
-            @assert norm(B) == 1
+            @assert norm(B_pert) == 1
             # total Hamiltonian of the system is a sum of local terms hj, where hj acts on sites i and j which are paired for gates to latch onto.
             # op function returns these operators as ITensors and we tensor product and add them together to compute the operator hj.
 
