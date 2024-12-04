@@ -1,6 +1,6 @@
 using DelimitedFiles
 include("gates_function.jl")  # Include the gates_functions.jl file
-#include("H_MPO.jl") 
+include("chkpt_hdf5.jl") 
 include("momentum.jl")
 include("constants.jl")
 """
@@ -25,9 +25,55 @@ include("constants.jl")
 # This file generates the evolve function which evolves the ψ state in time and computes the expectation values of Sz at each time step, along 
 # with their survival probabilities. The time evolution utilizes the unitary operators created as gates from the create_gates function.
 # The <Sz> and Survival probabilities output from this function are unitless. 
-function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal, save_data::Bool, periodic=true)
+function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal, chkptdir, checkpoint_every, do_recover, recover_type, recover_iteration, save_data::Bool, periodic=true)
 
-    # Create empty array s to...
+    t_initial = 0.0
+    iteration = 0
+    t_recover = 0.0  # Variable to store the initial recovery time 
+
+    if do_recover
+        
+        if recover_type == "auto"
+            println("auto recovery: recovering from last iteration")
+            recover_iteration = -1
+            checkpoint_files = readdir(chkptdir)
+            checkpoint_files = filter(f -> endswith(f, ".h5"), checkpoint_files)
+            checkpoint_files = sort(checkpoint_files)
+
+            if !isempty(checkpoint_files)
+                latest_checkpoint_file = checkpoint_files[end]
+                checkpoint_filename = joinpath(chkptdir, latest_checkpoint_file)
+            else
+                error("No checkpoint files found in directory: $chkptdir. Unable to recover.")
+            end
+
+            s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, t1, t2, t_initial, iteration = recover_checkpoint_hdf5(checkpoint_filename)
+            # Increment t_initial by τ to ensure it starts from the next expected value
+            t_initial += τ
+            s = siteinds(ψ)
+
+        elseif recover_type == "manual"
+            println("Manual recovery from iteration ", recover_iteration)
+            
+            # Create the checkpoint filename for the specified iteration
+            checkpoint_filename = joinpath(chkptdir, "checkpoint.chkpt.it" * lpad(recover_iteration, 6, "0") * ".h5")
+            
+            if isfile(checkpoint_filename)
+                println("Recovering from checkpoint: $checkpoint_filename")
+                # Recover data from the specified checkpoint
+                s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, t1, t2, t_initial, iteration = recover_checkpoint_hdf5(checkpoint_filename)
+                
+                # Increment t_initial by τ to ensure it starts from the next expected value
+                t_initial += τ
+                s = siteinds(ψ)
+            else
+                error("Checkpoint file not found for iteration $recover_iteration in directory: $chkptdir.")
+            end
+        end
+     
+    end    
+
+    # Create empty array s to... 
     Sz_array = Float64[] # to store sz values 
     Sy_array = Float64[] # to store sy values 
     Sx_array = Float64[] # to store sx values 
@@ -43,14 +89,20 @@ function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sh
     ρₑμ_at_t2 = nothing  # Initialize a variable to store ρₑμ at t2
     Δt = t2 - t1 #time difference between growth rates 
 
-
     # H = Hamiltonian_mpo(s, N, B, N_sites, Δx, Δm², p, x, Δp, shape_name,L, τ, energy_sign, periodic)
     # extract output of p_hat and p_mod for the p vector defined above for all sites. 
     p_mod, p̂ = momentum(p,N_sites) 
     p̂ₓ= [sub_array[1] for sub_array in p̂]
     
+    # Main evolution loop
+    is_first_iteration = true  # Flag to mark the first iteration of the loop
     # Compute and print survival probability (found from <Sz>) at each time step then apply the gates to go to the next time
-     for t in 0.0:τ:ttotal
+    for t in t_initial:τ:ttotal
+        # Save `t_recover` only once during the first iteration of the loop
+        if is_first_iteration
+            t_recover = t
+            is_first_iteration = false
+        end
         # extract the gates array generated in the gates_function file
         gates = create_gates(s, ψ,N, B, N_sites, Δx, Δm², p, x, Δp, theta_nu, shape_name,L, τ, energy_sign, periodic)
         push!(x_values, copy(x))  # Record x values at each time step
@@ -145,8 +197,20 @@ function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sh
         # The normalize! function is used to ensure that the MPS is properly normalized after each application of the time evolution gates. 
         # This is necessary to ensure that the MPS represents a valid quantum state.
         normalize!(ψ)
+
+        if save_data
+            isdir(chkptdir) || mkpath(chkptdir)
+            println("iteration: ",  iteration, "  ", iteration % checkpoint_every)
+            if iteration % checkpoint_every == 0 
+                println("CREATE CHECKPOINT AT ITERATION = ", iteration, " TIME = ", t)
+                checkpoint_filename = joinpath(chkptdir, "checkpoint.chkpt.it" * lpad(iteration, 6, "0") * ".h5")
+                checkpoint_simulation_hdf5(checkpoint_filename, s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, gates, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, t1, t2, ttotal, t, iteration)
+            end
+
+            iteration = iteration + 1
+        end
     end
-    t_array = 0.0:τ:ttotal
+    t_array = t_initial:τ:ttotal
 
     # After the time evolution loop, calculate and print the growth rate from the ratio if both values have been captured
     if ρₑμ_at_t1 !== nothing && ρₑμ_at_t2 !== nothing
@@ -156,7 +220,7 @@ function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sh
         println("ρₑμ was not captured at both t1 and t2.")
     end
 
-    if save_data
+    if save_data && !do_recover
         save_data = isdir(datadir) || mkpath(datadir)
         # Writing data to files with corresponding headers
         fname1 = joinpath(datadir, "t_<Sz>_<Sy>_<Sx>.dat")
@@ -182,9 +246,54 @@ function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sh
 
         fname8 = joinpath(datadir, "Im_Ω.dat")
         writedlm(fname8, [Im_Ω])
-    end
     
-    return Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, Im_Ω 
+    
+    elseif save_data && do_recover
+       ### maybe need to put an assert condition to check whether the first checkpoint_every enteries after recovery
+       ## matches the last checkpoint_every enteries beofre recovery (from the if save_data && !do_recover loop above)
+
+        # Determine the start index for appending data
+        start_index = iteration >= checkpoint_every ? checkpoint_every + 1 : 0
+    
+        # Function to append data as new rows to the existing file after every `checkpoint_every` values
+        function append_data(filename, new_data)
+            open(filename, "a") do f
+                writedlm(f, new_data)
+            end
+        end
+    
+        # Append new values for each of the saved files, starting from the appropriate index
+        if start_index > 0
+            fname1 = joinpath(datadir, "t_<Sz>_<Sy>_<Sx>.dat")
+            append_data(fname1, [t_array[start_index:end] Sz_array[start_index:end] Sy_array[start_index:end] Sx_array[start_index:end]])
+    
+            fname2 = joinpath(datadir, "t_probsurv.dat")
+            append_data(fname2, [t_array[start_index:end] prob_surv_array[start_index:end]])
+    
+            fname3 = joinpath(datadir, "t_xsiteval.dat")
+            append_data(fname3, [t_array[start_index:end] x_values[start_index:end]])
+    
+            fname4 = joinpath(datadir, "t_pxsiteval.dat")
+            append_data(fname4, [t_array[start_index:end] pₓ_values[start_index:end]])
+    
+            fname5 = joinpath(datadir, "t_ρₑₑ.dat")
+            append_data(fname5, [t_array[start_index:end] ρₑₑ_array[start_index:end]])
+    
+            fname6 = joinpath(datadir, "t_ρ_μμ.dat")
+            append_data(fname6, [t_array[start_index:end] ρ_μμ_array[start_index:end]])
+    
+            fname7 = joinpath(datadir, "t_ρₑμ.dat")
+            append_data(fname7, [t_array[start_index:end] ρₑμ_array[start_index:end]])
+    
+            # Saving just a single value here, appended as a new row
+            fname8 = joinpath(datadir, "Im_Ω.dat")
+            open(fname8, "a") do f
+                writedlm(f, [Im_Ω])
+            end
+        end
+    end
+        
+    return Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, Im_Ω, t_recover
 end
 
 
