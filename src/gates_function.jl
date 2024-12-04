@@ -56,7 +56,7 @@ function create_gates(s, ψ, N, B, N_sites, Δx, Δm², p, x, Δp, theta_nu, sha
     else 
         ω = [Δm² / (2 * p_mod[i]) * energy_sign[i] for i in 1:N_sites]
     end
-    println("ω = ", ω)
+    # println("ω = ", ω)
 
     for i in 1:(N_sites-1)
         for j in i+1:N_sites
