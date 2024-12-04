@@ -4,7 +4,7 @@
     using Measures
     using LinearAlgebra
     using DelimitedFiles
-
+    ### THIS FILE DOES NOT DO CHECKPOINTING. JUST FOR ILLUSTRATION PURPOSES.
     """
     For github unit tests runs: 
     src_dir = ../
