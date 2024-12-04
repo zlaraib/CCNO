@@ -5,6 +5,7 @@ using LinearAlgebra
 using DelimitedFiles
 using Statistics
 using Random
+using HDF5
 
 """
 For github unit tests runs: 
@@ -33,6 +34,7 @@ include(src_dir * "src/constants.jl")
 include(src_dir * "src/shape_func.jl")
 include(src_dir * "src/momentum.jl")
 include(src_dir * "src/perturb.jl")
+include(src_dir * "src/chkpt_hdf5.jl")
 include(src_dir * "Initializations/initial_cond.jl")
 include(src_dir * "Utilities/gen_input_file.jl")
 include(src_dir * "Utilities/save_plots.jl")
@@ -67,9 +69,14 @@ function main()
     periodic = true  # true = imposes periodic boundary conditions while false doesn't
     analytic_growth_rate=  (abs(m2^2 - m1^2)/ (2*hbar* Eνₑ)) # analytic growth rate 
 
-    x = generate_x_array(N_sites, L)
-    y = generate_x_array(N_sites, L)
-    z = generate_x_array(N_sites, L)
+    checkpoint_every = 4
+    do_recover = false
+    recover_type = "auto" 
+    recover_iteration = 80 # change it to the iteration you want to recover from, for manual iteration. Currently auto recovery already recovers from last iteration (i.e. recover_iteration = -1 for auto recovery). 
+    
+    x = generate_x_array(N_sites_eachflavor, L)
+    y = generate_x_array(N_sites_eachflavor, L)
+    z = generate_x_array(N_sites_eachflavor, L)
 
     # p matrix with numbers generated from the p_array for all components (x, y, z) #sherood has 
     p = hcat(generate_px_array(N_sites, Eνₑ, Eνₑ̄), generate_py_array(N_sites), generate_pz_array(N_sites))
@@ -93,18 +100,19 @@ function main()
 
 
     # Specify the relative directory path
-    datadir = joinpath(@__DIR__,"datafiles","FFI", "par_"*string(N_sites), "tt_"*string(ttotal))
+    datadir = joinpath(@__DIR__,"datafiles","FFI", "par_"*string(N_sites))
+    chkptdir = joinpath(@__DIR__, "checkpoints","FFI", "par_"*string(N_sites))
 
     #extract output for the survival probability values at each timestep
-    Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, Im_Ω = evolve(
-        s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ₀, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal, save_data , periodic)
+    Sz_array, Sy_array, Sx_array,  prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, Im_Ω, t_recover = evolve(
+        s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ₀, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal,chkptdir, checkpoint_every,  do_recover, recover_type, recover_iteration, save_data , periodic)
 
     @assert abs((Im_Ω - analytic_growth_rate)/  analytic_growth_rate) < tolerance 
 
     if save_data
         # Generate input data
-        input_data = extract_initial_conditions()
-
+        input_data = extract_initial_conditions(N_sites,N_sites_eachflavor,τ, ttotal,tolerance,
+        Δm², maxdim, cutoff, p,ψ₀,L, Δx,n_νₑ,n_νₑ̄,Eνₑ,Eνₑ̄,B, N, shape_name,Δp,periodic)
         # Call the function to generate the inputs file in the specified directory
         generate_inputs_file(datadir, "inputs.txt", input_data)
     end
@@ -112,19 +120,20 @@ function main()
 
     if save_plots_flag 
         # Specify the relative directory path
-        plotdir = joinpath(@__DIR__, "plots","FFI", "par_"*string(N_sites), "tt_"*string(ttotal))
+        plotdir = joinpath(@__DIR__, "plots","FFI", "par_"*string(N_sites))
             
-        save_plots(τ, N_sites, ttotal,Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array, plotdir, save_plots_flag)
+        save_plots(τ, N_sites,L,tolerance, ttotal,Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array,datadir, plotdir, save_plots_flag)
         
         # Call the function to generate the inputs file in the specified directory
         generate_inputs_file(plotdir, "inputs.txt", input_data)
     end
-
-    # Plotting ρₑμ vs t # for jenkins file 
-    plot(0.0:τ:τ*(length(ρₑμ_array)-1), ρₑμ_array, xlabel = "t", ylabel = "<ρₑμ>", legend = false, 
-    left_margin = 20mm, right_margin = 10mm, top_margin = 5mm, bottom_margin = 10mm) 
-    # Save the plot as a PDF file
-    savefig( "Homo_MF_<ρₑμ>_vs_t for $N_sites particles.pdf")
+    if !save_plots_flag 
+        # Plotting ρₑμ vs t # for jenkins file 
+        plot(0.0:τ:τ*(length(ρₑμ_array)-1), ρₑμ_array, xlabel = "t", ylabel = "<ρₑμ>", legend = false, 
+        left_margin = 20mm, right_margin = 10mm, top_margin = 5mm, bottom_margin = 10mm) 
+        # Save the plot as a PDF file
+        savefig( "Homo_MF_<ρₑμ>_vs_t for $N_sites particles.pdf")
+    end
 end
 
 @time main()

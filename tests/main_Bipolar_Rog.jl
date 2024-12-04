@@ -2,7 +2,7 @@ using ITensors
 using Plots
 using Measures
 using DelimitedFiles
-
+using HDF5
 """
 For github unit tests runs: 
 src_dir = ../
@@ -26,6 +26,7 @@ save_data and save_plots_flag should be true to run test files.
     
 include(src_dir * "src/evolution.jl")
 include(src_dir * "src/constants.jl")
+include(src_dir * "src/chkpt_hdf5.jl")
 include(src_dir * "Utilities/save_plots.jl")
 include(src_dir * "Initializations/initial_cond.jl")
 
@@ -64,6 +65,11 @@ function main()
     B = [sin(2 *theta_nu), 0, -cos(2*theta_nu)]
     B = B / norm(B) 
 
+    checkpoint_every = 4
+    do_recover = false
+    recover_type = "auto" 
+    recover_iteration = 80 # change it to the iteration you want to recover from, for manual iteration. Currently auto recovery already recovers from last iteration (i.e. recover_iteration = -1 for auto recovery). 
+    
     x = fill(rand(), N_sites) # variable.
     y = fill(rand(), N_sites) # variable.
     z = fill(rand(), N_sites) # variable.
@@ -78,27 +84,29 @@ function main()
     energy_sign = [i <= N_sites ÷ 2 ? 1 : 1 for i in 1:N_sites] # all of the sites are neutrinos
 
     # Specify the relative directory path
-    datadir = joinpath(@__DIR__, "datafiles","Roggero", "par_"*string(N_sites), "tt_"*string(ttotal), "τ_"*string(τ))
-    #extract output from the expect.jl file where the survival probability values were computed at each timestep
-    Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, Im_Ω = evolve(
-        s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal, save_data , periodic)
+    datadir = joinpath(@__DIR__, "datafiles","Roggero", "par_"*string(N_sites), "τ_"*string(τ))
+    chkptdir = joinpath(@__DIR__, "checkpoints","Roggero", "par_"*string(N_sites), "τ_"*string(τ))
     
+    #extract output for the survival probability values at each timestep
+    Sz_array, Sy_array, Sx_array,  prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, Im_Ω, t_recover = evolve(
+        s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal,chkptdir, checkpoint_every,  do_recover, recover_type, recover_iteration, save_data , periodic)
+
     # Defining Δω as in Rogerro(2021)
     Δω = vcat((ω_a - ω_b)/2, (ω_a - ω_b)/2)
     @assert all(Δω./mu .== 0.1)
 
     if save_plots_flag
         # Specify the relative directory path
-        plotdir = joinpath(@__DIR__, "plots","Roggero", "par_"*string(N_sites), "tt_"*string(ttotal), "τ_"*string(τ))
-        
-        save_plots(τ, N_sites, ttotal,Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array, plotdir, save_plots_flag)
+        plotdir = joinpath(@__DIR__, "plots","Roggero", "par_"*string(N_sites), "τ_"*string(τ))
+
+        save_plots(τ, N_sites,L,tolerance, ttotal,Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array,datadir, plotdir, save_plots_flag)
     end
-
-    # Plotting P_surv vs t 
-    plot(0.0:τ:τ*(length(prob_surv_array)-1), prob_surv_array, xlabel = "t", ylabel = "Survival Probability p(t)",title = "Running main_Bipolar_Rog script \n for N_sites$(N_sites) with maxdim=1 and cutoff for τ$(τ)", legend = false, size=(700, 600), aspect_ratio=:auto,margin= 10mm, label= ["My_plot_for_N$(N_sites)"]) 
-    # Save the plot as a PDF file # for jenkins archive 
-    savefig("Survival probability vs t (Rog_bipolar)for N_sites$(N_sites) with maxdim=1 and cutoff for τ$(τ).pdf")
-
+    if !save_plots_flag 
+        # Plotting P_surv vs t 
+        plot(0.0:τ:τ*(length(prob_surv_array)-1), prob_surv_array, xlabel = "t", ylabel = "Survival Probability p(t)",title = "Running main_Bipolar_Rog script \n for N_sites$(N_sites) with maxdim=1 and cutoff for τ$(τ)", legend = false, size=(700, 600), aspect_ratio=:auto,margin= 10mm, label= ["My_plot_for_N$(N_sites)"]) 
+        # Save the plot as a PDF file # for jenkins archive 
+        savefig("Survival probability vs t (Rog_bipolar)for N_sites$(N_sites) with maxdim=1 and cutoff for τ$(τ).pdf")
+    end
 end 
 
 @time main()
