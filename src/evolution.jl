@@ -119,35 +119,54 @@ function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sh
                 @assert (x[i] >= 0 && x[i] <= L)
             end
         end
-        
-        # if shape_name!=="none" #specfic to the inhomogenous case Test4
-        #     # compute the avg expectation value of Sz at all sites
-        #     sz_tot = expect(ψ, "Sz")
-        #     sz = mean(sz_tot)
-        # else 
-            # compute expectation value of Sz (inbuilt operator in ITensors library) at the first site on the chain
-            # sz = expect(ψ, "Sz"; sites=1)
-        # end 
 
-        if shape_name!=="none" #specfic to the inhomogenous case Test4
-            # compute the avg expectation value of Sz at all sites
-            sz_tot = expect(ψ, "Sz")  # Compute Sz for each site and store the values in sz_tot
-            half_N = div(N_sites, 2)  # Calculate half of the number of sites
-            sz = mean(sz_tot[1:half_N])  # Take the mean of the first half of the sz_tot array
-        
-        else 
-            # compute expectation value of Sz (inbuilt operator in ITensors library) at the first site on the chain
-            sz = expect(ψ, "Sz"; sites=1)
-        end 
+
+        # compute the avg expectation value of Sz at all sites
+        sz_tot = expect(ψ, "Sz")  # Compute Sz for each site and store the values in sz_tot
+        half_N = div(N_sites, 2)  # Calculate half of the number of sites
 
         # compute expectation value of sy and sx using S+ and S- (inbuilt operator in ITensors library) at the first site on the chain
         if p == zeros(N_sites, 3) #for rogerro's case only (b/c S+ S- needed to keep conservation of QN number)
-            sy = -0.5 *im * (expect(complex(ψ), "S+"; sites=1) - expect(complex(ψ), "S-"; sites=1)) #re-check
-            sx = 0.5 * (expect(ψ, "S+"; sites=1) + expect(ψ, "S-"; sites=1)) #recheck
+            sy_tot = -0.5 *im * (expect(complex(ψ), "S+"; sites=1) - expect(complex(ψ), "S-")) 
+            sx_tot = 0.5 * (expect(ψ, "S+"; sites=1) + expect(ψ, "S-"))
         else 
-            sy = expect(complex(ψ), "Sy"; sites=1)
-            sx = expect(ψ, "Sx"; sites=1)
+            sy_tot = expect(complex(ψ), "Sy")
+            sx_tot = expect(ψ, "Sx")
         end
+        println("sz_tot= ",sz_tot )
+        println("sy_tot= ",sy_tot )
+        println("sx_tot= ",sx_tot )
+        if shape_name!=="none" #specfic to the inhomogenous case Test4
+            sz = mean(abs.(sz_tot[1:half_N]))  # Take the abs value fo all enteries till half_N and then take the mean of that first half of the sz_tot array
+            sy = mean(abs.(sy_tot[1:half_N])) # Take the abs value fo all enteries till half_N and then take the mean of that first half of the sy_tot array
+            sx = mean(abs.(sx_tot[1:half_N]))  # Take the abs value fo all enteries till half_N and then take the mean of that first half of the sx_tot array
+        else 
+            #for all inhomo cases:
+            sz = sz_tot[1]
+            sy = sy_tot[1]
+            sx = sx_tot[1]
+        end
+        println("sz= ",sz )
+        println("sy= ",sy )
+        println("sx= ",sx)
+
+        # # seperate loop of the forst site for all noninhomo cases 
+        # # compute expectation value of Sz (inbuilt operator in ITensors library) at the first site on the chain
+        # sz = expect(ψ, "Sz"; sites=1)
+        # # compute expectation value of sy and sx using S+ and S- (inbuilt operator in ITensors library) at the first site on the chain
+        # if p == zeros(N_sites, 3) #for rogerro's case only (b/c S+ S- needed to keep conservation of QN number)
+        #     sy = -0.5 *im * (expect(complex(ψ), "S+"; sites=1) - expect(complex(ψ), "S-"; sites=1)) #re-check
+        #     sx = 0.5 * (expect(ψ, "S+"; sites=1) + expect(ψ, "S-"; sites=1)) #recheck
+        #     println("sz= ",sz )
+        #     println("sy= ",sy )
+        #     println("sx= ",sx)
+        # else 
+        #     sy = expect(complex(ψ), "Sy"; sites=1)
+        #     sx = expect(ψ, "Sx"; sites=1)
+        #     println("sz= ",sz )
+        #     println("sy= ",sy )
+        #     println("sx= ",sx)
+        # end
 
         # add an element sz to ... 
         push!(Sz_array, sz) # .. the end of Sz array 
@@ -217,6 +236,7 @@ function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sh
         global Im_Ω = (1/Δt ) * log(ρₑμ_at_t2 / ρₑμ_at_t1)
         println("Growth rate of flavor coherence of ρₑμ at t2 to ρₑμ at t1: $Im_Ω")
     else
+        global Im_Ω = 1
         println("ρₑμ was not captured at both t1 and t2.")
     end
 
@@ -249,8 +269,6 @@ function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sh
     
     
     elseif save_data && do_recover
-       ### maybe need to put an assert condition to check whether the first checkpoint_every enteries after recovery
-       ## matches the last checkpoint_every enteries beofre recovery (from the if save_data && !do_recover loop above)
 
         # Determine the start index for appending data
         start_index = iteration >= checkpoint_every ? checkpoint_every + 1 : 0
