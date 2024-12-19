@@ -127,8 +127,8 @@ function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sh
 
         # compute expectation value of sy and sx using S+ and S- (inbuilt operator in ITensors library) at the first site on the chain
         if p == zeros(N_sites, 3) #for rogerro's case only (b/c S+ S- needed to keep conservation of QN number)
-            sy_tot = -0.5 *im * (expect(complex(ψ), "S+"; sites=1) - expect(complex(ψ), "S-")) 
-            sx_tot = 0.5 * (expect(ψ, "S+"; sites=1) + expect(ψ, "S-"))
+            sy_tot = -0.5 *im * (expect(complex(ψ), "S+") - expect(complex(ψ), "S-")) 
+            sx_tot = 0.5 * (expect(ψ, "S+") + expect(ψ, "S-"))
         else 
             sy_tot = expect(complex(ψ), "Sy")
             sx_tot = expect(ψ, "Sx")
