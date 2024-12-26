@@ -59,10 +59,6 @@ function store_data(do_recover, datadir, iteration, checkpoint_every, t_array, S
         writedlm(fname9, [t_array ρₑμ_array])
         writedlm(fname9_1, [t_array ρₑμ_array])
 
-        # fname8 = joinpath(datadir, "Im_Ω.dat")
-        # writedlm(fname8, [Im_Ω])
-
-
     elseif do_recover
 
         # Determine the start index for appending data
@@ -131,11 +127,6 @@ function store_data(do_recover, datadir, iteration, checkpoint_every, t_array, S
             writedlm(fname9_1, [t_array ρₑμ_array])
             append_data(fname9, [t_array[start_index:end] ρₑμ_array[start_index:end]])
 
-            # # Saving just a single value here, appended as a new row
-            # fname8 = joinpath(datadir, "Im_Ω.dat")
-            # open(fname8, "a") do f
-            #     writedlm(f, [Im_Ω])
-            # end
         end
     end
 end 
