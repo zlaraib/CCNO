@@ -43,11 +43,8 @@ function create_perturbation_gates(s, k, B_pert, α, x, L, N_sites, energy_sign,
             # op function returns these operators as ITensors and we tensor product and add them together to compute the operator hj.
 
             # add perturbation via one-body oscillation term to the Hamiltonian
-            hj= (1/(N_sites-1))* (
+            hj= (
                 (ω_pert[i] * B_pert[1] * op("Sx", s_i)* op("Id", s_j))  + (ω_pert[i] * B_pert[2] * op("Sy", s_i)* op("Id", s_j))  + (ω_pert[i] * B_pert[3] * op("Sz", s_i)* op("Id", s_j)) )
-
-            hj += (1/(N_sites-1))* (
-                (ω_pert[j] * B_pert[1] * op("Id", s_i) * op("Sx", s_j)) + (ω_pert[j] * B_pert[2]  * op("Id", s_i)* op("Sy", s_j)) + (ω_pert[j] * B_pert[3]  * op("Id", s_i)* op("Sz", s_j)) )
 
             # make Trotter gate Gj that would correspond to each gate in the gate array of ITensors             
             Gj = exp(-im * τ/2 * hj*  1/hbar) #Gj has factor of 1/hbar sinceonly Richers inhomo tests need perturbation
