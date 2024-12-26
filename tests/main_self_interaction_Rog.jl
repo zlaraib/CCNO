@@ -30,6 +30,7 @@ include(src_dir * "src/constants.jl")
 include(src_dir * "src/shape_func.jl")
 include(src_dir * "Utilities/save_plots.jl")
 include(src_dir * "src/chkpt_hdf5.jl")
+include(src_dir * "Utilities/save_datafiles.jl")
 
 # We are simulating the time evolution of a 1D spin chain with N sites, where each site is a spin-1/2 particle. 
 # The simulation is done by applying a sequence of unitary gates to an initial state of the system, 
@@ -58,7 +59,7 @@ function main()
     # s is an array of spin 1/2 tensor indices (Index objects) which will be the site or physical indices of the MPS.
     # We overload siteinds function, which generates custom Index array with Index objects having the tag of total spin quantum number for all N.
     # conserve_qns=true conserves the total spin quantum number "S" in the system as it evolves
-    s = siteinds("S=1/2", N_sites; conserve_qns=true)  #fixed
+    s = siteinds("S=1/2", N_sites; conserve_qns=false)  #fixed
 
     # Fixed Constants for Rogerro's fit (only self-interaction term)
     a_t = 0
@@ -95,9 +96,11 @@ function main()
     chkptdir = joinpath(@__DIR__, "checkpoints", "par_"*string(N_sites))
 
     #extract output for the survival probability values at each timestep
-    Sz_array, Sy_array, Sx_array,  prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, Im_Ω, t_recover = evolve(
+    Sz_array, Sy_array, Sx_array,  prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, t_array, t_recover = evolve(
         s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal,chkptdir, checkpoint_every,  do_recover, recover_type, recover_iteration, save_data , periodic)
 
+    # extract the prob_surv on the first site 
+    prob_surv_array_site1= [row[1] for row in prob_surv_array]
     # This function scans through the array, compares each element with its neighbors, 
     # and returns the index of the first local minimum it encounters. 
     # If no local minimum is found, it returns -1 to indicate that.
@@ -114,7 +117,7 @@ function main()
     tmin_ifirstlocalmin_file = joinpath(datadir, "tmin_ifirstlocalmin.dat")
     if !do_recover 
         # Index of first minimum of the prob_surv_array (containing survival probability values at each time step)
-        i_first_local_min = find_first_local_minima_index(prob_surv_array)
+        i_first_local_min = find_first_local_minima_index(prob_surv_array_site1)
         
         # Writing if_else statement to communicate if local minima (not) found
         if i_first_local_min != -1
@@ -156,7 +159,7 @@ function main()
             println("Recovered index of first local t_min from previous run: ", i_first_local_min)
         end
         if t_min === nothing && i_first_local_min == -1 
-            i_first_local_min = find_first_local_minima_index(prob_surv_array)
+            i_first_local_min = find_first_local_minima_index(prob_surv_array_site1)
             t_min = (τ * i_first_local_min) - τ + t_recover
             println("Recalculated t_min=",t_min)
             println("Recalculated i_first_local_min=",i_first_local_min)
@@ -205,20 +208,57 @@ function main()
         # Specify the relative directory path
         plotdir = joinpath(@__DIR__, "plots", "par_"*string(N_sites))
         
-        save_plots(τ, N_sites,L,tolerance, ttotal,Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array,datadir, plotdir, save_plots_flag)
+        # Read the data files
+        t_Sz_tot = readdlm(joinpath(datadir, "t_<Sz>.dat"))
+        t_Sy_tot = readdlm(joinpath(datadir, "t_<Sy>.dat"))
+        t_Sx_tot = readdlm(joinpath(datadir, "t_<Sx>.dat"))
+        t_probsurv_tot = readdlm(joinpath(datadir, "t_probsurv.dat"))
+        t_xsiteval = readdlm(joinpath(datadir, "t_xsiteval.dat"))
+        t_pxsiteval = readdlm(joinpath(datadir, "t_pxsiteval.dat"))
+        t_ρₑₑ_tot = readdlm(joinpath(datadir, "t_ρₑₑ.dat"))
+        t_ρ_μμ_tot = readdlm(joinpath(datadir, "t_ρ_μμ.dat"))
+        t_ρₑμ_tot = readdlm(joinpath(datadir, "t_ρₑμ.dat"))
+
+        # Extract time array and corresponding values for plotting
+        t_array = t_Sz_tot[:, 1]  
+
+        #Extract the array for first site only
+        Sz_array = t_Sz_tot[:,2]
+        Sy_array = t_Sy_tot[:,2]
+        Sx_array= t_Sx_tot[:,2] 
+        prob_surv_array = t_probsurv_tot[:, 2]
+        ρₑₑ_array = t_ρₑₑ_tot[:, 2]
+        ρ_μμ_array = t_ρ_μμ_tot[:, 2]
+        ρₑμ_array = t_ρₑμ_tot[:, 2]
+        
+        x_values = t_xsiteval[:, 2:end]  # All rows, all columns except the first
+        pₓ_values = t_pxsiteval[:, 2:end]  # All rows, all columns except the first
+
+        # # Parsing arrays containing strings like "[1.0,", into a numeric array suitable for plotting
+        Sz_array = [ parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in Sz_array]
+        Sy_array = [parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in Sy_array]
+        Sx_array =[parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in Sx_array]
+        prob_surv_array = [ parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in prob_surv_array]
+        ρₑₑ_array = [ parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in ρₑₑ_array]
+        ρ_μμ_array = [ parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in ρ_μμ_array]
+        ρₑμ_array =[parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in ρₑμ_array]
+
+        save_plots(τ, N_sites,L,t_array, ttotal,Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array,datadir, plotdir, save_plots_flag)
     end 
+
     if !save_plots_flag
         # Plotting P_surv vs t
-        plot(0.0:τ:τ*(length(prob_surv_array)-1), prob_surv_array, xlabel = "t", ylabel = "Survival Probabillity p(t)",
+        plot(t_array, prob_surv_array_site1, xlabel = "t", ylabel = "Survival Probabillity p(t)",
         title = "Running main_self_interaction_Rog script", legend = true, size=(800, 600), aspect_ratio=:auto,margin= 10mm, 
         label= ["My_plot_for_N_sites$(N_sites)"]) 
-        scatter!([t_p_Rog],[prob_surv_array[i_first_local_min]], label= ["t_p_Rog"])
-        scatter!([t_min],[prob_surv_array[i_first_local_min]], label= ["My_t_min)"], legendfontsize=5, legend=:topright)
+        scatter!([t_p_Rog],[prob_surv_array_site1[i_first_local_min]], label= ["t_p_Rog"])
+        scatter!([t_min],[prob_surv_array_site1[i_first_local_min]], label= ["My_t_min)"], legendfontsize=5, legend=:topright)
         # Save the plot as a PDF file # for jenkins archive 
-        savefig("Survival probability vs t for N_sites$(N_sites).pdf")
+        savefig("Survival probability_site1 vs t for N_sites$(N_sites).pdf")
     end
 
 end 
 
 @time main()
+
 

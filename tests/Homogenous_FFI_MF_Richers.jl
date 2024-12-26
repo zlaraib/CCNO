@@ -38,6 +38,7 @@ include(src_dir * "src/chkpt_hdf5.jl")
 include(src_dir * "Initializations/initial_cond.jl")
 include(src_dir * "Utilities/gen_input_file.jl")
 include(src_dir * "Utilities/save_plots.jl")
+include(src_dir * "Utilities/save_datafiles.jl")
 
 function main()
     """ Richers(2021) Test 3 initial conditions: """
@@ -103,9 +104,40 @@ function main()
     datadir = joinpath(@__DIR__,"datafiles","FFI", "par_"*string(N_sites))
     chkptdir = joinpath(@__DIR__, "checkpoints","FFI", "par_"*string(N_sites))
 
+    ρₑμ_at_t1 = nothing  # Initialize a variable to store ρₑμ at t1
+    ρₑμ_at_t2 = nothing  # Initialize a variable to store ρₑμ at t2
+    Δt = t2 - t1 #time difference between growth rates
+
     #extract output for the survival probability values at each timestep
-    Sz_array, Sy_array, Sx_array,  prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, Im_Ω, t_recover = evolve(
+    Sz_array, Sy_array, Sx_array,  prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, t_array, t_recover = evolve(
         s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ₀, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal,chkptdir, checkpoint_every,  do_recover, recover_type, recover_iteration, save_data , periodic)
+    
+    ρₑμ_array_site1= [row[1] for row in ρₑμ_array]
+
+    # Loop over the time array to match t1 and t2
+    for (i, t) in enumerate(t_array) 
+        # Check if the current time is approximately t1
+        if abs(t - t1) < τ / 2
+            println("corresponding ρₑμ index from the time array =",i)
+            ρₑμ_at_t1 = ρₑμ_array_site1[i]
+            println("ρₑμ_at_t1=",ρₑμ_at_t1)
+        end
+
+        # Check if the current time is approximately t2
+        if abs(t - t2) < τ / 2
+            println("corresponding ρₑμ index from the time array =",i)
+            ρₑμ_at_t2 = ρₑμ_array_site1[i]
+            println("ρₑμ_at_t2=",ρₑμ_at_t2)
+        end
+    end
+
+    # After the time evolution loop, calculate and print the growth rate
+    if ρₑμ_at_t1 !== nothing && ρₑμ_at_t2 !== nothing
+        Im_Ω = (1 / Δt) * log(ρₑμ_at_t2 / ρₑμ_at_t1)
+        println("Growth rate of flavor coherence of ρₑμ at t2 to ρₑμ at t1: $Im_Ω")
+    else
+        println("ρₑμ was not captured at both t1 and t2.")
+    end
 
     @assert abs((Im_Ω - analytic_growth_rate)/  analytic_growth_rate) < tolerance 
 
@@ -121,18 +153,53 @@ function main()
     if save_plots_flag 
         # Specify the relative directory path
         plotdir = joinpath(@__DIR__, "plots","FFI", "par_"*string(N_sites))
-            
-        save_plots(τ, N_sites,L,tolerance, ttotal,Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array,datadir, plotdir, save_plots_flag)
+
+        # Read the data files
+        t_Sz_tot = readdlm(joinpath(datadir, "t_<Sz>.dat"))
+        t_Sy_tot = readdlm(joinpath(datadir, "t_<Sy>.dat"))
+        t_Sx_tot = readdlm(joinpath(datadir, "t_<Sx>.dat"))
+        t_probsurv_tot = readdlm(joinpath(datadir, "t_probsurv.dat"))
+        t_xsiteval = readdlm(joinpath(datadir, "t_xsiteval.dat"))
+        t_pxsiteval = readdlm(joinpath(datadir, "t_pxsiteval.dat"))
+        t_ρₑₑ_tot = readdlm(joinpath(datadir, "t_ρₑₑ.dat"))
+        t_ρ_μμ_tot = readdlm(joinpath(datadir, "t_ρ_μμ.dat"))
+        t_ρₑμ_tot = readdlm(joinpath(datadir, "t_ρₑμ.dat"))
+
+        # Extract time array and corresponding values for plotting
+        t_array = t_Sz_tot[:, 1]  
+
+        #Extract the array for first site only
+        Sz_array = t_Sz_tot[:,2]
+        Sy_array = t_Sy_tot[:,2]
+        Sx_array= t_Sx_tot[:,2] 
+        prob_surv_array = t_probsurv_tot[:, 2]
+        ρₑₑ_array = t_ρₑₑ_tot[:, 2]
+        ρ_μμ_array = t_ρ_μμ_tot[:, 2]
+        ρₑμ_array = t_ρₑμ_tot[:, 2]
         
+        x_values = t_xsiteval[:, 2:end]  # All rows, all columns except the first
+        pₓ_values = t_pxsiteval[:, 2:end]  # All rows, all columns except the first
+
+        # # Parsing arrays containing strings like "[1.0,", into a numeric array suitable for plotting
+        Sz_array = [ parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in Sz_array]
+        Sy_array = [parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in Sy_array]
+        Sx_array =[parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in Sx_array]
+        prob_surv_array = [ parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in prob_surv_array]
+        ρₑₑ_array = [ parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in ρₑₑ_array]
+        ρ_μμ_array = [ parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in ρ_μμ_array]
+        ρₑμ_array =[parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in ρₑμ_array]
+
+        save_plots(τ, N_sites,L,t_array, ttotal,Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array,datadir, plotdir, save_plots_flag)
+    
         # Call the function to generate the inputs file in the specified directory
         generate_inputs_file(plotdir, "inputs.txt", input_data)
     end
     if !save_plots_flag 
         # Plotting ρₑμ vs t # for jenkins file 
-        plot(0.0:τ:τ*(length(ρₑμ_array)-1), ρₑμ_array, xlabel = "t", ylabel = "<ρₑμ>", legend = false, 
+        plot(t_array, ρₑμ_array_site1, xlabel = "t", ylabel = "<ρₑμ>_1", legend = false, 
         left_margin = 20mm, right_margin = 10mm, top_margin = 5mm, bottom_margin = 10mm) 
         # Save the plot as a PDF file
-        savefig( "Homo_MF_<ρₑμ>_vs_t for $N_sites particles.pdf")
+        savefig( "Homo_MF_<ρₑμ>_site1_vs_t for $N_sites particles.pdf")
     end
 end
 

@@ -102,9 +102,10 @@ function main()
     chkptdir = joinpath(@__DIR__, "checkpoints","Richers", "par_"*string(N_sites), "τ_"*string(τ))
 
     #extract output for the survival probability values at each timestep
-    Sz_array, Sy_array, Sx_array,  prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, Im_Ω, t_recover = evolve(
+    Sz_array, Sy_array, Sx_array,  prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, t_array, t_recover = evolve(
         s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ₀, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal,chkptdir, checkpoint_every,  do_recover, recover_type, recover_iteration, save_data , periodic)
 
+    ρₑₑ_array_site1= [row[1] for row in ρₑₑ_array]
     # insert assert condition here 
 
     if save_data
@@ -119,17 +120,51 @@ function main()
     if save_plots_flag 
         # Specify the relative directory path
         plotdir = joinpath(@__DIR__, "plots","Richers", "par_"*string(N_sites), "τ_"*string(τ))
+        # Read the data files
+        t_Sz_tot = readdlm(joinpath(datadir, "t_<Sz>.dat"))
+        t_Sy_tot = readdlm(joinpath(datadir, "t_<Sy>.dat"))
+        t_Sx_tot = readdlm(joinpath(datadir, "t_<Sx>.dat"))
+        t_probsurv_tot = readdlm(joinpath(datadir, "t_probsurv.dat"))
+        t_xsiteval = readdlm(joinpath(datadir, "t_xsiteval.dat"))
+        t_pxsiteval = readdlm(joinpath(datadir, "t_pxsiteval.dat"))
+        t_ρₑₑ_tot = readdlm(joinpath(datadir, "t_ρₑₑ.dat"))
+        t_ρ_μμ_tot = readdlm(joinpath(datadir, "t_ρ_μμ.dat"))
+        t_ρₑμ_tot = readdlm(joinpath(datadir, "t_ρₑμ.dat"))
 
-        save_plots(τ, N_sites,L,tolerance, ttotal,Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array,datadir, plotdir, save_plots_flag)
+        # Extract time array and corresponding values for plotting
+        t_array = t_Sz_tot[:, 1]  
+
+        #Extract the array for first site only
+        Sz_array = t_Sz_tot[:,2]
+        Sy_array = t_Sy_tot[:,2]
+        Sx_array= t_Sx_tot[:,2] 
+        prob_surv_array = t_probsurv_tot[:, 2]
+        ρₑₑ_array = t_ρₑₑ_tot[:, 2]
+        ρ_μμ_array = t_ρ_μμ_tot[:, 2]
+        ρₑμ_array = t_ρₑμ_tot[:, 2]
+        
+        x_values = t_xsiteval[:, 2:end]  # All rows, all columns except the first
+        pₓ_values = t_pxsiteval[:, 2:end]  # All rows, all columns except the first
+
+        # # Parsing arrays containing strings like "[1.0,", into a numeric array suitable for plotting
+        Sz_array = [ parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in Sz_array]
+        Sy_array = [parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in Sy_array]
+        Sx_array =[parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in Sx_array]
+        prob_surv_array = [ parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in prob_surv_array]
+        ρₑₑ_array = [ parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in ρₑₑ_array]
+        ρ_μμ_array = [ parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in ρ_μμ_array]
+        ρₑμ_array =[parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in ρₑμ_array]
+
+        save_plots(τ, N_sites,L,t_array, ttotal,Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array,datadir, plotdir, save_plots_flag)
         # Call the function to generate the inputs file in the specified directory
         generate_inputs_file(plotdir, "inputs.txt", input_data)
     end
     if !save_plots_flag
         # Plotting ρ_ee vs t # for jenkins file 
-        plot(0.0:τ:τ*(length(ρₑₑ_array)-1), ρₑₑ_array, xlabel = "t", ylabel = "<ρₑₑ>", legend = false, 
+        plot(t_array, ρₑₑ_array_site1, xlabel = "t", ylabel = "<ρₑₑ>", legend = false, 
         left_margin = 20mm, right_margin = 10mm, top_margin = 5mm, bottom_margin = 10mm) 
         # Save the plot as a PDF file
-        savefig("Bipolar Richers for $N_sites particles <ρₑₑ>_vs_t.pdf")
+        savefig("Bipolar Richers_site1 for $N_sites particles <ρₑₑ>_vs_t.pdf")
     end
 end 
 

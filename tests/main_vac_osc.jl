@@ -32,6 +32,7 @@ include(src_dir * "src/constants.jl")
 include(src_dir * "src/momentum.jl")
 include(src_dir * "Utilities/save_plots.jl")
 include(src_dir * "src/chkpt_hdf5.jl")
+include(src_dir * "Utilities/save_datafiles.jl")
 
 # We are simulating the time evolution of a 1D spin chain with N sites, where each site is a spin-1/2 particle. 
 # The simulation is done by applying a sequence of unitary gates to an initial state of the system, 
@@ -39,7 +40,6 @@ include(src_dir * "src/chkpt_hdf5.jl")
 
 
 function main()
-  N_sites = 6 # number of sites, #variable
   N_sites = 6 # number of sites, #variable
   cutoff = 1E-14 # specifies a truncation threshold for the SVD in MPS representation #variable
   τ = 0.1 # time step # sec #variable
@@ -93,11 +93,12 @@ function main()
   chkptdir = joinpath(@__DIR__, "checkpoints", "par_"*string(N_sites))
 
   #extract output for the survival probability values at each timestep
-  Sz_array, Sy_array, Sx_array,  prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, Im_Ω, t_recover = evolve(
-      s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal,chkptdir, checkpoint_every,  do_recover, recover_type, recover_iteration, save_data , periodic)
+  Sz_array, Sy_array, Sx_array,  prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, t_array, t_recover = evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal, chkptdir, checkpoint_every, do_recover, recover_type, recover_iteration, save_data::Bool, periodic)
     
-  expected_sz_array = Float64[]
-  expected_sz= Float64[]
+  # extract the Sz on the first site 
+  Sz_array_site1= [row[1] for row in Sz_array]
+  expected_sz_array_site1 = Float64[]
+  expected_sz_site1= Float64[]
   
   if !do_recover 
     for t in 0.0:τ:ttotal
@@ -106,23 +107,23 @@ function main()
       if B[1] == 1
 
         # Compute the expected value based on the derived analytic formula
-        expected_sz = -0.5 * cos(ω[i] * t)
+        expected_sz_site1 = -0.5 * cos(ω[i] * t)
 
       end
       if B[3] == -1
 
         # Compute the expected value based on the derived analytic formula
-        expected_sz = -0.5
+        expected_sz_site1 = -0.5
 
       end
 
-      push!(expected_sz_array, expected_sz)
+      push!(expected_sz_array_site1, expected_sz_site1)
 
     end
     # Check if every element in Sz_array is less than tolerance away from the corresponding element in expected_sz_array
     # for B vector in x, it checks that the value of Sz at the first spin site oscillates between -0.5 and 0.5 
     # for B vector in -z, it checks that the value of Sz at the firstspin site never oscillates from -0.5 
-    @assert all(abs.(Sz_array .- expected_sz_array) .< tolerance)
+    @assert all(abs.(Sz_array_site1 .- expected_sz_array_site1) .< tolerance)
     
   elseif do_recover 
     for t in t_recover:τ:ttotal
@@ -131,40 +132,74 @@ function main()
       if B[1] == 1
 
         # Compute the expected value based on the derived analytic formula
-        expected_sz = -0.5 * cos(ω[i] * t)
+        expected_sz_site1 = -0.5 * cos(ω[i] * t)
 
       end
       if B[3] == -1
 
         # Compute the expected value based on the derived analytic formula
-        expected_sz = -0.5
+        expected_sz_site1 = -0.5
 
       end
 
-      push!(expected_sz_array, expected_sz)
+      push!(expected_sz_array_site1, expected_sz_site1)
 
     end
     # Check if every element in Sz_array is less than tolerance away from the corresponding element in expected_sz_array
     # for B vector in x, it checks that the value of Sz at the first spin site oscillates between -0.5 and 0.5 
     # for B vector in -z, it checks that the value of Sz at the firstspin site never oscillates from -0.5 
-    @assert all(abs.(Sz_array .- expected_sz_array) .< tolerance)
+    @assert all(abs.(Sz_array_site1 .- expected_sz_array_site1) .< tolerance)
     
   end
 
   if save_plots_flag
     # Specify the relative directory path
     plotdir = joinpath(@__DIR__, "plots", "par_"*string(N_sites))
-    save_plots(τ, N_sites,L,tolerance, ttotal,Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array,datadir, plotdir, save_plots_flag)
+    # Read the data files
+    t_Sz_tot = readdlm(joinpath(datadir, "t_<Sz>.dat"))
+    t_Sy_tot = readdlm(joinpath(datadir, "t_<Sy>.dat"))
+    t_Sx_tot = readdlm(joinpath(datadir, "t_<Sx>.dat"))
+    t_probsurv_tot = readdlm(joinpath(datadir, "t_probsurv.dat"))
+    t_xsiteval = readdlm(joinpath(datadir, "t_xsiteval.dat"))
+    t_pxsiteval = readdlm(joinpath(datadir, "t_pxsiteval.dat"))
+    t_ρₑₑ_tot = readdlm(joinpath(datadir, "t_ρₑₑ.dat"))
+    t_ρ_μμ_tot = readdlm(joinpath(datadir, "t_ρ_μμ.dat"))
+    t_ρₑμ_tot = readdlm(joinpath(datadir, "t_ρₑμ.dat"))
 
+    # Extract time array and corresponding values for plotting
+    t_array = t_Sz_tot[:, 1]  
+
+    #Extract the array for first site only
+    Sz_array = t_Sz_tot[:,2]
+    Sy_array = t_Sy_tot[:,2]
+    Sx_array= t_Sx_tot[:,2] 
+    prob_surv_array = t_probsurv_tot[:, 2]
+    ρₑₑ_array = t_ρₑₑ_tot[:, 2]
+    ρ_μμ_array = t_ρ_μμ_tot[:, 2]
+    ρₑμ_array = t_ρₑμ_tot[:, 2]
+    
+    x_values = t_xsiteval[:, 2:end]  # All rows, all columns except the first
+    pₓ_values = t_pxsiteval[:, 2:end]  # All rows, all columns except the first
+
+    # # Parsing arrays containing strings like "[1.0,", into a numeric array suitable for plotting
+    Sz_array = [ parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in Sz_array]
+    Sy_array = [parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in Sy_array]
+    Sx_array =[parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in Sx_array]
+    prob_surv_array = [ parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in prob_surv_array]
+    ρₑₑ_array = [ parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in ρₑₑ_array]
+    ρ_μμ_array = [ parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in ρ_μμ_array]
+    ρₑμ_array =[parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in ρₑμ_array]
+
+    save_plots(τ, N_sites,L,t_array, ttotal,Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array,datadir, plotdir, save_plots_flag)
   end 
   if !save_plots_flag
-    plot(0.0:τ:τ*(length(Sz_array)-1), Sz_array, xlabel = "t", ylabel = "<Sz>", title = "Running main_vac_osc script",
+    plot(t_array, Sz_array_site1, xlabel = "t", ylabel = "<Sz>", title = "Running main_vac_osc script",
     legend = true, size=(700, 600), aspect_ratio=:auto,left_margin = 20mm, right_margin = 5mm, top_margin = 5mm, 
-    bottom_margin = 10mm, label = "My_sz") 
-    plot!(0.0:τ:τ*(length(Sz_array)-1), expected_sz_array, xlabel = "t", ylabel = "<Sz>", title = "Running main_vac_osc script", 
-    legendfontsize=8, legend=:topright, label = "Expected_sz from Sakurai") 
+    bottom_margin = 10mm, label = "My_sz_site1") 
+    plot!(t_array, expected_sz_array_site1, xlabel = "t", ylabel = "<Sz>", title = "Running main_vac_osc script", 
+    legendfontsize=8, legend=:topright, label = "Expected_sz from Sakurai_site1") 
     # Save the plot as a PDF file # for jenkins archive 
-    savefig("<Sz> vs t.pdf")
+    savefig("<Sz>_site1 vs t.pdf")
   end
 end
 

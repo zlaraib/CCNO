@@ -29,7 +29,7 @@ include(src_dir * "src/constants.jl")
 include(src_dir * "src/chkpt_hdf5.jl")
 include(src_dir * "Utilities/save_plots.jl")
 include(src_dir * "Initializations/initial_cond.jl")
-
+include(src_dir * "Utilities/save_datafiles.jl")
 
 # this file plots δω on x axis while minimum time tp on y axis and compares
 # the values of our calculations with Rogerros calculations in Table I.
@@ -110,9 +110,11 @@ function main(Δω, N_sites, ttotal)
     chkptdir = joinpath(@__DIR__, "checkpoints","Rog_Table_I", "par_"*string(N_sites), "Δω"*string(Δω))
 
     #extract output for the survival probability values at each timestep
-    Sz_array, Sy_array, Sx_array,  prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, Im_Ω, t_recover = evolve(
+    Sz_array, Sy_array, Sx_array,  prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, t_array, t_recover = evolve(
         s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal,chkptdir, checkpoint_every,  do_recover, recover_type, recover_iteration, save_data , periodic)
     
+    # extract the prob_surv on the first site 
+    prob_surv_array_site1= [row[1] for row in prob_surv_array]
     function find_first_local_minima_index(arr)
         N = length(arr)
         for i in 2:(N-1)
@@ -126,7 +128,7 @@ function main(Δω, N_sites, ttotal)
     tmin_ifirstlocalmin_file = joinpath(datadir, "tmin_ifirstlocalmin.dat")
     if !do_recover 
         # Index of first minimum of the prob_surv_array (containing survival probability values at each time step)
-        i_first_local_min = find_first_local_minima_index(prob_surv_array)
+        i_first_local_min = find_first_local_minima_index(prob_surv_array_site1)
         
         # Writing if_else statement to communicate if local minima (not) found
         if i_first_local_min != -1
@@ -168,7 +170,7 @@ function main(Δω, N_sites, ttotal)
             println("Recovered index of first local t_min from previous run: ", i_first_local_min)
         end
         if t_min === nothing && i_first_local_min == -1 
-            i_first_local_min = find_first_local_minima_index(prob_surv_array)
+            i_first_local_min = find_first_local_minima_index(prob_surv_array_site1)
             t_min = (τ * i_first_local_min) - τ + t_recover
             println("Recalculated t_min=",t_min)
             println("Recalculated i_first_local_min=",i_first_local_min)
@@ -216,7 +218,7 @@ function main(Δω, N_sites, ttotal)
     return t_p_Rog, t_min
 end
 
-# Arrays to store t_p_Rog and t_min for each Δω
+# Arrays to store t_p_Rog and t_min for each Δω for 1st site
 Δω_values = [-0.5, 0.0, 0.125, 0.25, 0.5, 1.0]
 t_p_Rog_array = Float64[]
 t_min_array = Float64[]

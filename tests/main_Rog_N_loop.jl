@@ -29,6 +29,7 @@ include(src_dir * "src/constants.jl")
 include(src_dir * "src/chkpt_hdf5.jl")
 include(src_dir * "Utilities/save_plots.jl")
 include(src_dir * "Initializations/initial_cond.jl")
+include(src_dir * "Utilities/save_datafiles.jl")
 
 # This file evolves the system under the vaccum oscillations + self-interaction
 # Hamiltonian and then plots survival probability for 
@@ -79,9 +80,11 @@ function main(N_sites)
     chkptdir = joinpath(@__DIR__, "checkpoints","Rog_N_loop", "par_"*string(N_sites))
 
     #extract output for the survival probability values at each timestep
-    Sz_array, Sy_array, Sx_array,  prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, Im_Ω, t_recover = evolve(
+    Sz_array, Sy_array, Sx_array,  prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, t_array, t_recover = evolve(
         s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal,chkptdir, checkpoint_every,  do_recover, recover_type, recover_iteration, save_data , periodic)
 
+    # extract the prob_surv on the first site 
+    prob_surv_array_site1= [row[1] for row in prob_surv_array]
     function find_first_local_minima_index(arr)
         N = length(arr)
         for i in 2:(N-1)
@@ -95,7 +98,7 @@ function main(N_sites)
     tmin_ifirstlocalmin_file = joinpath(datadir, "tmin_ifirstlocalmin.dat")
     if !do_recover 
         # Index of first minimum of the prob_surv_array (containing survival probability values at each time step)
-        i_first_local_min = find_first_local_minima_index(prob_surv_array)
+        i_first_local_min = find_first_local_minima_index(prob_surv_array_site1)
         
         # Writing if_else statement to communicate if local minima (not) found
         if i_first_local_min != -1
@@ -137,7 +140,7 @@ function main(N_sites)
             println("Recovered index of first local t_min from previous run: ", i_first_local_min)
         end
         if t_min === nothing && i_first_local_min == -1 
-            i_first_local_min = find_first_local_minima_index(prob_surv_array)
+            i_first_local_min = find_first_local_minima_index(prob_surv_array_site1)
             t_min = (τ * i_first_local_min) - τ + t_recover
             println("Recalculated t_min=",t_min)
             println("Recalculated i_first_local_min=",i_first_local_min)
@@ -183,10 +186,10 @@ function main(N_sites)
         @assert abs(t_min - t_p_Rog) <  τ + tolerance
     end
     if !save_plots_flag
-        plot!(0.0:τ:τ*(length(prob_surv_array)-1), prob_surv_array, xlabel = "t", ylabel = "Survival Probability p(t)", title = "Running Rog_particle_loop script", aspect_ratio=:auto, margin= 10mm, legend= true, label= ["My_plot_for_N$(N_sites)"])
-        scatter!([t_p_Rog],[prob_surv_array[i_first_local_min]], label= ["t_p_Rog_for_N$(N_sites)"])
-        scatter!([t_min],[prob_surv_array[i_first_local_min]], label= ["My_t_min__for_N$(N_sites)"], legendfontsize=5, legend=:topright)
-        savefig("Survival probability vs t (Rog)_loop.pdf")
+        plot!(t_array, prob_surv_array_site1, xlabel = "t", ylabel = "Survival Probability p(t)", title = "Running Rog_particle_loop script", aspect_ratio=:auto, margin= 10mm, legend= true, label= ["My_plot_for_N$(N_sites)"])
+        scatter!([t_p_Rog],[prob_surv_array[i_first_local_min]], label= ["t_p_Rog_site1_for_N$(N_sites)"])
+        scatter!([t_min],[prob_surv_array[i_first_local_min]], label= ["My_t_min_site1_for_N$(N_sites)"], legendfontsize=5, legend=:topright)
+        savefig("Survival probability_site1 vs t (Rog)_loop.pdf")
     end
     return τ, N_sites,L,tolerance, ttotal,Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array,datadir
 end
@@ -198,8 +201,42 @@ for N_sites in N_start:N_step:N_stop
     if save_plots_flag
         # Specify the relative directory path
         global plotdir = joinpath(@__DIR__, "plots","Rog_N_loop", "par_"*string(N_sites))
+        # Read the data files
+        t_Sz_tot = readdlm(joinpath(datadir, "t_<Sz>.dat"))
+        t_Sy_tot = readdlm(joinpath(datadir, "t_<Sy>.dat"))
+        t_Sx_tot = readdlm(joinpath(datadir, "t_<Sx>.dat"))
+        t_probsurv_tot = readdlm(joinpath(datadir, "t_probsurv.dat"))
+        t_xsiteval = readdlm(joinpath(datadir, "t_xsiteval.dat"))
+        t_pxsiteval = readdlm(joinpath(datadir, "t_pxsiteval.dat"))
+        t_ρₑₑ_tot = readdlm(joinpath(datadir, "t_ρₑₑ.dat"))
+        t_ρ_μμ_tot = readdlm(joinpath(datadir, "t_ρ_μμ.dat"))
+        t_ρₑμ_tot = readdlm(joinpath(datadir, "t_ρₑμ.dat"))
 
-        save_plots(τ, N_sites,L,tolerance, ttotal,Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array,datadir, plotdir, save_plots_flag)
+        # Extract time array and corresponding values for plotting
+        t_array = t_Sz_tot[:, 1]  
+
+        #Extract the array for first site only
+        Sz_array = t_Sz_tot[:,2]
+        Sy_array = t_Sy_tot[:,2]
+        Sx_array= t_Sx_tot[:,2] 
+        prob_surv_array = t_probsurv_tot[:, 2]
+        ρₑₑ_array = t_ρₑₑ_tot[:, 2]
+        ρ_μμ_array = t_ρ_μμ_tot[:, 2]
+        ρₑμ_array = t_ρₑμ_tot[:, 2]
+        
+        x_values = t_xsiteval[:, 2:end]  # All rows, all columns except the first
+        pₓ_values = t_pxsiteval[:, 2:end]  # All rows, all columns except the first
+
+        # # Parsing arrays containing strings like "[1.0,", into a numeric array suitable for plotting
+        Sz_array = [ parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in Sz_array]
+        Sy_array = [parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in Sy_array]
+        Sx_array =[parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in Sx_array]
+        prob_surv_array = [ parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in prob_surv_array]
+        ρₑₑ_array = [ parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in ρₑₑ_array]
+        ρ_μμ_array = [ parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in ρ_μμ_array]
+        ρₑμ_array =[parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in ρₑμ_array]
+
+        save_plots(τ, N_sites,L,t_array, ttotal,Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array,datadir, plotdir, save_plots_flag)
     
     end 
 end

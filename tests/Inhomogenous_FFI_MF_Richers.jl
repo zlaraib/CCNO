@@ -6,6 +6,7 @@ using DelimitedFiles
 using Statistics
 using Random
 using HDF5
+
 """
 For github unit tests runs: 
 src_dir = ../
@@ -37,6 +38,7 @@ include(src_dir * "src/perturb.jl")
 include(src_dir * "Initializations/initial_cond.jl")
 include(src_dir * "Utilities/gen_input_file.jl")
 include(src_dir * "Utilities/save_plots.jl")
+include(src_dir * "Utilities/save_datafiles.jl")
 
 function main()
     """ Richers(2021) Test 4 initial conditions: """
@@ -126,9 +128,41 @@ function main()
     datadir = joinpath(@__DIR__,"datafiles","FFI", "par_"*string(N_sites))
     chkptdir = joinpath(@__DIR__, "checkpoints","FFI", "par_"*string(N_sites))
 
+    ρₑμ_at_t1 = nothing  # Initialize a variable to store ρₑμ at t1
+    ρₑμ_at_t2 = nothing  # Initialize a variable to store ρₑμ at t2
+    Δt = t2 - t1 #time difference between growth rates
+
     #extract output for the survival probability values at each timestep
-    Sz_array, Sy_array, Sx_array,  prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, Im_Ω, t_recover = evolve(
+    Sz_array, Sy_array, Sx_array,  prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, t_array, t_recover = evolve(
         s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ₀, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal,chkptdir, checkpoint_every,  do_recover, recover_type, recover_iteration, save_data , periodic)
+
+    # Take the abs value fo all enteries till N_sites_eachflavor and then take the mean of that first half of the array, then do this for each row in ρₑμ_array 
+    ρₑμ_array_domain_avg = [mean(abs.(row[1:N_sites_eachflavor])) for row in ρₑμ_array] 
+
+    # Loop over the time array to match t1 and t2
+    for (i, t) in enumerate(t_array) 
+        # Check if the current time is approximately t1
+        if abs(t - t1) < τ / 2
+            println("corresponding ρₑμ index from the time array =",i)
+            ρₑμ_at_t1 = ρₑμ_array_domain_avg[i]
+            println("ρₑμ_at_t1=",ρₑμ_at_t1)
+        end
+
+        # Check if the current time is approximately t2
+        if abs(t - t2) < τ / 2
+            println("corresponding ρₑμ index from the time array =",i)
+            ρₑμ_at_t2 = ρₑμ_array_domain_avg[i]
+            println("ρₑμ_at_t2=",ρₑμ_at_t2)
+        end
+    end
+
+    # After the time evolution loop, calculate and print the growth rate
+    if ρₑμ_at_t1 !== nothing && ρₑμ_at_t2 !== nothing
+        Im_Ω = (1 / Δt) * log(ρₑμ_at_t2 / ρₑμ_at_t1)
+        println("Growth rate of flavor coherence of ρₑμ at t2 to ρₑμ at t1: $Im_Ω")
+    else
+        println("ρₑμ was not captured at both t1 and t2.")
+    end
 
     @assert abs((Im_Ω - analytic_growth_rate)/  analytic_growth_rate) < tolerance 
 
@@ -144,7 +178,47 @@ function main()
         # Specify the relative directory path
         plotdir = joinpath(@__DIR__, "plots","FFI", "par_"*string(N_sites))
             
-        save_plots(τ, N_sites,L,tolerance, ttotal,Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array,datadir, plotdir, save_plots_flag)
+        # Read the data files
+        t_Sz_tot = readdlm(joinpath(datadir, "t_<Sz>.dat"))
+        t_Sy_tot = readdlm(joinpath(datadir, "t_<Sy>.dat"))
+        t_Sx_tot = readdlm(joinpath(datadir, "t_<Sx>.dat"))
+        t_probsurv_tot = readdlm(joinpath(datadir, "t_probsurv.dat"))
+        t_xsiteval = readdlm(joinpath(datadir, "t_xsiteval.dat"))
+        t_pxsiteval = readdlm(joinpath(datadir, "t_pxsiteval.dat"))
+        t_ρₑₑ_tot = readdlm(joinpath(datadir, "t_ρₑₑ.dat"))
+        t_ρ_μμ_tot = readdlm(joinpath(datadir, "t_ρ_μμ.dat"))
+        t_ρₑμ_tot = readdlm(joinpath(datadir, "t_ρₑμ.dat"))
+
+        # Extract time array and corresponding values for plotting
+        t_array = t_Sz_tot[:, 1]  
+        Sz_array =  t_Sz_tot[:, 2:N_sites_eachflavor+1]
+        Sy_array = t_Sy_tot[:, 2:N_sites_eachflavor+1]  
+        Sx_array= t_Sx_tot[:, 2:N_sites_eachflavor+1] 
+        prob_surv_array = t_probsurv_tot[:, 2:N_sites_eachflavor+1] 
+        ρₑₑ_array = t_ρₑₑ_tot[:, 2:N_sites_eachflavor+1] 
+        ρ_μμ_array =t_ρ_μμ_tot[:, 2:N_sites_eachflavor+1]  
+        ρₑμ_array = t_ρₑμ_tot[:, 2:N_sites_eachflavor+1]
+
+        # Parsing arrays containing strings like "[1.0,", into a numeric array suitable for plotting
+        Sz_array_parsed = [parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in Sz_array]
+        Sy_array_parsed =[parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in Sy_array]
+        Sx_array_parsed =[parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in Sx_array]
+        prob_surv_array_parsed  = [ parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in prob_surv_array]
+        ρₑₑ_array_parsed  = [ parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in ρₑₑ_array]
+        ρ_μμ_array_parsed  = [ parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in ρ_μμ_array]
+        ρₑμ_array_parsed  =[parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in ρₑμ_array]
+
+        Sz_array_domain_avgd = [mean(abs.(row)) for row in eachrow(Sz_array_parsed)]
+        Sy_array_domain_avgd = [mean(abs.(row)) for row in eachrow(Sy_array_parsed)]
+        Sx_array_domain_avgd = [mean(abs.(row)) for row in eachrow(Sx_array_parsed)]
+        prob_surv_array_domain_avgd = [mean(abs.(row)) for row in eachrow(prob_surv_array_parsed)]
+        ρₑₑ_array_domain_avgd = [mean(abs.(row)) for row in eachrow(ρₑₑ_array_parsed)]
+        ρ_μμ_array_domain_avgd = [mean(abs.(row)) for row in eachrow(ρ_μμ_array_parsed)]
+        ρₑμ_array_domain_avgd= [mean(abs.(row)) for row in eachrow(ρₑμ_array_parsed)]
+
+        x_values = t_xsiteval[:, 2:end]  # All rows, all columns except the first
+        pₓ_values = t_pxsiteval[:, 2:end]  # All rows, all columns except the first
+        save_plots(τ, N_sites,L,t_array, ttotal,Sz_array_domain_avgd, Sy_array_domain_avgd, Sx_array_domain_avgd, prob_surv_array_domain_avgd, x_values, pₓ_values, ρₑₑ_array_domain_avgd,ρ_μμ_array_domain_avgd, ρₑμ_array_domain_avgd,datadir, plotdir, save_plots_flag)
         
         # Call the function to generate the inputs file in the specified directory
         generate_inputs_file(plotdir, "inputs.txt", input_data)
@@ -152,10 +226,10 @@ function main()
 
     if !save_plots_flag
         # Plotting ρₑμ vs t # for jenkins file 
-        plot(0.0:τ:τ*(length(ρₑμ_array)-1), ρₑμ_array, xlabel = "t", ylabel = "<ρₑμ>", legend = false, 
+        plot(t_array, ρₑμ_array_domain_avg, xlabel = "t", ylabel = "<ρₑμ>", legend = false, 
         left_margin = 20mm, right_margin = 10mm, top_margin = 5mm, bottom_margin = 10mm) 
         # Save the plot as a PDF file
-        savefig( "Inhomo_MF_<ρₑμ>_vs_t for $N_sites particles.pdf")
+        savefig( "Inhomo_MF_<ρₑμ>_domain_avg_vs_t for $N_sites particles.pdf")
     end
 end
 
