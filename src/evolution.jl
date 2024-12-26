@@ -86,11 +86,6 @@ function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sh
     ρ_μμ_array = [] # to store ρ_μμ values for all sites 
     ρₑμ_array = [] # to store ρₑμ values for all sites 
     
-    # ρₑμ_at_t1 = nothing  # Initialize a variable to store ρₑμ at t1
-    # ρₑμ_at_t2 = nothing  # Initialize a variable to store ρₑμ at t2
-    # Δt = t2 - t1 #time difference between growth rates 
-
-    # H = Hamiltonian_mpo(s, N, B, N_sites, Δx, Δm², p, x, Δp, shape_name,L, τ, energy_sign, periodic)
     # extract output of p_hat and p_mod for the p vector defined above for all sites. 
     p_mod, p̂ = momentum(p,N_sites) 
     p̂ₓ= [sub_array[1] for sub_array in p̂]
@@ -124,48 +119,9 @@ function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sh
         # compute the avg expectation value of Sz at all sites
         sz_tot = expect(ψ, "Sz")  # Compute Sz for each site and store the values in sz_tot
 
-        # compute expectation value of sy and sx using S+ and S- (inbuilt operator in ITensors library) at the first site on the chain
-        # if p == zeros(N_sites, 3) #for rogerro's case only (b/c S+ S- needed to keep conservation of QN number)
-        #     sy_tot = -0.5 *im * (expect(complex(ψ), "S+") - expect(complex(ψ), "S-")) 
-        #     sx_tot = 0.5 * (expect(ψ, "S+") + expect(ψ, "S-"))
-        # else 
-            sy_tot = expect(complex(ψ), "Sy")
-            sx_tot = expect(ψ, "Sx")
-        # end
-        # println("sz_tot= ",sz_tot )
-        # println("sy_tot= ",sy_tot )
-        # println("sx_tot= ",sx_tot )
-        # if shape_name!=="none" #specfic to the inhomogenous case Test4
-        #     sz = mean(abs.(sz_tot[1:half_N]))  # Take the abs value fo all enteries till half_N and then take the mean of that first half of the sz_tot array
-        #     sy = mean(abs.(sy_tot[1:half_N])) # Take the abs value fo all enteries till half_N and then take the mean of that first half of the sy_tot array
-        #     sx = mean(abs.(sx_tot[1:half_N]))  # Take the abs value fo all enteries till half_N and then take the mean of that first half of the sx_tot array
-        # else 
-        #     #for all inhomo cases:
-        #     sz = sz_tot[1]
-        #     sy = sy_tot[1]
-        #     sx = sx_tot[1]
-        # end
-        # println("sz= ",sz )
-        # println("sy= ",sy )
-        # println("sx= ",sx)
-
-        # # seperate loop of the forst site for all noninhomo cases 
-        # # compute expectation value of Sz (inbuilt operator in ITensors library) at the first site on the chain
-        # sz = expect(ψ, "Sz"; sites=1)
-        # # compute expectation value of sy and sx using S+ and S- (inbuilt operator in ITensors library) at the first site on the chain
-        # if p == zeros(N_sites, 3) #for rogerro's case only (b/c S+ S- needed to keep conservation of QN number)
-        #     sy = -0.5 *im * (expect(complex(ψ), "S+"; sites=1) - expect(complex(ψ), "S-"; sites=1)) #re-check
-        #     sx = 0.5 * (expect(ψ, "S+"; sites=1) + expect(ψ, "S-"; sites=1)) #recheck
-        #     println("sz= ",sz )
-        #     println("sy= ",sy )
-        #     println("sx= ",sx)
-        # else 
-        #     sy = expect(complex(ψ), "Sy"; sites=1)
-        #     sx = expect(ψ, "Sx"; sites=1)
-        #     println("sz= ",sz )
-        #     println("sy= ",sy )
-        #     println("sx= ",sx)
-        # end
+        # compute expectation value of sy and sx (inbuilt operator in ITensors library) at the first site on the chain
+        sy_tot = expect(complex(ψ), "Sy")
+        sx_tot = expect(ψ, "Sx")
 
         push!(Sz_array, sz_tot)  # Add all elements of sz_tot to Sz_array
         push!(Sy_array, sy_tot)  # Add all elements of sz_tot to Sz_array
@@ -175,11 +131,6 @@ function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sh
         prob_surv_tot = 0.5 * (1 .- 2 .* sz_tot)
         push!(prob_surv_array, prob_surv_tot)
 
-        # if B[1] == 1
-        #     println("$t $sz")
-        # else 
-        #     println("$t $prob_surv")
-        # end
         println("$t $prob_surv_tot")
         # recall that in our code sigma_z = 2*Sz so make sure these expressions are consistent with "Sz in ITensors" 
         ρₑₑ_tot = ((2 .* sz_tot) .+ 1) ./ 2
@@ -190,17 +141,7 @@ function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sh
         
         ρₑμ_tot = sqrt.(sx_tot.^2 .+ sy_tot.^2)
         push!(ρₑμ_array, ρₑμ_tot)
-        # println("$t $ρₑμ_tot")
-        #moved it to Homo tests 
-        # # Check if the current time is approximately t1
-        # if abs(t - t1) < τ / 2
-        #     ρₑμ_at_t1 = ρₑμ
-        # end
-        
-        # # Check if the current time is approximately t2
-        # if abs(t - t2) < τ / 2
-        #     ρₑμ_at_t2 = ρₑμ
-        # end
+
         # Writing an if statement in a shorthand way that checks whether the current value of t is equal to ttotal, 
         # and if so, it executes the break statement, which causes the loop to terminate early.
         t ≈ ttotal && break
@@ -209,8 +150,6 @@ function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sh
         # The apply function is a matrix-vector multiplication operation that is smart enough to determine which site indices each gate has, and then figure out where to apply it to our MPS. 
         # It truncates the MPS according to the set cutoff and maxdim for all the non-nearest-neighbor gates.
         ψ = apply(gates, ψ; cutoff, maxdim)
-        # ψ = tdvp(H, ψ,  -im *τ;   nsweeps=1,
-        # reverse_step=true,outputlevel=1)
 
         # The normalize! function is used to ensure that the MPS is properly normalized after each application of the time evolution gates. 
         # This is necessary to ensure that the MPS represents a valid quantum state.
@@ -230,88 +169,9 @@ function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sh
     end
     t_array = t_initial:τ:ttotal
 
-    # moved it to homo test 
-    # # After the time evolution loop, calculate and print the growth rate from the ratio if both values have been captured
-    # if ρₑμ_at_t1 !== nothing && ρₑμ_at_t2 !== nothing
-    #     global Im_Ω = (1/Δt ) * log(ρₑμ_at_t2 / ρₑμ_at_t1)
-    #     println("Growth rate of flavor coherence of ρₑμ at t2 to ρₑμ at t1: $Im_Ω")
-    # else
-    #     global Im_Ω = 1
-    #     println("ρₑμ was not captured at both t1 and t2.")
-    # end
     if save_data 
         store_data(do_recover, datadir, iteration, checkpoint_every, t_array, Sz_array, Sy_array, Sx_array, prob_surv_array,x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array)
     end 
-    # if save_data && !do_recover
-    #     save_data = isdir(datadir) || mkpath(datadir)
-    #     # Writing data to files with corresponding headers
-    #     fname1 = joinpath(datadir, "t_<Sz>_<Sy>_<Sx>.dat")
-    #     writedlm(fname1, [t_array Sz_array Sy_array Sx_array])
-        
-    #     fname2 = joinpath(datadir, "t_probsurv.dat")
-    #     writedlm(fname2, [t_array prob_surv_array])
-        
-    #     fname3 = joinpath(datadir, "t_xsiteval.dat")
-    #     writedlm(fname3, [t_array x_values])
-        
-    #     fname4 = joinpath(datadir, "t_pxsiteval.dat")
-    #     writedlm(fname4, [t_array pₓ_values])
-        
-    #     fname5 = joinpath(datadir, "t_ρₑₑ.dat")
-    #     writedlm(fname5, [t_array ρₑₑ_array])
-        
-    #     fname6 = joinpath(datadir, "t_ρ_μμ.dat")
-    #     writedlm(fname6, [t_array ρ_μμ_array])
-        
-    #     fname7 = joinpath(datadir, "t_ρₑμ.dat")
-    #     writedlm(fname7, [t_array ρₑμ_array])
-
-    #     fname8 = joinpath(datadir, "Im_Ω.dat")
-    #     writedlm(fname8, [Im_Ω])
-    
-    
-    # elseif save_data && do_recover
-
-    #     # Determine the start index for appending data
-    #     start_index = iteration >= checkpoint_every ? checkpoint_every + 1 : 0
-    
-    #     # Function to append data as new rows to the existing file after every `checkpoint_every` values
-    #     function append_data(filename, new_data)
-    #         open(filename, "a") do f
-    #             writedlm(f, new_data)
-    #         end
-    #     end
-    
-    #     # Append new values for each of the saved files, starting from the appropriate index
-    #     if start_index > 0
-    #         fname1 = joinpath(datadir, "t_<Sz>_<Sy>_<Sx>.dat")
-    #         append_data(fname1, [t_array[start_index:end] Sz_array[start_index:end] Sy_array[start_index:end] Sx_array[start_index:end]])
-    
-    #         fname2 = joinpath(datadir, "t_probsurv.dat")
-    #         append_data(fname2, [t_array[start_index:end] prob_surv_array[start_index:end]])
-    
-    #         fname3 = joinpath(datadir, "t_xsiteval.dat")
-    #         append_data(fname3, [t_array[start_index:end] x_values[start_index:end]])
-    
-    #         fname4 = joinpath(datadir, "t_pxsiteval.dat")
-    #         append_data(fname4, [t_array[start_index:end] pₓ_values[start_index:end]])
-    
-    #         fname5 = joinpath(datadir, "t_ρₑₑ.dat")
-    #         append_data(fname5, [t_array[start_index:end] ρₑₑ_array[start_index:end]])
-    
-    #         fname6 = joinpath(datadir, "t_ρ_μμ.dat")
-    #         append_data(fname6, [t_array[start_index:end] ρ_μμ_array[start_index:end]])
-    
-    #         fname7 = joinpath(datadir, "t_ρₑμ.dat")
-    #         append_data(fname7, [t_array[start_index:end] ρₑμ_array[start_index:end]])
-    
-    #         # Saving just a single value here, appended as a new row
-    #         fname8 = joinpath(datadir, "Im_Ω.dat")
-    #         open(fname8, "a") do f
-    #             writedlm(f, [Im_Ω])
-    #         end
-    #     end
-    # end
 
     return Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, t_array, t_recover
 end
