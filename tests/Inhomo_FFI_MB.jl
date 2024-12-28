@@ -178,7 +178,7 @@ function main()
 
     if save_plots_flag 
         # Specify the relative directory path
-        plotdir = joinpath(@__DIR__, "plots","FF_MB", "par_"*string(N_sites))
+        plotdir = joinpath(@__DIR__, "plots","FFI_MB", "par_"*string(N_sites))
             
         # Read the data files
         t_Sz_tot = readdlm(joinpath(datadir, "t_<Sz>.dat"))
