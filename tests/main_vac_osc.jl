@@ -40,7 +40,6 @@ include(src_dir * "src/chkpt_hdf5.jl")
 
 function main()
   N_sites = 6 # number of sites, #variable
-  N_sites = 6 # number of sites, #variable
   cutoff = 1E-14 # specifies a truncation threshold for the SVD in MPS representation #variable
   τ = 0.1 # time step # sec #variable
   ttotal = 5.0 # total time of evolution #sec #variable
