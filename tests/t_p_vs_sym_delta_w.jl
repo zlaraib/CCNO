@@ -89,6 +89,7 @@ function main(Δω, N_sites, ttotal)
         c_t = 0
     end
     Δm² = Δω
+    Δm² = Δω
     s = siteinds("S=1/2", N_sites; conserve_qns=false)
     mu = ones(N_sites)
     N = mu .* fill(((Δx)^3 )/(√2 * G_F * N_sites), N_sites)
@@ -102,8 +103,20 @@ function main(Δω, N_sites, ttotal)
     y = fill(rand(), N_sites) # variable.
     z = fill(rand(), N_sites) # variable.
 
+    N = mu .* fill(((Δx)^3 )/(√2 * G_F * N_sites), N_sites)
+    theta_nu = 0 # mixing_angle #rad 
+    B = [sin(2*theta_nu), 0, -cos(2*theta_nu)] # is equivalent to B = [0, 0, -1] # fixed for Rogerro's case
+    B = B / norm(B)
+
+    # p matrix with numbers generated from the p_array for all components (x, y, z)
+    p = hcat(generate_p_array(N_sites),fill(0, N_sites), fill(0, N_sites))
+    x = fill(rand(), N_sites) # variable.
+    y = fill(rand(), N_sites) # variable.
+    z = fill(rand(), N_sites) # variable.
+
     ψ = productMPS(s, N -> N <= N_sites/2 ? "Dn" : "Up")
     energy_sign = [i <= N_sites ÷ 2 ? 1 : 1 for i in 1:N_sites]
+    shape_name = "none"  # Change this to the desired shape name # variable.
     shape_name = "none"  # Change this to the desired shape name # variable.
     # Specify the relative directory path
     datadir = joinpath(@__DIR__, "datafiles","Rog_Table_I", "par_"*string(N_sites), "Δω"*string(Δω))

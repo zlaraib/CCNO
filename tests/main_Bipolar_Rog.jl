@@ -37,13 +37,23 @@ include(src_dir * "Utilities/save_datafiles.jl")
 
 function main()
     N_sites = 4 # number of sites # make it 24 to produce Rog results. #reduced for unit test passing
+    N_sites = 4 # number of sites # make it 24 to produce Rog results. #reduced for unit test passing
     cutoff = 1E-10 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT)
+    τ = 0.25 # time step (NEED TO BE 0.05 for Rog_ main_text results)
+    ttotal = 50 # total time of evolution
     τ = 0.25 # time step (NEED TO BE 0.05 for Rog_ main_text results)
     ttotal = 50 # total time of evolution
     tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution
     Δx = 1E-3 # length of the box of interacting neutrinos at a site/shape function width of neutrinos in cm 
     Δm²= 0.2 # erg^2 # Artifically Fixed for Rog bipolar test #change accordingly in gates_fnction too if need be.
+    Δm²= 0.2 # erg^2 # Artifically Fixed for Rog bipolar test #change accordingly in gates_fnction too if need be.
     maxdim = 1 #bond dimension
+    L = 1 # cm # not being used in this test but defined to keep the evolve function arguments consistent.
+    Δp = L # width of shape function # not being used in this test but defined to keep the evolve function arguments consistent. 
+    t1 = 0.0084003052 #choose initial time for growth rate calculation #variable, not being used in this test
+    t2 = 0.011700318 #choose final time for growth rate calculation #variable, not being used in this test
+    periodic = true  # true = imposes periodic boundary conditions while false doesn't
+   
     L = 1 # cm # not being used in this test but defined to keep the evolve function arguments consistent.
     Δp = L # width of shape function # not being used in this test but defined to keep the evolve function arguments consistent. 
     t1 = 0.0084003052 #choose initial time for growth rate calculation #variable, not being used in this test
@@ -61,7 +71,10 @@ function main()
     # Create an array of dimension N_sites and fill it with the value 1/(sqrt(2) * G_F). This is the number of neutrinos. 
     N = mu .* fill(((Δx)^3 )/(√2 * G_F * N_sites), N_sites)
 
+    N = mu .* fill(((Δx)^3 )/(√2 * G_F * N_sites), N_sites)
+
     # Create a B vector which would be same for all N_sites particles 
+    theta_nu= 0.1 #rad # =34.3 degrees
     theta_nu= 0.1 #rad # =34.3 degrees
     B = [sin(2 *theta_nu), 0, -cos(2*theta_nu)]
     B = B / norm(B) 
@@ -76,6 +89,13 @@ function main()
     z = fill(rand(), N_sites) # variable.
 
     ψ = productMPS(s, N -> N <= N_sites/2 ? "Dn" : "Up")
+
+    #Select a shape function based on the shape_name variable form the list defined in dictionary in shape_func file
+    shape_name = "none"  # Change this to the desired shape name # variable.
+
+    # p matrix with numbers generated from the p_array for all components (x, y, z)
+    p = hcat(generate_p_array(N_sites),fill(0, N_sites), fill(0, N_sites))
+    energy_sign = [i <= N_sites ÷ 2 ? 1 : 1 for i in 1:N_sites] # all of the sites are neutrinos
 
     #Select a shape function based on the shape_name variable form the list defined in dictionary in shape_func file
     shape_name = "none"  # Change this to the desired shape name # variable.
