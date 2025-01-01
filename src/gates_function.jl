@@ -47,8 +47,6 @@ include("momentum.jl")
 
 # This file generates the create_gates function that holds ITensors Trotter gates and returns the dimensionless unitary 
 # operators govered by the Hamiltonian which includes effects of the vacuum and self-interaction potential for each site.
-
-function create_gates(s, ψ, N, B, N_sites, Δx, Δm², p, x, Δp, theta_nu, shape_name,L, τ, energy_sign, periodic)
     
 function create_gates(s, ψ, N, B, N_sites, Δx, Δm², p, x, Δp, theta_nu, shape_name,L, τ, energy_sign, periodic)
     
@@ -133,12 +131,10 @@ function create_gates(s, ψ, N, B, N_sites, Δx, Δm², p, x, Δp, theta_nu, sha
 
             # add Vacuum Oscillation Hamiltonian 
             if ω[i] != 0 || ω[j] != 0
-                
-                hj += (1/(N_sites-1))*( 
-                
+
                 hj += (1/(N_sites-1))*( 
                     (ω[i] * B[1] * op("Sx", s_i)* op("Id", s_j))  + (ω[i] * B[2] * op("Sy", s_i)* op("Id", s_j))  + (ω[i] * B[3] * op("Sz", s_i)* op("Id", s_j)) )
-                hj += (1/(N_sites-1))*(
+
                 hj += (1/(N_sites-1))*(
                     (ω[j] * B[1] * op("Id", s_i) * op("Sx", s_j)) + (ω[j] * B[2]  * op("Id", s_i)* op("Sy", s_j)) + (ω[j] * B[3]  * op("Id", s_i)* op("Sz", s_j)) )
             end
