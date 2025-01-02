@@ -229,9 +229,9 @@ function main()
         # Save the plot as a PDF file
         savefig( "Inhomo_MF_<ρₑμ>_domain_avg_vs_t for $N_sites particles.pdf")
     end
-    
-    @assert abs((Im_Ω - analytic_growth_rate)/  analytic_growth_rate) < tolerance 
 
+    @assert abs((Im_Ω - analytic_growth_rate)/  analytic_growth_rate) < tolerance 
+    
 end
 
 @time main()

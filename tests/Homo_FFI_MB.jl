@@ -139,6 +139,8 @@ function main()
         println("ρₑμ was not captured at both t1 and t2.")
     end
 
+    # @assert abs((Im_Ω - analytic_growth_rate)/  analytic_growth_rate) < tolerance 
+
     if save_data
         # Generate input data
         input_data = extract_initial_conditions(N_sites,N_sites_eachflavor,τ, ttotal,tolerance,
@@ -198,9 +200,6 @@ function main()
         # Save the plot as a PDF file
         savefig( "Homo_MF_<ρₑμ>_site1_vs_t for $N_sites particles.pdf")
     end
-    
-    # commented out b/c assert doesnt pass with maxdim= 2
-    # @assert abs((Im_Ω - analytic_growth_rate)/  analytic_growth_rate) < tolerance 
 end
 
 @time main()

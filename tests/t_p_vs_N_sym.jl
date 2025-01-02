@@ -50,7 +50,6 @@ function main(N_sites, Δω)
     tolerance  = 5E-1
     Δx = 1E-3
     Δm² = Δω
-    Δm² = Δω
     maxdim = 1000 #bond dimension
     L = 10 # cm # not being used in this test but defined to keep the evolve function arguments consistent.
     Δp = L # width of shape function # not being used in this test but defined to keep the evolve function arguments consistent.
@@ -67,17 +66,6 @@ function main(N_sites, Δω)
     b_t = 0
     c_t = 1.62
     mu = ones(N_sites)
-    N = mu .* fill(((Δx)^3 )/(√2 * G_F * N_sites), N_sites)
-    theta_nu = 0 # mixing_angle #rad 
-    B = [sin(2*theta_nu), 0, -cos(2*theta_nu)] # is equivalent to B = [0, 0, -1] # fixed for Rogerro's case
-    B = B / norm(B)
-
-    # p matrix with numbers generated from the p_array for all components (x, y, z)
-    p = hcat(generate_p_array(N_sites),fill(0, N_sites), fill(0, N_sites))
-    x = fill(rand(), N_sites) # variable.
-    y = fill(rand(), N_sites) # variable.
-    z = fill(rand(), N_sites) # variable.
-
     N = mu .* fill(((Δx)^3 )/(√2 * G_F * N_sites), N_sites)
     theta_nu = 0 # mixing_angle #rad 
     B = [sin(2*theta_nu), 0, -cos(2*theta_nu)] # is equivalent to B = [0, 0, -1] # fixed for Rogerro's case
@@ -216,11 +204,6 @@ for N_sites in N_start: N_step:N_stop
     push!(t_min_array, t_min)
 end
 N_values = range(N_start, stop=N_stop, step=N_step)
-if save_data 
-    save_data = isdir(datadir) || mkpath(datadir)
-    fname1 = joinpath(datadir, "Nvals_tpRog_tpmine.dat")
-    writedlm(fname1, [N_values t_p_Rog_array t_min_array])
-end 
 if save_data 
     save_data = isdir(datadir) || mkpath(datadir)
     fname1 = joinpath(datadir, "Nvals_tpRog_tpmine.dat")

@@ -1,5 +1,4 @@
 using DelimitedFiles
-using DelimitedFiles
 include("gates_function.jl")  # Include the gates_functions.jl file
 include("chkpt_hdf5.jl") 
 include("momentum.jl")
