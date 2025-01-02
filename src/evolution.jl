@@ -119,7 +119,7 @@ function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sh
         # compute the avg expectation value of Sz at all sites
         sz_tot = expect(ψ, "Sz")  # Compute Sz for each site and store the values in sz_tot
 
-        # compute expectation value of sy and sx (inbuilt operator in ITensors library) at the first site on the chain
+        # compute expectation value of sy and sx (inbuilt operator in ITensors library) at all sites on the chain
         sy_tot = expect(complex(ψ), "Sy")
         sx_tot = expect(ψ, "Sx")
 
@@ -127,7 +127,7 @@ function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sh
         push!(Sy_array, sy_tot)  # Add all elements of sz_tot to Sz_array
         push!(Sx_array, sx_tot)  # Add all elements of sz_tot to Sz_array
         
-        #survival probability for a (we took first) neutrino to be found in its initial flavor state (in this case a spin down)
+        #survival probability for all sites (neutrino) to be found in its initial flavor state
         prob_surv_tot = 0.5 * (1 .- 2 .* sz_tot)
         push!(prob_surv_array, prob_surv_tot)
 
