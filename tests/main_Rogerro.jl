@@ -37,11 +37,15 @@ include(src_dir * "Utilities/save_datafiles.jl")
 
 function main()
     N_sites = 4 # number of sites 
+    N_sites = 4 # number of sites 
     cutoff = 1E-14 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT)
+    τ = 0.05 # time step 
+    ttotal = 5 # total time of evolution 
     τ = 0.05 # time step 
     ttotal = 5 # total time of evolution 
     tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution
     Δx = 1E-3 # length of the box of interacting neutrinos at a site/shape function width of neutrinos in cm 
+    Δm²= 0.5 # erg^2 # Artifically Fixed for Rog bipolar test #change accordingly in gates_fnction too if need be.
     Δm²= 0.5 # erg^2 # Artifically Fixed for Rog bipolar test #change accordingly in gates_fnction too if need be.
     maxdim = 1000 #bond dimension
     L = 1 # cm # not being used in this test but defined to keep the evolve function arguments consistent.
@@ -61,6 +65,7 @@ function main()
     s = siteinds("S=1/2", N_sites; conserve_qns=false)  
 
     # Constants for Rogerro's fit (corresponding to Δω = 0.25)
+    # Constants for Rogerro's fit (corresponding to Δω = 0.25)
     a_t = 1.224
     b_t = 0
     c_t = 1.62
@@ -78,8 +83,24 @@ function main()
     x = fill(rand(), N_sites) # variable.
     y = fill(rand(), N_sites) # variable.
     z = fill(rand(), N_sites) # variable.
+    N = mu .* fill(((Δx)^3 )/(√2 * G_F * N_sites), N_sites)
+    
+    theta_nu = 0 # mixing_angle #rad 
+    B = [sin(2*theta_nu), 0, -cos(2*theta_nu)] # is equivalent to B = [0, 0, -1] # fixed for Rogerro's case
+    B = B / norm(B)
+
+    x = fill(rand(), N_sites) # variable.
+    y = fill(rand(), N_sites) # variable.
+    z = fill(rand(), N_sites) # variable.
 
     ψ = productMPS(s, N -> N <= N_sites/2 ? "Dn" : "Up")
+
+    #Select a shape function based on the shape_name variable form the list defined in dictionary in shape_func file
+    shape_name = "none"  # Change this to the desired shape name # variable.
+
+    # p matrix with numbers generated from the p_array for all components (x, y, z)
+    p = hcat(generate_p_array(N_sites),fill(0, N_sites), fill(0, N_sites))
+    energy_sign = [i <= N_sites ÷ 2 ? 1 : 1 for i in 1:N_sites] # all of the sites are neutrinos
 
     #Select a shape function based on the shape_name variable form the list defined in dictionary in shape_func file
     shape_name = "none"  # Change this to the desired shape name # variable.

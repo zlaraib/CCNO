@@ -1,10 +1,27 @@
 using DelimitedFiles
+using DelimitedFiles
 include("gates_function.jl")  # Include the gates_functions.jl file
 include("chkpt_hdf5.jl") 
 include("momentum.jl")
 include("constants.jl")
 include("../Utilities/save_datafiles.jl")
 """
+    Expected (CGS) units of the quantities defined in the files in tests directory that are being used in the evolve function.                                                                   
+    s = site index array (dimensionless and unitless)          
+    N = array of no.of neutrinos contained on each site (dimensionless and unitless)
+    B = array of normalized vector related to mixing angle in vacuum oscillations (dimensionless constant)
+    N_sites = Total no.of sites (dimensionless and unitless)
+    Δx = length of the box of interacting neutrinos at a site (cm)
+    Δm² = difference in mass squared (erg^2)
+    p = array of momentum vectors (erg)
+    x = array of positions of sites (cm)
+    Δp = width of shape function (cm)
+    shape_name = name of the shape function (string) ["none","triangular","flat_top"]
+    τ = time step (sec)
+    energy_sign = array of sign of the energy (1 or -1): 1 for neutrinos and -1 for anti-neutrinos
+    maxdim = max bond dimension in MPS truncation (unitless and dimensionless)
+    cutoff = truncation threshold for the SVD in MPS representation (unitless and dimensionless)
+    periodic = boolean indicating whether boundary conditions should be periodic
     Expected (CGS) units of the quantities defined in the files in tests directory that are being used in the evolve function.                                                                   
     s = site index array (dimensionless and unitless)          
     N = array of no.of neutrinos contained on each site (dimensionless and unitless)
@@ -146,6 +163,9 @@ function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sh
         # and if so, it executes the break statement, which causes the loop to terminate early.
         t ≈ ttotal && break
 
+        # apply each gate in gates(ITensors array) successively to the wavefunction ψ (MPS)(it is equivalent to time evolving psi according to the time-dependent Hamiltonian represented by gates).
+        # The apply function is a matrix-vector multiplication operation that is smart enough to determine which site indices each gate has, and then figure out where to apply it to our MPS. 
+        # It truncates the MPS according to the set cutoff and maxdim for all the non-nearest-neighbor gates.
         # apply each gate in gates(ITensors array) successively to the wavefunction ψ (MPS)(it is equivalent to time evolving psi according to the time-dependent Hamiltonian represented by gates).
         # The apply function is a matrix-vector multiplication operation that is smart enough to determine which site indices each gate has, and then figure out where to apply it to our MPS. 
         # It truncates the MPS according to the set cutoff and maxdim for all the non-nearest-neighbor gates.

@@ -39,6 +39,7 @@ include(src_dir * "Utilities/save_datafiles.jl")
 # which is a product state where each site alternates between up and down.
 
 
+
 function main()
   N_sites = 6 # number of sites, #variable
   cutoff = 1E-14 # specifies a truncation threshold for the SVD in MPS representation #variable
@@ -62,8 +63,10 @@ function main()
   # Make an array of 'site' indices and label as s 
   # conserve_qns=false doesnt conserve the total spin quantum number "S"(in z direction) in the system as it evolves
   s = siteinds("S=1/2", N_sites; conserve_qns=false)  #Fixed
+  s = siteinds("S=1/2", N_sites; conserve_qns=false)  #Fixed
 
   # Initialize an array of zeros for all N_sites particles
+  mu = zeros(N_sites) #Fixed
   mu = zeros(N_sites) #Fixed
                                 
   # Create an array of dimension N and fill it with the value 1/(sqrt(2) * G_F). This is the number of neutrinos.
@@ -85,7 +88,27 @@ function main()
   #Select a shape function based on the shape_name variable form the list defined in dictionary in shape_func file
   shape_name = "none"  # variable.
 
+  # Create an array of dimension N and fill it with the value 1/(sqrt(2) * G_F). This is the number of neutrinos.
+  N = mu.* fill((Δx)^3/(sqrt(2) * G_F), N_sites) 
+  
+  # Create a B vector which would be same for all N particles 
+  theta_nu = π/4 # mixing_angle #rad 
+  B = [sin(2*theta_nu), 0, -cos(2*theta_nu)] # is equivalent to B = [1, 0, 0] # variable. But only other case that can be tested from this file is B = [0,0,-1] for which theta_nu = π/4.
+  B = B / norm(B)
+
+  x = fill(rand(), N_sites) # variable.
+  y = fill(rand(), N_sites) # variable.
+  z = zeros(N_sites) # variable.
+ 
+  # Generate an Nx3 array for p with random values
+  p = ones(N_sites, 3) # variable, but will need to make sure that p_vector.jl file if statment stays constsnet 
+  energy_sign = fill(1, N_sites) # all of the sites are neutrinos
+
+  #Select a shape function based on the shape_name variable form the list defined in dictionary in shape_func file
+  shape_name = "none"  # variable.
+
   # Initialize psi to be a product state (First half to be spin down and other half to be spin up)
+  ψ = productMPS(s, N -> N <= N_sites/2 ? "Dn" : "Up") # Fixed to produce consistent results for the test assert conditions 
   ψ = productMPS(s, N -> N <= N_sites/2 ? "Dn" : "Up") # Fixed to produce consistent results for the test assert conditions 
 
   # Specify the relative directory path
