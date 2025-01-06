@@ -53,9 +53,6 @@ function save_plots(τ, N_sites,L, t_array, ttotal,Sz_array, Sy_array, Sx_array,
         for site in 1:N_sites
             site_positions = x_values[:, site]  # Get all positions for a specific site
             # Convert each entry to a floating-point number
-            site_positions = [
-                parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in site_positions
-            ]
             plot!(site_positions,t_array, label = "Site $site"
             ,left_margin = 25mm, right_margin = 5mm, top_margin = 5mm, bottom_margin = 10mm)
         end
@@ -67,9 +64,6 @@ function save_plots(τ, N_sites,L, t_array, ttotal,Sz_array, Sy_array, Sx_array,
         xlims = (0, L)
         for site in 1:N_sites
             site_momentum = pₓ_values[:, site]
-            site_momentum = [
-                parse(Float64, replace(strip(momentum, ['[', ']', ',']), "," => "")) for momentum in site_momentum
-            ]
             plot!(site_momentum,t_array, label = "Site $site",
             left_margin = 25mm, right_margin = 5mm, top_margin = 5mm, bottom_margin = 10mm)
         end

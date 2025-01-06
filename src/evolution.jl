@@ -42,7 +42,7 @@ include("../Utilities/save_datafiles.jl")
 # This file generates the evolve function which evolves the ψ state in time and computes the expectation values of Sz at each time step, along 
 # with their survival probabilities. The time evolution utilizes the unitary operators created as gates from the create_gates function.
 # The <Sz> and Survival probabilities output from this function are unitless. 
-function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal, chkptdir, checkpoint_every, do_recover, recover_type, recover_iteration, save_data::Bool, periodic=true)
+function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal, chkptdir, checkpoint_every, do_recover, recover_file, save_data::Bool, periodic=true)
 
     t_initial = 0.0
     iteration = 0
@@ -50,42 +50,18 @@ function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sh
 
     if do_recover
         
-        if recover_type == "auto"
-            println("auto recovery: recovering from last iteration")
-            recover_iteration = -1
-            checkpoint_files = readdir(chkptdir)
-            checkpoint_files = filter(f -> endswith(f, ".h5"), checkpoint_files)
-            checkpoint_files = sort(checkpoint_files)
-
-            if !isempty(checkpoint_files)
-                latest_checkpoint_file = checkpoint_files[end]
-                checkpoint_filename = joinpath(chkptdir, latest_checkpoint_file)
-            else
-                error("No checkpoint files found in directory: $chkptdir. Unable to recover.")
-            end
-
-            s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, t1, t2, t_initial, iteration = recover_checkpoint_hdf5(checkpoint_filename)
+        println("Manual recovery from file ", recover_file)
+        
+        if isfile(recover_file)
+            println("Recovering from checkpoint: $recover_file")
+            # Recover data from the specified checkpoint
+            s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, t1, t2, t_initial, iteration = recover_checkpoint_hdf5(recover_file)
+            
             # Increment t_initial by τ to ensure it starts from the next expected value
             t_initial += τ
             s = siteinds(ψ)
-
-        elseif recover_type == "manual"
-            println("Manual recovery from iteration ", recover_iteration)
-            
-            # Create the checkpoint filename for the specified iteration
-            checkpoint_filename = joinpath(chkptdir, "checkpoint.chkpt.it" * lpad(recover_iteration, 6, "0") * ".h5")
-            
-            if isfile(checkpoint_filename)
-                println("Recovering from checkpoint: $checkpoint_filename")
-                # Recover data from the specified checkpoint
-                s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, t1, t2, t_initial, iteration = recover_checkpoint_hdf5(checkpoint_filename)
-                
-                # Increment t_initial by τ to ensure it starts from the next expected value
-                t_initial += τ
-                s = siteinds(ψ)
-            else
-                error("Checkpoint file not found for iteration $recover_iteration in directory: $chkptdir.")
-            end
+        else
+            error("Checkpoint file not found")
         end
      
     end    
@@ -147,7 +123,6 @@ function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sh
         prob_surv_tot = 0.5 * (1 .- 2 .* sz_tot)
         push!(prob_surv_array, prob_surv_tot)
 
-        println("$t $prob_surv_tot")
         # recall that in our code sigma_z = 2*Sz so make sure these expressions are consistent with "Sz in ITensors" 
         ρₑₑ_tot = ((2 .* sz_tot) .+ 1) ./ 2
         push!(ρₑₑ_array, abs.(ρₑₑ_tot))
@@ -174,13 +149,15 @@ function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sh
         # This is necessary to ensure that the MPS represents a valid quantum state.
         normalize!(ψ)
 
+        println("$iteration $t")
         if save_data
-            isdir(chkptdir) || mkpath(chkptdir)
-            println("iteration: ",  iteration, "  ", iteration % checkpoint_every)
+
+            store_data(datadir, t+τ, sz_tot, sy_tot, sx_tot, prob_surv_tot,x, px, ρₑₑ_tot,ρ_μμ_tot, ρₑμ_tot)
+
+            mkpath(chkptdir)
             if iteration % checkpoint_every == 0 
-                println("CREATE CHECKPOINT AT ITERATION = ", iteration, " TIME = ", t)
                 checkpoint_filename = joinpath(chkptdir, "checkpoint.chkpt.it" * lpad(iteration, 6, "0") * ".h5")
-                checkpoint_simulation_hdf5(checkpoint_filename, s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, gates, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, t1, t2, ttotal, t, iteration)
+                checkpoint_simulation_hdf5(checkpoint_filename, s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, gates, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, t1, t2, ttotal, t+τ, iteration)
             end
 
             iteration = iteration + 1
@@ -188,9 +165,7 @@ function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sh
     end
     t_array = t_initial:τ:ttotal
 
-    if save_data 
-        store_data(do_recover, datadir, iteration, checkpoint_every, t_array, Sz_array, Sy_array, Sx_array, prob_surv_array,x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array)
-    end 
+
 
     return Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, t_array, t_recover
 end
