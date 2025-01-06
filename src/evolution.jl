@@ -21,22 +21,6 @@ include("../Utilities/save_datafiles.jl")
     maxdim = max bond dimension in MPS truncation (unitless and dimensionless)
     cutoff = truncation threshold for the SVD in MPS representation (unitless and dimensionless)
     periodic = boolean indicating whether boundary conditions should be periodic
-    Expected (CGS) units of the quantities defined in the files in tests directory that are being used in the evolve function.                                                                   
-    s = site index array (dimensionless and unitless)          
-    N = array of no.of neutrinos contained on each site (dimensionless and unitless)
-    B = array of normalized vector related to mixing angle in vacuum oscillations (dimensionless constant)
-    N_sites = Total no.of sites (dimensionless and unitless)
-    Δx = length of the box of interacting neutrinos at a site (cm)
-    Δm² = difference in mass squared (erg^2)
-    p = array of momentum vectors (erg)
-    x = array of positions of sites (cm)
-    Δp = width of shape function (cm)
-    shape_name = name of the shape function (string) ["none","triangular","flat_top"]
-    τ = time step (sec)
-    energy_sign = array of sign of the energy (1 or -1): 1 for neutrinos and -1 for anti-neutrinos
-    maxdim = max bond dimension in MPS truncation (unitless and dimensionless)
-    cutoff = truncation threshold for the SVD in MPS representation (unitless and dimensionless)
-    periodic = boolean indicating whether boundary conditions should be periodic
 """
 
 # This file generates the evolve function which evolves the ψ state in time and computes the expectation values of Sz at each time step, along 
@@ -165,8 +149,6 @@ function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sh
         end
     end
     t_array = t_initial:τ:ttotal
-
-
 
     return Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, t_array, t_recover
 end
