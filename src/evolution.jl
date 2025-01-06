@@ -126,13 +126,14 @@ function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sh
         # recall that in our code sigma_z = 2*Sz so make sure these expressions are consistent with "Sz in ITensors" 
         ρₑₑ_tot = ((2 .* sz_tot) .+ 1) ./ 2
         push!(ρₑₑ_array, abs.(ρₑₑ_tot))
-        
+
         ρ_μμ_tot = ((-2 .* sz_tot) .+ 1) ./ 2
         push!(ρ_μμ_array, abs.(ρ_μμ_tot))
         
         ρₑμ_tot = sqrt.(sx_tot.^2 .+ sy_tot.^2)
         push!(ρₑμ_array, ρₑμ_tot)
 
+        println("iteration= $iteration time= $t ρₑₑ_tot= $ρₑₑ_tot")
         # Writing an if statement in a shorthand way that checks whether the current value of t is equal to ttotal, 
         # and if so, it executes the break statement, which causes the loop to terminate early.
         t ≈ ttotal && break
@@ -149,7 +150,7 @@ function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sh
         # This is necessary to ensure that the MPS represents a valid quantum state.
         normalize!(ψ)
 
-        println("$iteration $t")
+
         if save_data
 
             store_data(datadir, t+τ, sz_tot, sy_tot, sx_tot, prob_surv_tot,x, px, ρₑₑ_tot,ρ_μμ_tot, ρₑμ_tot)
