@@ -98,7 +98,7 @@ function main()
     ψ = productMPS(s, n -> n <= N_sites/2 ? "Up" : "Dn")
 
     function generate_B_pert(α)
-        # Generate perturbations for x and y 
+        # Generate perturbations in x and y plane
         x_pert = α  
         y_pert = α 
 

@@ -50,8 +50,7 @@ function main(Δω, N_sites, ttotal)
     periodic = false 
     checkpoint_every = 4
     do_recover = false
-    recover_type = "auto" 
-    recover_iteration = 80 # change it to the iteration you want to recover from, for manual iteration. Currently auto recovery already recovers from last iteration (i.e. recover_iteration = -1 for auto recovery). 
+    recover_file = "" 
     
     if Δω==-0.5
         a_t = 0
@@ -106,12 +105,12 @@ function main(Δω, N_sites, ttotal)
     energy_sign = [i <= N_sites ÷ 2 ? 1 : 1 for i in 1:N_sites]
     shape_name = "none"  # Change this to the desired shape name # variable.
     # Specify the relative directory path
-    datadir = joinpath(@__DIR__, "datafiles","Rog_Table_I", "par_"*string(N_sites), "Δω"*string(Δω))
-    chkptdir = joinpath(@__DIR__, "checkpoints","Rog_Table_I", "par_"*string(N_sites), "Δω"*string(Δω))
+    datadir = joinpath(@__DIR__, "datafiles")
+    chkptdir = joinpath(@__DIR__, "checkpoints")
 
     #extract output for the survival probability values at each timestep
     Sz_array, Sy_array, Sx_array,  prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, t_array, t_recover = evolve(
-        s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal,chkptdir, checkpoint_every,  do_recover, recover_type, recover_iteration, save_data , periodic)
+        s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal,chkptdir, checkpoint_every,  do_recover, recover_file, save_data , periodic)
     
     # extract the prob_surv on the first site 
     prob_surv_array_site1= [row[1] for row in prob_surv_array]
@@ -223,7 +222,7 @@ end
 t_p_Rog_array = Float64[]
 t_min_array = Float64[]
 
-datadir = joinpath(@__DIR__, "datafiles","Rog_Table_I", "par_"*string(N_sites))
+datadir = joinpath(@__DIR__, "datafiles")
 
 for Δω in Δω_values
     t_p_Rog, t_min = main(Δω, N_sites, ttotal)
@@ -236,7 +235,7 @@ if save_data
     writedlm(fname1, [Δω_values t_p_Rog_array t_min_array])
 end 
 if save_plots_flag
-    plotdir = joinpath(@__DIR__, "plots","Rog_Table_I", "par_"*string(N_sites))
+    plotdir = joinpath(@__DIR__, "plots")
     # check if a directory exists, and if it doesn't, create it using mkpath
     save_plots_flag = isdir(plotdir) || mkpath(plotdir)
     # Create the plot

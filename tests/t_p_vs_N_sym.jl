@@ -58,8 +58,7 @@ function main(N_sites, Δω)
     periodic = false
     checkpoint_every = 4
     do_recover = false
-    recover_type = "auto" 
-    recover_iteration = 80 # change it to the iteration you want to recover from, for manual iteration. Currently auto recovery already recovers from last iteration (i.e. recover_iteration = -1 for auto recovery). 
+    recover_file = "" 
     s = siteinds("S=1/2", N_sites; conserve_qns=false)
     # check for Δω = 0.25
     a_t = 1.224
@@ -80,12 +79,12 @@ function main(N_sites, Δω)
     ψ = productMPS(s, N -> N <= N_sites/2 ? "Dn" : "Up")
     energy_sign = [i <= N_sites ÷ 2 ? 1 : 1 for i in 1:N_sites]
     shape_name = "none" 
-    datadir = joinpath(@__DIR__, "datafiles","Rog_Fig_3b", "par_"*string(N_sites))
-    chkptdir = joinpath(@__DIR__, "checkpoints","Rog_Fig_3b", "par_"*string(N_sites))
+    datadir = joinpath(@__DIR__, "datafiles")
+    chkptdir = joinpath(@__DIR__, "checkpoints")
 
     #extract output for the survival probability values at each timestep
     Sz_array, Sy_array, Sx_array,  prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, t_array, t_recover = evolve(
-        s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal,chkptdir, checkpoint_every,  do_recover, recover_type, recover_iteration, save_data , periodic)
+        s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal,chkptdir, checkpoint_every,  do_recover, recover_file, save_data , periodic)
     
     # extract the prob_surv on the first site 
     prob_surv_array_site1= [row[1] for row in prob_surv_array]
@@ -191,7 +190,7 @@ function main(N_sites, Δω)
     end
     return t_p_Rog, t_min
 end
-datadir = joinpath(@__DIR__, "datafiles","Rog_Fig_3b", "N_start_"*string(N_start), "N_stop_"*string(N_stop))
+datadir = joinpath(@__DIR__, "datafiles")
 
 # Arrays to store t_p_Rog and t_min for 1st site
 t_p_Rog_array = Float64[]
@@ -211,7 +210,7 @@ if save_data
 end 
 
 if save_plots_flag
-    plotdir = joinpath(@__DIR__, "plots","Rog_Fig_3b", "N_start_"*string(N_start), "N_stop_"*string(N_stop))
+    plotdir = joinpath(@__DIR__, "plots")
         
     # check if a directory exists, and if it doesn't, create it using mkpath
     save_plot_flag =  isdir(plotdir) || mkpath(plotdir)

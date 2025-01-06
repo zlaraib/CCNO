@@ -53,9 +53,8 @@ function main()
     
     checkpoint_every = 4
     do_recover = false
-    recover_type = "auto" 
-    recover_iteration = 80 # change it to the iteration you want to recover from, for manual iteration. Currently auto recovery already recovers from last iteration (i.e. recover_iteration = -1 for auto recovery). 
-    
+    recover_file = "" 
+
     # s is an array of spin 1/2 tensor indices (Index objects) which will be the site or physical indices of the MPS.
     # We overload siteinds function, which generates custom Index array with Index objects having the tag of total spin quantum number for all N.
     # conserve_qns=true conserves the total spin quantum number "S" in the system as it evolves
@@ -92,12 +91,12 @@ function main()
     energy_sign = fill(1, N_sites) # all of the sites are neutrinos
 
     # Specify the relative directory path
-    datadir = joinpath(@__DIR__, "datafiles", "par_"*string(N_sites))
-    chkptdir = joinpath(@__DIR__, "checkpoints", "par_"*string(N_sites))
+    datadir = joinpath(@__DIR__, "datafiles")
+    chkptdir = joinpath(@__DIR__, "checkpoints")
 
     #extract output for the survival probability values at each timestep
     Sz_array, Sy_array, Sx_array,  prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, t_array, t_recover = evolve(
-        s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal,chkptdir, checkpoint_every,  do_recover, recover_type, recover_iteration, save_data , periodic)
+        s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal,chkptdir, checkpoint_every,  do_recover, recover_file, save_data , periodic)
 
     # extract the prob_surv on the first site 
     prob_surv_array_site1= [row[1] for row in prob_surv_array]
@@ -206,7 +205,7 @@ function main()
     end
     if save_plots_flag
         # Specify the relative directory path
-        plotdir = joinpath(@__DIR__, "plots", "par_"*string(N_sites))
+        plotdir = joinpath(@__DIR__, "plots")
         
         # Read the data files
         t_Sz_tot = readdlm(joinpath(datadir, "t_<Sz>.dat"))
@@ -233,15 +232,6 @@ function main()
         
         x_values = t_xsiteval[:, 2:end]  # All rows, all columns except the first
         pₓ_values = t_pxsiteval[:, 2:end]  # All rows, all columns except the first
-
-        # # Parsing arrays containing strings like "[1.0,", into a numeric array suitable for plotting
-        Sz_array = [ parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in Sz_array]
-        Sy_array = [parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in Sy_array]
-        Sx_array =[parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in Sx_array]
-        prob_surv_array = [ parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in prob_surv_array]
-        ρₑₑ_array = [ parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in ρₑₑ_array]
-        ρ_μμ_array = [ parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in ρ_μμ_array]
-        ρₑμ_array =[parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in ρₑμ_array]
 
         save_plots(τ, N_sites,L,t_array, ttotal,Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array,datadir, plotdir, save_plots_flag)
     end 

@@ -74,8 +74,7 @@ function main()
 
     checkpoint_every = 4
     do_recover = false
-    recover_type = "auto" 
-    recover_iteration = 80 # change it to the iteration you want to recover from, for manual iteration. Currently auto recovery already recovers from last iteration (i.e. recover_iteration = -1 for auto recovery). 
+    recover_file = "" 
 
     x = generate_x_array(N_sites_eachflavor, L)
     y = generate_x_array(N_sites_eachflavor, L)
@@ -93,17 +92,15 @@ function main()
     # i.e. examples of conservation of quantum numbers are the total number of neutrino particles, or the total of all S_z components of this system of spins
     # conserving total Sz requires Sx and Sy in terms of S+ and S- by design choice.
 
-   
     s = siteinds("S=1/2", N_sites; conserve_qns=false) #fixed #switched conserve_qns to false to avoid fluxes error in expect function
 
     # Initialize psi to be a product state (Of all electron flavor neutrino i.e. spin up in Richers notation which is equivalently half spin up and half chain spin down in my TN notation)
     ψ = productMPS(s, n -> n <= N_sites/2 ? "Up" : "Dn")
 
     function generate_B_pert(α)
-        # Generate two random perturbations for x and y
-        x_pert = α *   (2 * rand() - 1)  # Random number between -α and α
-        y_pert = α *   (2 * rand() - 1)  # Random number between -α and α
-
+        # Generate perturbations in x and y plane
+        x_pert = α  
+        y_pert = α  
         # Calculate the z component to maintain normalization
         z_pert = sqrt(max(0, 1 - x_pert^2 - y_pert^2))
 
@@ -117,6 +114,7 @@ function main()
 
     # Since the perturbation is small, B_pert should already be normalized, but you can normalize again for precision
     B_pert = B_pert / norm(B_pert) 
+    # println("B_pert= ", B_pert)  
 
     # Perturb the state via one-body Hamiltonian
     ψ₀= evolve_perturbation(s,k, τ_pert, B_pert, α, x, L, N_sites, ψ, cutoff, maxdim, energy_sign,ttotal)
@@ -125,8 +123,8 @@ function main()
                     n_νₑ,n_νₑ̄,Eνₑ,Eνₑ̄,Δx,Δm², p, x, Δp, ψ₀, shape_name, energy_sign, cutoff, maxdim, ttotal,periodic)
 
     # Specify the relative directory path
-    datadir = joinpath(@__DIR__,"datafiles","FFI_MB", "par_"*string(N_sites))
-    chkptdir = joinpath(@__DIR__, "checkpoints","FFI_MB", "par_"*string(N_sites))
+    datadir = joinpath(@__DIR__,"datafiles")
+    chkptdir = joinpath(@__DIR__, "checkpoints")
 
     ρₑμ_at_t1 = nothing  # Initialize a variable to store ρₑμ at t1
     ρₑμ_at_t2 = nothing  # Initialize a variable to store ρₑμ at t2
@@ -134,7 +132,7 @@ function main()
 
     #extract output for the survival probability values at each timestep
     Sz_array, Sy_array, Sx_array,  prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, t_array, t_recover = evolve(
-        s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ₀, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal,chkptdir, checkpoint_every,  do_recover, recover_type, recover_iteration, save_data , periodic)
+        s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ₀, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal,chkptdir, checkpoint_every,  do_recover, recover_file, save_data , periodic)
 
     # Take the abs value fo all enteries till N_sites_eachflavor and then take the mean of that first half of the array, then do this for each row in ρₑμ_array 
     ρₑμ_array_domain_avg = [mean(abs.(row[1:N_sites_eachflavor])) for row in ρₑμ_array] 
@@ -163,7 +161,7 @@ function main()
     else
         println("ρₑμ was not captured at both t1 and t2.")
     end
-    
+
     if save_data
         # Generate input data
         input_data = extract_initial_conditions(N_sites,N_sites_eachflavor,τ, ttotal,tolerance,
@@ -172,10 +170,9 @@ function main()
         generate_inputs_file(datadir, "inputs.txt", input_data)
     end
 
-
     if save_plots_flag 
         # Specify the relative directory path
-        plotdir = joinpath(@__DIR__, "plots","FFI_MB", "par_"*string(N_sites))
+        plotdir = joinpath(@__DIR__, "plots")
             
         # Read the data files
         t_Sz_tot = readdlm(joinpath(datadir, "t_<Sz>.dat"))
@@ -199,26 +196,19 @@ function main()
         ρₑμ_array = t_ρₑμ_tot[:, 2:N_sites_eachflavor+1]
 
         # Parsing arrays containing strings like "[1.0,", into a numeric array suitable for plotting
-        Sz_array_parsed = [parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in Sz_array]
-        Sy_array_parsed =[parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in Sy_array]
-        Sx_array_parsed =[parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in Sx_array]
-        prob_surv_array_parsed  = [ parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in prob_surv_array]
-        ρₑₑ_array_parsed  = [ parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in ρₑₑ_array]
-        ρ_μμ_array_parsed  = [ parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in ρ_μμ_array]
-        ρₑμ_array_parsed  =[parse(Float64, replace(strip(position, ['[', ']', ',']), "," => "")) for position in ρₑμ_array]
 
-        Sz_array_domain_avgd = [mean(abs.(row)) for row in eachrow(Sz_array_parsed)]
-        Sy_array_domain_avgd = [mean(abs.(row)) for row in eachrow(Sy_array_parsed)]
-        Sx_array_domain_avgd = [mean(abs.(row)) for row in eachrow(Sx_array_parsed)]
-        prob_surv_array_domain_avgd = [mean(abs.(row)) for row in eachrow(prob_surv_array_parsed)]
-        ρₑₑ_array_domain_avgd = [mean(abs.(row)) for row in eachrow(ρₑₑ_array_parsed)]
-        ρ_μμ_array_domain_avgd = [mean(abs.(row)) for row in eachrow(ρ_μμ_array_parsed)]
-        ρₑμ_array_domain_avgd= [mean(abs.(row)) for row in eachrow(ρₑμ_array_parsed)]
+        Sz_array_domain_avgd = [mean(abs.(row)) for row in eachrow(Sz_array)]
+        Sy_array_domain_avgd = [mean(abs.(row)) for row in eachrow(Sy_array)]
+        Sx_array_domain_avgd = [mean(abs.(row)) for row in eachrow(Sx_array)]
+        prob_surv_array_domain_avgd = [mean(abs.(row)) for row in eachrow(prob_surv_array)]
+        ρₑₑ_array_domain_avgd = [mean(abs.(row)) for row in eachrow(ρₑₑ_array)]
+        ρ_μμ_array_domain_avgd = [mean(abs.(row)) for row in eachrow(ρ_μμ_array)]
+        ρₑμ_array_domain_avgd= [mean(abs.(row)) for row in eachrow(ρₑμ_array)]
 
         x_values = t_xsiteval[:, 2:end]  # All rows, all columns except the first
         pₓ_values = t_pxsiteval[:, 2:end]  # All rows, all columns except the first
         save_plots(τ, N_sites,L,t_array, ttotal,Sz_array_domain_avgd, Sy_array_domain_avgd, Sx_array_domain_avgd, prob_surv_array_domain_avgd, x_values, pₓ_values, ρₑₑ_array_domain_avgd,ρ_μμ_array_domain_avgd, ρₑμ_array_domain_avgd,datadir, plotdir, save_plots_flag)
-             
+        
         # Call the function to generate the inputs file in the specified directory
         generate_inputs_file(plotdir, "inputs.txt", input_data)
     end
