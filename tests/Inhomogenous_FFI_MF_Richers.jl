@@ -98,9 +98,9 @@ function main()
     ψ = productMPS(s, n -> n <= N_sites/2 ? "Up" : "Dn")
 
     function generate_B_pert(α)
-        # Generate two random perturbations for x and y
-        x_pert = α *   (2 * rand() - 1)  # Random number between -α and α
-        y_pert = α *   (2 * rand() - 1)  # Random number between -α and α
+        # Generate perturbations for x and y 
+        x_pert = α  
+        y_pert = α 
 
         # Calculate the z component to maintain normalization
         z_pert = sqrt(max(0, 1 - x_pert^2 - y_pert^2))
