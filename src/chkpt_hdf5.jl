@@ -4,7 +4,7 @@ using HDF5
 
 # This file generates functions that read and write into an hdf5 File
 # for the values needed for recovery in the evolution process.
-function checkpoint_simulation_hdf5(checkpoint_filename, s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, gates, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, t1, t2, ttotal, t, iteration)
+function checkpoint_simulation_hdf5(checkpoint_filename, s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, t, iteration)
     # Open an HDF5 file for writing (or create it if it doesn't exist)
     f = h5open(checkpoint_filename, "w")
     
@@ -18,8 +18,6 @@ function checkpoint_simulation_hdf5(checkpoint_filename, s, τ, N, B, L, N_sites
     write(f, "theta_nu(rad)", theta_nu)
     write(f, "cutoff(unitless const)", cutoff)
     write(f, "maxdim(unitless const)", maxdim)
-    write(f, "t1(sec)", t1)
-    write(f, "t2(sec)", t2)
     write(f, "t(sec)", t)
     write(f, "iteration(unitless const)", iteration)
     
@@ -57,8 +55,6 @@ function recover_checkpoint_hdf5(checkpoint_filename)
     theta_nu = read(f, "theta_nu(rad)")
     cutoff = read(f, "cutoff(unitless const)")
     maxdim = read(f, "maxdim(unitless const)")
-    t1 = read(f, "t1(sec)")
-    t2 = read(f, "t2(sec)")
     t_initial = read(f, "t(sec)")
     iteration = read(f, "iteration(unitless const)")
     
@@ -81,5 +77,5 @@ function recover_checkpoint_hdf5(checkpoint_filename)
     
     println("Recovered checkpoint from $checkpoint_filename, iteration $iteration, time $t_initial")
 
-    return s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, t1, t2, t_initial, iteration
+    return s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, t_initial, iteration
 end
