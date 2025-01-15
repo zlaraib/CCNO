@@ -1,3 +1,6 @@
+# reads all the data in "run*/datafiles/t_*" and combines them into a single file in "combined_data/t_*".
+# run with: python3 combine_data_new.py
+
 import numpy as np
 import os
 
