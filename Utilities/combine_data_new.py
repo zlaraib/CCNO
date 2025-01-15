@@ -28,7 +28,7 @@ for f in filenames:
     # remove only individual elements, not the entire rest of the array
     i = 1
     while i < combined_data.shape[0]:
-        if combined_data[i, 0] < combined_data[i - 1, 0]:
+        if combined_data[i, 0] <= combined_data[i - 1, 0]:
             combined_data = np.delete(combined_data, i, axis=0)
         else:
             i += 1
