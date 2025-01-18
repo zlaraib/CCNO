@@ -101,27 +101,29 @@ function main(N_sites, Δω)
     tmin_ifirstlocalmin_file = joinpath(datadir, "tmin_ifirstlocalmin.dat")
     if !do_recover 
         # Index of first minimum of the prob_surv_array (containing survival probability values at each time step)
-        i_first_local_min = find_first_local_minima_index(prob_surv_array_site1)
+        global i_first_local_min = find_first_local_minima_index(prob_surv_array_site1)
         
         # Writing if_else statement to communicate if local minima (not) found
         if i_first_local_min != -1
             println("Index of the first local minimum: ", i_first_local_min)
-            t_min = τ * i_first_local_min - τ
+            global t_min = τ * i_first_local_min - τ
             println(t_min)
         else
-            t_min = nothing
+            global t_min = nothing
             println(t_min)
             println("No local minimum found in the array.")
         end
         println("Corresponding time of first minimum index= ", t_min)
 
-        if save_data
-            # Save t_min and i_first_local_min to file
-            writedlm(tmin_ifirstlocalmin_file, [t_min i_first_local_min])
-            println("Saved t_min to file: ", tmin_ifirstlocalmin_file)
-        else t_min = t_min
+
         end
-    elseif do_recover 
+    if save_data
+        # Save t_min and i_first_local_min to file
+        writedlm(tmin_ifirstlocalmin_file, [t_min i_first_local_min])
+        println("Saved t_min to file: ", tmin_ifirstlocalmin_file)
+    else global t_min = t_min
+    end
+    if do_recover 
 
         # Read the saved t_min and i_first_local_min from the file
         tmin_data = readdlm(tmin_ifirstlocalmin_file)
