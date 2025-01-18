@@ -30,7 +30,7 @@ function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sh
 
     t_initial = 0.0
     iteration = 0
-    t_recover = 0.0  # Variable to store the initial recovery time 
+    t_recover = t_initial # Variable to store the initial recovery time 
 
     if do_recover
         
@@ -66,15 +66,8 @@ function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sh
     p_mod, p̂ = momentum(p,N_sites) 
     p̂ₓ= [sub_array[1] for sub_array in p̂]
     
-    # Main evolution loop
-    is_first_iteration = true  # Flag to mark the first iteration of the loop
     # Compute and print survival probability (found from <Sz>) at each time step then apply the gates to go to the next time
     for t in t_initial:τ:ttotal
-        # Save `t_recover` only once during the first iteration of the loop
-        if is_first_iteration
-            t_recover = t
-            is_first_iteration = false
-        end
         # extract the gates array generated in the gates_function file
         gates = create_gates(s, ψ,N, B, N_sites, Δx, Δm², p, x, Δp, theta_nu, shape_name,L, τ, energy_sign, periodic)
         push!(x_values, copy(x))  # Record x values at each time step
