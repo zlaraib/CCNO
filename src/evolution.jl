@@ -38,11 +38,11 @@ function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sh
         
         if isfile(recover_file)
             println("Recovering from checkpoint: $recover_file")
+            # Increment t_initial by τ to ensure it starts from the next expected value
+            t_initial += τ
             # Recover data from the specified checkpoint
             s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, t_initial, iteration = recover_checkpoint_hdf5(recover_file)
             
-            # Increment t_initial by τ to ensure it starts from the next expected value
-            t_initial += τ
             s = siteinds(ψ)
         else
             error("Checkpoint file not found")
@@ -137,7 +137,7 @@ function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sh
 
         if save_data
 
-            store_data(datadir, t+τ, sz_tot, sy_tot, sx_tot, prob_surv_tot,x, px, ρₑₑ_tot,ρ_μμ_tot, ρₑμ_tot)
+            store_data(datadir, t, sz_tot, sy_tot, sx_tot, prob_surv_tot,x, px, ρₑₑ_tot,ρ_μμ_tot, ρₑμ_tot)
 
             mkpath(chkptdir)
             if iteration % checkpoint_every == 0 
