@@ -13,7 +13,8 @@ function generate_inputs_file(directory, filename, data)
     end
 end
 
-function extract_initial_conditions()
+function extract_initial_conditions(N_sites,N_sites_eachflavor,τ, ttotal,tolerance,
+    Δm², maxdim, cutoff, p,ψ₀, L, Δx,n_νₑ,n_νₑ̄,Eνₑ,Eνₑ̄,B, N, shape_name,Δp,periodic)
     # Putting all my initial conditions into a dictionary
     initial_conditions = Dict(
         "N_sites" => N_sites,

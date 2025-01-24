@@ -2,7 +2,7 @@ using ITensors
 using Plots
 using Measures
 using DelimitedFiles
-
+using HDF5
 """
 For github unit tests runs: 
 src_dir = ../
@@ -26,8 +26,10 @@ save_data and save_plots_flag should be true to run test files.
     
 include(src_dir * "src/evolution.jl")
 include(src_dir * "src/constants.jl")
+include(src_dir * "src/chkpt_hdf5.jl")
 include(src_dir * "Utilities/save_plots.jl")
 include(src_dir * "Initializations/initial_cond.jl")
+include(src_dir * "Utilities/save_datafiles.jl")
 
 # We are simulating the time evolution of a 1D spin chain with N_sites sites, where each site is a spin-1/2 particle. 
 # The simulation is done by applying a sequence of unitary gates to an initial state of the system, 
@@ -64,6 +66,10 @@ function main()
     B = [sin(2 *theta_nu), 0, -cos(2*theta_nu)]
     B = B / norm(B) 
 
+    checkpoint_every = 4
+    do_recover = false
+    recover_file = ""
+
     x = fill(rand(), N_sites) # variable.
     y = fill(rand(), N_sites) # variable.
     z = fill(rand(), N_sites) # variable.
@@ -78,27 +84,57 @@ function main()
     energy_sign = [i <= N_sites ÷ 2 ? 1 : 1 for i in 1:N_sites] # all of the sites are neutrinos
 
     # Specify the relative directory path
-    datadir = joinpath(@__DIR__, "datafiles","Roggero", "par_"*string(N_sites), "tt_"*string(ttotal), "τ_"*string(τ))
-    #extract output from the expect.jl file where the survival probability values were computed at each timestep
-    Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, Im_Ω = evolve(
-        s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal, save_data , periodic)
+    datadir = joinpath(@__DIR__, "datafiles")
+    chkptdir = joinpath(@__DIR__, "checkpoints")
     
+    #extract output for the survival probability values at each timestep
+    Sz_array, Sy_array, Sx_array,  prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, t_array, t_recover = evolve(
+        s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal,chkptdir, checkpoint_every,  do_recover, recover_file ,save_data , periodic)
+
+    # extract the prob_surv on the first site 
+    prob_surv_array_site1= [row[1] for row in prob_surv_array]
     # Defining Δω as in Rogerro(2021)
     Δω = vcat((ω_a - ω_b)/2, (ω_a - ω_b)/2)
     @assert all(Δω./mu .== 0.1)
 
     if save_plots_flag
         # Specify the relative directory path
-        plotdir = joinpath(@__DIR__, "plots","Roggero", "par_"*string(N_sites), "tt_"*string(ttotal), "τ_"*string(τ))
+        plotdir = joinpath(@__DIR__, "plots")
+
+        # Read the data files
+        t_Sz_tot = readdlm(joinpath(datadir, "t_<Sz>.dat"))
+        t_Sy_tot = readdlm(joinpath(datadir, "t_<Sy>.dat"))
+        t_Sx_tot = readdlm(joinpath(datadir, "t_<Sx>.dat"))
+        t_probsurv_tot = readdlm(joinpath(datadir, "t_probsurv.dat"))
+        t_xsiteval = readdlm(joinpath(datadir, "t_xsiteval.dat"))
+        t_pxsiteval = readdlm(joinpath(datadir, "t_pxsiteval.dat"))
+        t_ρₑₑ_tot = readdlm(joinpath(datadir, "t_ρₑₑ.dat"))
+        t_ρ_μμ_tot = readdlm(joinpath(datadir, "t_ρ_μμ.dat"))
+        t_ρₑμ_tot = readdlm(joinpath(datadir, "t_ρₑμ.dat"))
+
+        # Extract time array and corresponding values for plotting
+        t_array = t_Sz_tot[:, 1]  
+
+        #Extract the array for first site only
+        Sz_array = t_Sz_tot[:,2]
+        Sy_array = t_Sy_tot[:,2]
+        Sx_array= t_Sx_tot[:,2] 
+        prob_surv_array = t_probsurv_tot[:, 2]
+        ρₑₑ_array = t_ρₑₑ_tot[:, 2]
+        ρ_μμ_array = t_ρ_μμ_tot[:, 2]
+        ρₑμ_array = t_ρₑμ_tot[:, 2]
         
-        save_plots(τ, N_sites, ttotal,Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array, plotdir, save_plots_flag)
+        x_values = t_xsiteval[:, 2:end]  # All rows, all columns except the first
+        pₓ_values = t_pxsiteval[:, 2:end]  # All rows, all columns except the first
+
+        save_plots(τ, N_sites,L,t_array, ttotal,Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array,datadir, plotdir, save_plots_flag)
     end
-
-    # Plotting P_surv vs t 
-    plot(0.0:τ:τ*(length(prob_surv_array)-1), prob_surv_array, xlabel = "t", ylabel = "Survival Probability p(t)",title = "Running main_Bipolar_Rog script \n for N_sites$(N_sites) with maxdim=1 and cutoff for τ$(τ)", legend = false, size=(700, 600), aspect_ratio=:auto,margin= 10mm, label= ["My_plot_for_N$(N_sites)"]) 
-    # Save the plot as a PDF file # for jenkins archive 
-    savefig("Survival probability vs t (Rog_bipolar)for N_sites$(N_sites) with maxdim=1 and cutoff for τ$(τ).pdf")
-
+    if !save_plots_flag 
+        # Plotting P_surv vs t 
+        plot(t_array, prob_surv_array_site1, xlabel = "t", ylabel = "Survival Probability p(t)",title = "Running main_Bipolar_Rog script \n for N_sites$(N_sites) with maxdim=1 and cutoff for τ$(τ)", legend = false, size=(700, 600), aspect_ratio=:auto,margin= 10mm, label= ["My_plot_for_N$(N_sites)"]) 
+        # Save the plot as a PDF file # for jenkins archive 
+        savefig("Survival probability_site1 vs t (Rog_bipolar)for N_sites$(N_sites) with maxdim=1 and cutoff for τ$(τ).pdf")
+    end
 end 
 
 @time main()

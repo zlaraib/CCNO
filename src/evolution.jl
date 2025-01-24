@@ -1,8 +1,9 @@
 using DelimitedFiles
 include("gates_function.jl")  # Include the gates_functions.jl file
-#include("H_MPO.jl") 
+include("chkpt_hdf5.jl") 
 include("momentum.jl")
 include("constants.jl")
+include("../Utilities/save_datafiles.jl")
 """
     Expected (CGS) units of the quantities defined in the files in tests directory that are being used in the evolve function.                                                                   
     s = site index array (dimensionless and unitless)          
@@ -25,32 +26,48 @@ include("constants.jl")
 # This file generates the evolve function which evolves the ψ state in time and computes the expectation values of Sz at each time step, along 
 # with their survival probabilities. The time evolution utilizes the unitary operators created as gates from the create_gates function.
 # The <Sz> and Survival probabilities output from this function are unitless. 
-function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal, save_data::Bool, periodic=true)
+function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal, chkptdir, checkpoint_every, do_recover, recover_file, save_data::Bool, periodic=true)
 
-    # Create empty array s to...
-    Sz_array = Float64[] # to store sz values 
-    Sy_array = Float64[] # to store sy values 
-    Sx_array = Float64[] # to store sx values 
-    t_array = [] # to store t values 
-    prob_surv_array = Float64[]   # to store survival probability values 
+    t_initial = 0.0
+    iteration = 0
+    t_recover = t_initial # Variable to store the initial recovery time 
+
+    if do_recover
+        
+        println("Manual recovery from file ", recover_file)
+        
+        if isfile(recover_file)
+            println("Recovering from checkpoint: $recover_file")
+            # Increment t_initial by τ to ensure it starts from the next expected value
+            t_initial += τ
+            # Recover data from the specified checkpoint
+            s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, t_initial, iteration = recover_checkpoint_hdf5(recover_file)
+            
+            s = siteinds(ψ)
+        else
+            error("Checkpoint file not found")
+        end
+     
+    end    
+
+    # Create empty array s to... 
+    Sz_array = [] # to store sz values for all sites  
+    Sy_array = [] # to store sy values for all sites 
+    Sx_array = [] # to store sx values for all sites 
+    t_array = [] # to store t values (same for all sites)
+    prob_surv_array = []   # to store survival probability values for all sites 
     x_values = []  # to store x values for all sites 
     pₓ_values = [] # to store px vector values for all sites
-    ρₑₑ_array = Float64[] # to store ρₑₑ values
-    ρ_μμ_array = Float64[] # to store ρ_μμ values
-    ρₑμ_array = Float64[] # to store ρₑμ values
+    ρₑₑ_array = [] # to store ρₑₑ values for all sites 
+    ρ_μμ_array = [] # to store ρ_μμ values for all sites 
+    ρₑμ_array = [] # to store ρₑμ values for all sites 
     
-    ρₑμ_at_t1 = nothing  # Initialize a variable to store ρₑμ at t1
-    ρₑμ_at_t2 = nothing  # Initialize a variable to store ρₑμ at t2
-    Δt = t2 - t1 #time difference between growth rates 
-
-
-    # H = Hamiltonian_mpo(s, N, B, N_sites, Δx, Δm², p, x, Δp, shape_name,L, τ, energy_sign, periodic)
     # extract output of p_hat and p_mod for the p vector defined above for all sites. 
     p_mod, p̂ = momentum(p,N_sites) 
     p̂ₓ= [sub_array[1] for sub_array in p̂]
     
     # Compute and print survival probability (found from <Sz>) at each time step then apply the gates to go to the next time
-     for t in 0.0:τ:ttotal
+    for t in t_initial:τ:ttotal
         # extract the gates array generated in the gates_function file
         gates = create_gates(s, ψ,N, B, N_sites, Δx, Δm², p, x, Δp, theta_nu, shape_name,L, τ, energy_sign, periodic)
         push!(x_values, copy(x))  # Record x values at each time step
@@ -67,70 +84,33 @@ function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sh
                 @assert (x[i] >= 0 && x[i] <= L)
             end
         end
+
+        # compute the avg expectation value of Sz at all sites
+        sz_tot = expect(ψ, "Sz")  # Compute Sz for each site and store the values in sz_tot
+
+        # compute expectation value of sy and sx (inbuilt operator in ITensors library) at all sites on the chain
+        sy_tot = expect(complex(ψ), "Sy")
+        sx_tot = expect(ψ, "Sx")
+
+        push!(Sz_array, sz_tot)  # Add all elements of sz_tot to Sz_array
+        push!(Sy_array, sy_tot)  # Add all elements of sz_tot to Sz_array
+        push!(Sx_array, sx_tot)  # Add all elements of sz_tot to Sz_array
         
-        # if shape_name!=="none" #specfic to the inhomogenous case Test4
-        #     # compute the avg expectation value of Sz at all sites
-        #     sz_tot = expect(ψ, "Sz")
-        #     sz = mean(sz_tot)
-        # else 
-            # compute expectation value of Sz (inbuilt operator in ITensors library) at the first site on the chain
-            # sz = expect(ψ, "Sz"; sites=1)
-        # end 
+        #survival probability for all sites (neutrino) to be found in its initial flavor state
+        prob_surv_tot = 0.5 * (1 .- 2 .* sz_tot)
+        push!(prob_surv_array, prob_surv_tot)
 
-        if shape_name!=="none" #specfic to the inhomogenous case Test4
-            # compute the avg expectation value of Sz at all sites
-            sz_tot = expect(ψ, "Sz")  # Compute Sz for each site and store the values in sz_tot
-            half_N = div(N_sites, 2)  # Calculate half of the number of sites
-            sz = mean(sz_tot[1:half_N])  # Take the mean of the first half of the sz_tot array
-        
-        else 
-            # compute expectation value of Sz (inbuilt operator in ITensors library) at the first site on the chain
-            sz = expect(ψ, "Sz"; sites=1)
-        end 
-
-        # compute expectation value of sy and sx using S+ and S- (inbuilt operator in ITensors library) at the first site on the chain
-        if p == zeros(N_sites, 3) #for rogerro's case only (b/c S+ S- needed to keep conservation of QN number)
-            sy = -0.5 *im * (expect(complex(ψ), "S+"; sites=1) - expect(complex(ψ), "S-"; sites=1)) #re-check
-            sx = 0.5 * (expect(ψ, "S+"; sites=1) + expect(ψ, "S-"; sites=1)) #recheck
-        else 
-            sy = expect(complex(ψ), "Sy"; sites=1)
-            sx = expect(ψ, "Sx"; sites=1)
-        end
-
-        # add an element sz to ... 
-        push!(Sz_array, sz) # .. the end of Sz array 
-        push!(Sy_array, sy) # .. the end of Sy array 
-        push!(Sx_array, sx) # .. the end of Sx array 
-        
-        # survival probability for a (we took first) neutrino to be found in its initial flavor state (in this case a spin down)
-        prob_surv = 0.5 * (1 - 2 * sz)
-
-        # add an element prob_surv to the end of  prob_surv_array 
-        push!(prob_surv_array, prob_surv)
-
-        if B[1] == 1
-            println("$t $sz")
-        else 
-            println("$t $prob_surv")
-        end
-        
         # recall that in our code sigma_z = 2*Sz so make sure these expressions are consistent with "Sz in ITensors" 
-        ρₑₑ = ( (2 * sz) + 1)/2 
-        push!(ρₑₑ_array,abs(ρₑₑ))
-        ρ_μμ = ( (-2 * sz) + 1)/2 
-        push!(ρ_μμ_array,abs(ρ_μμ))
-        ρₑμ = sqrt(sx^2 + sy^2)
-        push!(ρₑμ_array, ρₑμ)
+        ρₑₑ_tot = ((2 .* sz_tot) .+ 1) ./ 2
+        push!(ρₑₑ_array, abs.(ρₑₑ_tot))
 
-        # Check if the current time is approximately t1
-        if abs(t - t1) < τ / 2
-            ρₑμ_at_t1 = ρₑμ
-        end
+        ρ_μμ_tot = ((-2 .* sz_tot) .+ 1) ./ 2
+        push!(ρ_μμ_array, abs.(ρ_μμ_tot))
         
-        # Check if the current time is approximately t2
-        if abs(t - t2) < τ / 2
-            ρₑμ_at_t2 = ρₑμ
-        end
+        ρₑμ_tot = sqrt.(sx_tot.^2 .+ sy_tot.^2)
+        push!(ρₑμ_array, ρₑμ_tot)
+
+        println("iteration= $iteration time= $t ρₑₑ_tot= $ρₑₑ_tot")
         # Writing an if statement in a shorthand way that checks whether the current value of t is equal to ttotal, 
         # and if so, it executes the break statement, which causes the loop to terminate early.
         t ≈ ttotal && break
@@ -138,53 +118,32 @@ function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sh
         # apply each gate in gates(ITensors array) successively to the wavefunction ψ (MPS)(it is equivalent to time evolving psi according to the time-dependent Hamiltonian represented by gates).
         # The apply function is a matrix-vector multiplication operation that is smart enough to determine which site indices each gate has, and then figure out where to apply it to our MPS. 
         # It truncates the MPS according to the set cutoff and maxdim for all the non-nearest-neighbor gates.
+        # apply each gate in gates(ITensors array) successively to the wavefunction ψ (MPS)(it is equivalent to time evolving psi according to the time-dependent Hamiltonian represented by gates).
+        # The apply function is a matrix-vector multiplication operation that is smart enough to determine which site indices each gate has, and then figure out where to apply it to our MPS. 
+        # It truncates the MPS according to the set cutoff and maxdim for all the non-nearest-neighbor gates.
         ψ = apply(gates, ψ; cutoff, maxdim)
-        # ψ = tdvp(H, ψ,  -im *τ;   nsweeps=1,
-        # reverse_step=true,outputlevel=1)
 
         # The normalize! function is used to ensure that the MPS is properly normalized after each application of the time evolution gates. 
         # This is necessary to ensure that the MPS represents a valid quantum state.
         normalize!(ψ)
-    end
-    t_array = 0.0:τ:ttotal
 
-    # After the time evolution loop, calculate and print the growth rate from the ratio if both values have been captured
-    if ρₑμ_at_t1 !== nothing && ρₑμ_at_t2 !== nothing
-        global Im_Ω = (1/Δt ) * log(ρₑμ_at_t2 / ρₑμ_at_t1)
-        println("Growth rate of flavor coherence of ρₑμ at t2 to ρₑμ at t1: $Im_Ω")
-    else
-        println("ρₑμ was not captured at both t1 and t2.")
-    end
 
-    if save_data
-        save_data = isdir(datadir) || mkpath(datadir)
-        # Writing data to files with corresponding headers
-        fname1 = joinpath(datadir, "t_<Sz>_<Sy>_<Sx>.dat")
-        writedlm(fname1, [t_array Sz_array Sy_array Sx_array])
-        
-        fname2 = joinpath(datadir, "t_probsurv.dat")
-        writedlm(fname2, [t_array prob_surv_array])
-        
-        fname3 = joinpath(datadir, "t_xsiteval.dat")
-        writedlm(fname3, [t_array x_values])
-        
-        fname4 = joinpath(datadir, "t_pxsiteval.dat")
-        writedlm(fname4, [t_array pₓ_values])
-        
-        fname5 = joinpath(datadir, "t_ρₑₑ.dat")
-        writedlm(fname5, [t_array ρₑₑ_array])
-        
-        fname6 = joinpath(datadir, "t_ρ_μμ.dat")
-        writedlm(fname6, [t_array ρ_μμ_array])
-        
-        fname7 = joinpath(datadir, "t_ρₑμ.dat")
-        writedlm(fname7, [t_array ρₑμ_array])
+        if save_data
 
-        fname8 = joinpath(datadir, "Im_Ω.dat")
-        writedlm(fname8, [Im_Ω])
+            store_data(datadir, t, sz_tot, sy_tot, sx_tot, prob_surv_tot,x, px, ρₑₑ_tot,ρ_μμ_tot, ρₑμ_tot)
+
+            mkpath(chkptdir)
+            if iteration % checkpoint_every == 0 
+                checkpoint_filename = joinpath(chkptdir, "checkpoint.chkpt.it" * lpad(iteration, 6, "0") * ".h5")
+                checkpoint_simulation_hdf5(checkpoint_filename, s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, t+τ, iteration)
+            end
+
+            iteration = iteration + 1
+        end
     end
-    
-    return Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, Im_Ω 
+    t_array = t_initial:τ:ttotal
+
+    return Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, t_array, t_recover
 end
 
 
