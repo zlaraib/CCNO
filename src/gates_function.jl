@@ -4,6 +4,8 @@ include("geometric_func.jl")
 include("shape_func.jl")
 include("momentum.jl")
 
+# This file generates the create_gates function that holds ITensors Trotter gates and returns the dimensionless unitary 
+# operators govered by the Hamiltonian which includes effects of the vacuum and self-interaction potential for each site.
 
 """
     Expected (CGS) units of the quantities defined in the files in tests directory that are being used in the gates function.                                                                   
@@ -23,10 +25,6 @@ include("momentum.jl")
     cutoff = truncation threshold for the SVD in MPS representation (unitless and dimensionless)
     periodic = boolean indicating whether boundary conditions should be periodic
 """
-
-# This file generates the create_gates function that holds ITensors Trotter gates and returns the dimensionless unitary 
-# operators govered by the Hamiltonian which includes effects of the vacuum and self-interaction potential for each site.
-
 function create_gates(s, ψ, N, B, N_sites, Δx, Δm², p, x, Δp, theta_nu, shape_name,L, τ, energy_sign, periodic)
     
     # Make gates (1,2),(2,3),(3,4),... i.e. unitary gates which act on any (non-neighboring) pairs of sites in the chain.
