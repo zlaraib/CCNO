@@ -12,9 +12,9 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
     - name: Set up Julia
-      uses: actions/setup-julia@v1
+      uses: julia-actions/setup-julia@v2
       with:
-        julia-version: '1.6'
+        version: '1.6'
     - name: Install dependencies
       run: |
         julia -e 'import Pkg; Pkg.add(["Documenter", "HDF5", "Random", "Statistics", "LinearAlgebra", "DelimitedFiles", "Plots", "Measures"])'
