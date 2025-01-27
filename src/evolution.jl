@@ -4,6 +4,11 @@ include("chkpt_hdf5.jl")
 include("momentum.jl")
 include("constants.jl")
 include("../Utilities/save_datafiles.jl")
+
+# This file generates the evolve function which evolves the ψ state in time and computes the expectation values of Sz at each time step, along 
+# with their survival probabilities. The time evolution utilizes the unitary operators created as gates from the create_gates function.
+# The <Sz> and Survival probabilities output from this function are unitless. 
+
 """
     Expected (CGS) units of the quantities defined in the files in tests directory that are being used in the evolve function.                                                                   
     s = site index array (dimensionless and unitless)          
@@ -22,10 +27,6 @@ include("../Utilities/save_datafiles.jl")
     cutoff = truncation threshold for the SVD in MPS representation (unitless and dimensionless)
     periodic = boolean indicating whether boundary conditions should be periodic
 """
-
-# This file generates the evolve function which evolves the ψ state in time and computes the expectation values of Sz at each time step, along 
-# with their survival probabilities. The time evolution utilizes the unitary operators created as gates from the create_gates function.
-# The <Sz> and Survival probabilities output from this function are unitless. 
 function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal, chkptdir, checkpoint_every, do_recover, recover_file, save_data::Bool, periodic=true)
 
     t_initial = 0.0

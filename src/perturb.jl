@@ -4,6 +4,10 @@ include("geometric_func.jl")
 include("shape_func.jl")
 include("momentum.jl")
 
+# This file generates the create_perturbation_gates function that holds ITensors Trotter gates and returns the dimensionless unitary 
+# operators that will generate the perturbation via this hamiltonian which includes effects of the vacuum one-body potential for each site 
+# Then, this file generates the evolve_perturbation function which utilizes the unitary operators created as perturb_gates from the 
+# create_perturbation_gates function to evolve the initial ψ state in time and return the normalized perturbed state after evolution.
 
 """
     Expected (CGS) units of the quantities defined in the files in tests directory that are being used in the gates function.                                                                   
@@ -16,12 +20,6 @@ include("momentum.jl")
     maxdim = max bond dimension in MPS truncation (unitless and dimensionless)
     cutoff = truncation threshold for the SVD in MPS representation (unitless and dimensionless)
 """
-
-# This file generates the create_perturbation_gates function that holds ITensors Trotter gates and returns the dimensionless unitary 
-# operators that will generate the perturbation via this hamiltonian which includes effects of the vacuum one-body potential for each site 
-# Then, this file generates the evolve_perturbation function which utilizes the unitary operators created as perturb_gates from the 
-# create_perturbation_gates function to evolve the initial ψ state in time and return the normalized perturbed state after evolution.
-
 function create_perturbation_gates(s, k, B_pert, α, x, L, N_sites, energy_sign, τ)
     
     # Make gates (1,2),(2,3),(3,4),... i.e. unitary gates which act on any (non-neighboring) pairs of sites in the chain.

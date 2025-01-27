@@ -1,0 +1,32 @@
+name: Deploy Documentation to GitHub Pages
+on:
+  push:
+    branches:
+      - main  # Trigger deployment when pushing to the main branch
+permissions:
+  contents: write
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    - name: Set up Julia
+      uses: actions/setup-julia@v1
+      with:
+        julia-version: '1.6'
+    - name: Install dependencies
+      run: |
+        julia -e 'import Pkg; Pkg.add(["Documenter", "HDF5", "Random", "Statistics", "LinearAlgebra", "DelimitedFiles", "Plots", "Measures"])'
+        julia -e 'import Pkg; Pkg.add(PackageSpec(name="ITensors", version="0.3.66"))'  # Install ITensors@0.3.66
+    - name: Build the documentation
+      run: |
+        cd docs
+        julia --project make.jl
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        publish_branch: gh-pages  # The branch where the generated HTML will be deployed
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: docs/build  # The directory containing the generated HTML
+        force_orphan: true  # remove branch history
