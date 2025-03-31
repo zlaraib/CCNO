@@ -1,7 +1,8 @@
-push!(LOAD_PATH, "/mnt/scratch/srichers/software/CCNO")
+push!(LOAD_PATH, "/Users/srichers/software/CCNO")
 using CCNO
 
 using ITensors
+using ITensorMPS
 using Plots
 using Measures
 using LinearAlgebra
@@ -20,7 +21,7 @@ function main()
     N_sites = 2* (N_sites_eachflavor) # total particles/sites for all neutrino and anti neutrino electron flavored
     τ = 5E-13 # time step to include 50 steps every 10 picoseconds # sec # variable
     τ_pert = 10^-8 # time step for perturbation evolution
-    ttotal = 9E-11 # total time of evolution # sec #variable
+    ttotal = 5.0E-12 # total time of evolution # sec #variable
     tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution #variable
     m1 = -0.008596511*CCNO.eV #eV  1st mass eigenstate of neutrino
     m2 = 0*CCNO.eV #eV  2nd mass eigenstate of neutrino

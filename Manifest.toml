@@ -2,7 +2,7 @@
 
 julia_version = "1.11.4"
 manifest_format = "2.0"
-project_hash = "f81584a2656f584c02e8d97535b8df6c071b1704"
+project_hash = "6158b68e2f9bc9efe6eb0100397578246087eeb0"
 
 [[deps.Accessors]]
 deps = ["CompositionsBase", "ConstructionBase", "Dates", "InverseFunctions", "MacroTools"]
@@ -334,6 +334,26 @@ git-tree-sha1 = "f93a9ce66cd89c9ba7a4695a47fd93b4c6bc59fa"
 uuid = "e33a78d0-f292-5ffc-b300-72abe9b543c8"
 version = "2.12.0+0"
 
+[[deps.ITensorMPS]]
+deps = ["Adapt", "Compat", "ITensors", "IsApprox", "KrylovKit", "LinearAlgebra", "NDTensors", "Printf", "Random", "SerializedElementArrays", "TupleTools"]
+git-tree-sha1 = "8794874a59ed8dc11cf7a6a3c54d67d1f54322a4"
+uuid = "0d1a4710-d33b-49a5-8f18-73bdf49b47e2"
+version = "0.3.16"
+
+    [deps.ITensorMPS.extensions]
+    ITensorMPSChainRulesCoreExt = "ChainRulesCore"
+    ITensorMPSHDF5Ext = "HDF5"
+    ITensorMPSObserversExt = "Observers"
+    ITensorMPSPackageCompilerExt = "PackageCompiler"
+    ITensorMPSZygoteRulesExt = ["ChainRulesCore", "ZygoteRules"]
+
+    [deps.ITensorMPS.weakdeps]
+    ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
+    HDF5 = "f67ccb44-e63f-5c2f-98bd-6dc0ccc4ba2f"
+    Observers = "338f10d5-c7f1-4033-a7d1-f9dec39bcaa0"
+    PackageCompiler = "9b87118b-4619-50d2-8e1e-99f35a4d4d9d"
+    ZygoteRules = "700de1a5-db45-46bc-99cf-38207098b444"
+
 [[deps.ITensors]]
 deps = ["Adapt", "BitIntegers", "ChainRulesCore", "Compat", "Dictionaries", "DocStringExtensions", "Functors", "IsApprox", "LinearAlgebra", "NDTensors", "Pkg", "Printf", "Random", "Requires", "SerializedElementArrays", "SimpleTraits", "SparseArrays", "StaticArrays", "Strided", "TimerOutputs", "TupleTools", "Zeros"]
 git-tree-sha1 = "55a9a338413a2cfa19e106c70d94f7d9b0856cef"
@@ -411,6 +431,16 @@ deps = ["Artifacts", "Preferences"]
 git-tree-sha1 = "a007feb38b422fbdab534406aeca1b86823cb4d6"
 uuid = "692b3bcd-3c85-4b1f-b108-f13ce0eb3210"
 version = "1.7.0"
+
+[[deps.KrylovKit]]
+deps = ["LinearAlgebra", "PackageExtensionCompat", "Printf", "Random", "VectorInterface"]
+git-tree-sha1 = "38477816f8db29956ea591feb3086d9edabf6f38"
+uuid = "0b1a1467-8014-51b9-945f-bf0ae24f4b77"
+version = "0.9.5"
+weakdeps = ["ChainRulesCore"]
+
+    [deps.KrylovKit.extensions]
+    KrylovKitChainRulesCoreExt = "ChainRulesCore"
 
 [[deps.LazyArtifacts]]
 deps = ["Artifacts", "Pkg"]
