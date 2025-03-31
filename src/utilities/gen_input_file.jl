@@ -1,4 +1,4 @@
-include("../Initializations/initial_cond.jl") 
+include("../initializations/initial_cond.jl") 
 # This file extracts the initial condition from the test script and generates an input file
 
 function generate_inputs_file(directory, filename, data)

@@ -1,13 +1,7 @@
-
-include("constants.jl")
-include("geometric_func.jl")
-include("shape_func.jl")
-include("momentum.jl")
-
 # This file generates the create_gates function that holds ITensors Trotter gates and returns the dimensionless unitary 
 # operators govered by the Hamiltonian which includes effects of the vacuum and self-interaction potential for each site.
 
-"""
+@doc """
     Expected (CGS) units of the quantities defined in the files in tests directory that are being used in the gates function.                                                                   
     s = site index array (dimensionless and unitless)          
     N = array of no.of neutrinos contained on each site (dimensionless and unitless)

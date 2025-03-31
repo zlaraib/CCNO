@@ -1,5 +1,4 @@
-
-""" 
+@doc """ 
     This function takes in a momentum vector (for all sites) along with their directions 
     and returns the geometric factor dependent on the unit momentum vectors for all
     i< j sites for a (non) zero p vector. 

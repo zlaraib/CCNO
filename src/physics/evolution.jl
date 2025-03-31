@@ -1,9 +1,4 @@
 using DelimitedFiles
-include("gates_function.jl")  # Include the gates_functions.jl file
-include("chkpt_hdf5.jl") 
-include("momentum.jl")
-include("constants.jl")
-include("../Utilities/save_datafiles.jl")
 
 # This file generates the evolve function which evolves the ψ state in time and computes the expectation values of Sz at each time step, along 
 # with their survival probabilities. The time evolution utilizes the unitary operators created as gates from the create_gates function.

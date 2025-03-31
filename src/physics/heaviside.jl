@@ -1,4 +1,4 @@
-""" 
+@doc """ 
     This function takes in a scalar x  
     and returns its heaviside step-function result
 """
