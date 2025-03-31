@@ -21,7 +21,7 @@ function main()
     N_sites = 2* (N_sites_eachflavor) # total particles/sites for all neutrino and anti neutrino electron flavored
     τ = 5E-13 # time step to include 50 steps every 10 picoseconds # sec # variable
     τ_pert = 10^-8 # time step for perturbation evolution
-    ttotal = 5.0E-12 # total time of evolution # sec #variable
+    ttotal = 9.0E-11 # total time of evolution # sec #variable
     tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution #variable
     m1 = -0.008596511*CCNO.eV #eV  1st mass eigenstate of neutrino
     m2 = 0*CCNO.eV #eV  2nd mass eigenstate of neutrino
@@ -70,7 +70,6 @@ function main()
     s = siteinds("S=1/2", N_sites; conserve_qns=false) #fixed #switched conserve_qns to false to avoid fluxes error in expect function
 
     # Initialize psi to be a product state (Of all electron flavor neutrino i.e. spin up in Richers notation which is equivalently half spin up and half chain spin down in my TN notation)
-    print("productMPS()")
     @time ψ = productMPS(s, n -> n <= N_sites/2 ? "Up" : "Dn")
 
     function generate_B_pert(α)
@@ -93,10 +92,8 @@ function main()
     # println("B_pert= ", B_pert)  
 
     # Perturb the state via one-body Hamiltonian
-    print("evolve_perturbations():")
     @time ψ₀= CCNO.evolve_perturbation(s,k, τ_pert, B_pert, α, x, L, N_sites, ψ, cutoff, maxdim, energy_sign,ttotal)
 
-    print("Neutrino_number():")
     @time N = CCNO.Neutrino_number(s, τ, B,L, N_sites, N_sites_eachflavor, tolerance,
                     n_νₑ,n_νₑ̄,Eνₑ,Eνₑ̄,Δx,Δm², p, x, Δp, ψ₀, shape_name, energy_sign, cutoff, maxdim, ttotal,periodic)
 
@@ -109,12 +106,10 @@ function main()
     Δt = t2 - t1 #time difference between growth rates
 
     #extract output for the survival probability values at each timestep
-    print("evolve():")
     @time Sz_array, Sy_array, Sx_array,  prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, t_array, t_recover = CCNO.evolve(
         s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ₀, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal,chkptdir, checkpoint_every,  do_recover, recover_file, save_data , periodic)
 
     # Take the abs value fo all enteries till N_sites_eachflavor and then take the mean of that first half of the array, then do this for each row in ρₑμ_array
-    print("rho_array_domain_avg:")
     @time ρₑμ_array_domain_avg = [mean(abs.(row[1:N_sites_eachflavor])) for row in ρₑμ_array] 
 
     # Loop over the time array to match t1 and t2
@@ -204,5 +199,4 @@ function main()
     #commented out b/c assert "doesnt always" pass even with fixed maxdim= 2
     # @assert abs((Im_Ω - analytic_growth_rate)/  analytic_growth_rate) < tolerance 
 end
-print("main()")
 @time main()
