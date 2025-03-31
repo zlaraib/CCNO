@@ -1,38 +1,16 @@
+push!(LOAD_PATH, "..")
+using CCNO
+
 using ITensors
+using ITensorMPS
 using Plots 
 using Measures 
 using LinearAlgebra
 using DelimitedFiles
 using HDF5
 
-"""
-For github unit tests runs: 
-src_dir = ../
-save_data and save_plots_flag should be false to run test files. 
-"""
-
-src_dir = "../"
 save_data = false  # true = saves datafiles for science runs while false doesn't. So change it to false for jenkins test runs
 save_plots_flag = false # true = saves plots for science runs while false doesn't. So change it to false for jenkins test runs
-
-
-"""
-For science runs: 
-src_dir = /home/zohalaraib/Oscillatrino/ # should be changed to users PATH
-save_data and save_plots_flag should be true to run test files. 
-
-"""
-# src_dir= "/home/zohalaraib/Oscillatrino/" # should be changed to users PATH
-# save_data = true  # true = saves datafiles for science runs while false doesn't. So change it to false for jenkins test runs
-# save_plots_flag = true # true = saves plots for science runs while false doesn't. So change it to false for jenkins test runs
-    
-
-include(src_dir * "src/evolution.jl")
-include(src_dir * "src/constants.jl")
-include(src_dir * "src/momentum.jl")
-include(src_dir * "Utilities/save_plots.jl")
-include(src_dir * "src/chkpt_hdf5.jl")
-include(src_dir * "Utilities/save_datafiles.jl")
 
 # We are simulating the time evolution of a 1D spin chain with N sites, where each site is a spin-1/2 particle. 
 # The simulation is done by applying a sequence of unitary gates to an initial state of the system, 
@@ -65,7 +43,7 @@ function main()
   mu = zeros(N_sites) #Fixed
                                 
   # Create an array of dimension N and fill it with the value 1/(sqrt(2) * G_F). This is the number of neutrinos.
-  N = mu.* fill((Δx)^3/(sqrt(2) * G_F), N_sites) 
+  N = mu.* fill((Δx)^3/(sqrt(2) * CCNO.G_F), N_sites) 
   
   # Create a B vector which would be same for all N particles 
   theta_nu = π/4 # mixing_angle #rad 
@@ -91,7 +69,7 @@ function main()
   chkptdir = joinpath(@__DIR__, "checkpoints")
 
   #extract output for the survival probability values at each timestep
-  Sz_array, Sy_array, Sx_array,  prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, t_array, t_recover = evolve(
+  Sz_array, Sy_array, Sx_array,  prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, t_array, t_recover = CCNO.evolve(
     s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal,chkptdir, checkpoint_every,  do_recover, recover_file, save_data , periodic)
     
   # extract the Sz on the first site 
@@ -106,7 +84,7 @@ function main()
       if B[1] == 1
 
         # Compute the expected value based on the derived analytic formula
-        expected_sz_site1 = -0.5 * cos(ω[i] * t)
+        expected_sz_site1 = -0.5 * cos(CCNO.ω[i] * t)
 
       end
       if B[3] == -1
@@ -131,7 +109,7 @@ function main()
       if B[1] == 1
 
         # Compute the expected value based on the derived analytic formula
-        expected_sz_site1 = -0.5 * cos(ω[i] * t)
+        expected_sz_site1 = -0.5 * cos(CCNO.ω[i] * t)
 
       end
       if B[3] == -1

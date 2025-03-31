@@ -1,35 +1,15 @@
+push!(LOAD_PATH, "..")
+using CCNO
+
 using ITensors
+using ITensorMPS
 using Plots
 using Measures
 using DelimitedFiles
 using HDF5
-"""
-For github unit tests runs: 
-src_dir = ../
-save_data and save_plots_flag should be false to run test files. 
-"""
 
-src_dir = "../"
 save_data = false  # true = saves datafiles for science runs while false doesn't. So change it to false for jenkins test runs
 save_plots_flag = false # true = saves plots for science runs while false doesn't. So change it to false for jenkins test runs
-
-
-"""
-For science runs: 
-src_dir = /home/zohalaraib/Oscillatrino/ # should be changed to users PATH
-save_data and save_plots_flag should be true to run test files. 
-
-"""
-# src_dir= "/home/zohalaraib/Oscillatrino/" # should be changed to users PATH
-# save_data = true  # true = saves datafiles for science runs while false doesn't. So change it to false for jenkins test runs
-# save_plots_flag = true # true = saves plots for science runs while false doesn't. So change it to false for jenkins test runs
-    
-include(src_dir * "src/evolution.jl")
-include(src_dir * "src/constants.jl")
-include(src_dir * "src/chkpt_hdf5.jl")
-include(src_dir * "Utilities/save_plots.jl")
-include(src_dir * "Initializations/initial_cond.jl")
-include(src_dir * "Utilities/save_datafiles.jl")
 
 # this file plots δω on x axis while minimum time tp on y axis and compares
 # the values of our calculations with Rogerros calculations in Table I.
@@ -90,13 +70,13 @@ function main(Δω, N_sites, ttotal)
     Δm² = Δω
     s = siteinds("S=1/2", N_sites; conserve_qns=false)
     mu = ones(N_sites)
-    N = mu .* fill(((Δx)^3 )/(√2 * G_F * N_sites), N_sites)
+    N = mu .* fill(((Δx)^3 )/(√2 * CCNO.G_F * N_sites), N_sites)
     theta_nu = 0 # mixing_angle #rad 
     B = [sin(2*theta_nu), 0, -cos(2*theta_nu)] # is equivalent to B = [0, 0, -1] # fixed for Rogerro's case
     B = B / norm(B)
 
     # p matrix with numbers generated from the p_array for all components (x, y, z)
-    p = hcat(generate_p_array(N_sites),fill(0, N_sites), fill(0, N_sites))
+    p = hcat(CCNO.generate_p_array(N_sites),fill(0, N_sites), fill(0, N_sites))
     x = fill(rand(), N_sites) # variable.
     y = fill(rand(), N_sites) # variable.
     z = fill(rand(), N_sites) # variable.
@@ -109,7 +89,7 @@ function main(Δω, N_sites, ttotal)
     chkptdir = joinpath(@__DIR__, "checkpoints")
 
     #extract output for the survival probability values at each timestep
-    Sz_array, Sy_array, Sx_array,  prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, t_array, t_recover = evolve(
+    Sz_array, Sy_array, Sx_array,  prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, t_array, t_recover = CCNO.evolve(
         s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal,chkptdir, checkpoint_every,  do_recover, recover_file, save_data , periodic)
     
     # extract the prob_surv on the first site 

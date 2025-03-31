@@ -1,4 +1,4 @@
-push!(LOAD_PATH, "/Users/srichers/software/CCNO")
+push!(LOAD_PATH, "..")
 using CCNO
 
 using ITensors
@@ -11,7 +11,6 @@ using Statistics
 using Random
 using HDF5
 
-src_dir = ""
 save_data = false  # true = saves datafiles for science runs while false doesn't. So change it to false for jenkins test runs
 save_plots_flag = false # true = saves plots for science runs while false doesn't. So change it to false for jenkins test runs
 

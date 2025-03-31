@@ -1,5 +1,7 @@
 module CCNO
 
+__precompile__()
+
 include("initializations/initial_cond.jl")
 
 include("physics/chkpt_hdf5.jl")
