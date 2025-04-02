@@ -12,6 +12,7 @@ pipeline {
 	    sh 'nvcc -V'
 	    sh 'git submodule update --init'
 	    sh 'julia -v'
+	    sh 'julia -e \'push!(LOAD_PATH, "."); using Pkg; Pkg.add(["CCNO"]); Pkg.precompile()\''
 }}
 
 
