@@ -15,8 +15,7 @@ RUN wget -q https://julialang-s3.julialang.org/bin/linux/x64/1.11/julia-${JULIA_
     && rm julia-${JULIA_VERSION}-linux-x86_64.tar.gz
 ENV USER=jenkins
 ENV LOGNAME=jenkins
-ENV JULIA_DEPOT_PATH=/opt/julia:$JULIA_DEPOT_PATH
-ENV JULIA_LOAD_PATH=/opt/julia:$JULIA_LOAD_PATH
+ENV JULIA_DEPOT_PATH=/opt/julia
+ENV JULIA_LOAD_PATH=/opt/julia
 RUN mkdir -p $JULIA_DEPOT_PATH && chmod -R 777 $JULIA_DEPOT_PATH
 RUN julia -e 'push!(LOAD_PATH, "."); using Pkg; Pkg.add(["ITensors", "ITensorMPS", "Plots", "Measures", "LinearAlgebra", "ITensorTDVP", "HDF5"]); Pkg.precompile()'
-RUN chmod a+rX -R /opt/julia
