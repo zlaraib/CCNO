@@ -18,3 +18,4 @@ ENV JULIA_PATH=/opt/julia
 ENV JULIA_DEPOT_PATH=/opt/julia
 RUN mkdir -p $JULIA_DEPOT_PATH && chmod -R 777 $JULIA_DEPOT_PATH
 RUN julia -e 'push!(LOAD_PATH, "."); using Pkg; Pkg.add(["ITensors", "ITensorMPS", "Plots", "Measures", "LinearAlgebra", "ITensorTDVP", "HDF5"]); Pkg.precompile()'
+RUN chmod -R 777 $JULIA_DEPOT_PATH
