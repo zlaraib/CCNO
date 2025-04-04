@@ -1,3 +1,5 @@
+using Measures
+using Plots
 
 # This function reads data from output files and saves the plots
 function save_plots(τ, N_sites,L, t_array, ttotal,Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array, datadir, plotdir, save_plot_flag::Bool)

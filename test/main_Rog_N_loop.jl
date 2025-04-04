@@ -208,7 +208,7 @@ for N_sites in N_start:N_step:N_stop
         x_values = t_xsiteval[:, 2:end]  # All rows, all columns except the first
         pₓ_values = t_pxsiteval[:, 2:end]  # All rows, all columns except the first
 
-        save_plots(τ, N_sites,L,t_array, ttotal,Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array,datadir, plotdir, save_plots_flag)
+        CCNO.save_plots(τ, N_sites,L,t_array, ttotal,Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array,datadir, plotdir, save_plots_flag)
     
     end 
 end

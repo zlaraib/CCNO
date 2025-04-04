@@ -139,10 +139,10 @@ function main()
 
     if save_data
         # Generate input data
-        input_data = extract_initial_conditions(N_sites,N_sites_eachflavor,τ, ttotal,tolerance,
+        input_data = CCNO.extract_initial_conditions(N_sites,N_sites_eachflavor,τ, ttotal,tolerance,
         Δm², maxdim, cutoff, p,ψ₀,L, Δx,n_νₑ,n_νₑ̄,Eνₑ,Eνₑ̄,B, N, shape_name,Δp,periodic)
         # Call the function to generate the inputs file in the specified directory
-        generate_inputs_file(datadir, "inputs.txt", input_data)
+        CCNO.generate_inputs_file(datadir, "inputs.txt", input_data)
     end
 
     if save_plots_flag 
@@ -182,10 +182,10 @@ function main()
 
         x_values = t_xsiteval[:, 2:end]  # All rows, all columns except the first
         pₓ_values = t_pxsiteval[:, 2:end]  # All rows, all columns except the first
-        save_plots(τ, N_sites,L,t_array, ttotal,Sz_array_domain_avgd, Sy_array_domain_avgd, Sx_array_domain_avgd, prob_surv_array_domain_avgd, x_values, pₓ_values, ρₑₑ_array_domain_avgd,ρ_μμ_array_domain_avgd, ρₑμ_array_domain_avgd,datadir, plotdir, save_plots_flag)
+        CCNO.save_plots(τ, N_sites,L,t_array, ttotal,Sz_array_domain_avgd, Sy_array_domain_avgd, Sx_array_domain_avgd, prob_surv_array_domain_avgd, x_values, pₓ_values, ρₑₑ_array_domain_avgd,ρ_μμ_array_domain_avgd, ρₑμ_array_domain_avgd,datadir, plotdir, save_plots_flag)
         
         # Call the function to generate the inputs file in the specified directory
-        generate_inputs_file(plotdir, "inputs.txt", input_data)
+        CCNO.generate_inputs_file(plotdir, "inputs.txt", input_data)
     end
 
     if !save_plots_flag

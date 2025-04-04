@@ -16,16 +16,16 @@ save_plots_flag = false # true = saves plots for science runs while false doesn'
 
 function main()
     """ Richers(2021) Test 4 initial conditions for many-body dynamics: """
-    N_sites_eachflavor= 5 # total sites/particles that evenly spaced "for each (electron) flavor" 
+    N_sites_eachflavor= 10 # total sites/particles that evenly spaced "for each (electron) flavor" 
     N_sites = 2* (N_sites_eachflavor) # total particles/sites for all neutrino and anti neutrino electron flavored
     τ = 5E-13 # time step to include 50 steps every 10 picoseconds # sec # variable
     τ_pert = 10^-8 # time step for perturbation evolution
-    ttotal = 9.0E-11 # total time of evolution # sec #variable
+    ttotal = 5.0E-12 # total time of evolution # sec #variable
     tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution #variable
     m1 = -0.008596511*CCNO.eV #eV  1st mass eigenstate of neutrino
     m2 = 0*CCNO.eV #eV  2nd mass eigenstate of neutrino
     Δm² = (m2^2-m1^2) # mass square difference # (erg^2)
-    maxdim = 2 # max bond dimension in MPS truncation
+    maxdim = 20 # max bond dimension in MPS truncation
     cutoff = 1e-100 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT) #variable
     L = 1 # cm # domain size # (aka big box length)
     n_νₑ =  4.891290848285061e+32 # cm^-3 # number density of electron flavor neutrino
@@ -138,10 +138,10 @@ function main()
 
     if save_data
         # Generate input data
-        input_data = extract_initial_conditions(N_sites,N_sites_eachflavor,τ, ttotal,tolerance,
+        input_data = CCNO.extract_initial_conditions(N_sites,N_sites_eachflavor,τ, ttotal,tolerance,
         Δm², maxdim, cutoff, p,ψ₀,L, Δx,n_νₑ,n_νₑ̄,Eνₑ,Eνₑ̄,B, N, shape_name,Δp,periodic)
         # Call the function to generate the inputs file in the specified directory
-        generate_inputs_file(datadir, "inputs.txt", input_data)
+        CCNO.generate_inputs_file(datadir, "inputs.txt", input_data)
     end
 
     if save_plots_flag 
@@ -181,10 +181,10 @@ function main()
 
         x_values = t_xsiteval[:, 2:end]  # All rows, all columns except the first
         pₓ_values = t_pxsiteval[:, 2:end]  # All rows, all columns except the first
-        save_plots(τ, N_sites,L,t_array, ttotal,Sz_array_domain_avgd, Sy_array_domain_avgd, Sx_array_domain_avgd, prob_surv_array_domain_avgd, x_values, pₓ_values, ρₑₑ_array_domain_avgd,ρ_μμ_array_domain_avgd, ρₑμ_array_domain_avgd,datadir, plotdir, save_plots_flag)
+        CCNO.save_plots(τ, N_sites,L,t_array, ttotal,Sz_array_domain_avgd, Sy_array_domain_avgd, Sx_array_domain_avgd, prob_surv_array_domain_avgd, x_values, pₓ_values, ρₑₑ_array_domain_avgd,ρ_μμ_array_domain_avgd, ρₑμ_array_domain_avgd,datadir, plotdir, save_plots_flag)
         
         # Call the function to generate the inputs file in the specified directory
-        generate_inputs_file(plotdir, "inputs.txt", input_data)
+        CCNO.generate_inputs_file(plotdir, "inputs.txt", input_data)
     end
 
     if !save_plots_flag 
