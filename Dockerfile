@@ -14,3 +14,11 @@ RUN wget -q https://julialang-s3.julialang.org/bin/linux/x64/1.11/julia-${JULIA_
     && mv /opt/julia-${JULIA_VERSION} /opt/julia \
     && ln -s /opt/julia/bin/julia /usr/local/bin/julia \
     && rm julia-${JULIA_VERSION}-linux-x86_64.tar.gz
+
+# create directory where julia downloads and stores dependencies
+ENV JULIA_DEPOT_PATH=/opt/julia
+RUN mkdir -p $JULIA_DEPOT_PATH
+
+# install some dependencies to hopefully make the jenkins process faster
+RUN julia -e 'using Pkg; Pkg.add(["ITensors", "ITensorMPS", "Plots", "Measures", "LinearAlgebra", "ITensorTDVP", "HDF5"]); Pkg.precompile()'
+RUN chmod -R 777 $JULIA_DEPOT_PATH
