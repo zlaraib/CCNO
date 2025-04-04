@@ -12,7 +12,9 @@ pipeline {
 	    sh 'nvcc -V'
 	    sh 'git submodule update --init'
 	    sh 'julia -v'
-	    sh 'julia -e \'push!(LOAD_PATH, "."); using Pkg; Pkg.add(["CCNO"]); Pkg.precompile()\''
+
+	    # use the Manifest.toml and Project.toml to install prerequisites
+	    sh 'julia -e \'using Pkg; Pkg.activate(); Pkg.instantiate(); Pkg.precompile()\''
 }}
 
 
@@ -21,7 +23,7 @@ pipeline {
 	// Tests //
 	//=======//
 	stage('Particles evolution'){ steps{
-		sh 'julia test/par_evolution.jl'
+		sh 'julia --project=. test/par_evolution.jl'
 		archiveArtifacts artifacts: '*.pdf'
     } 
 }
