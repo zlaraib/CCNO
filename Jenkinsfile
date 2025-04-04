@@ -14,7 +14,7 @@ pipeline {
 	    sh 'julia -v'
 
 	    // use the Manifest.toml and Project.toml to install prerequisites
-	    sh 'julia -e \'using Pkg; Pkg.activate(); Pkg.instantiate(); Pkg.precompile()\''
+	    sh 'julia -e \'using Pkg; Pkg.activate("."); Pkg.instantiate(); Pkg.precompile()\''
 }}
 
 
