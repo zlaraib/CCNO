@@ -32,18 +32,18 @@ function create_gates(params::CCNO.parameters, s, ψ, N, B, Δx, Δm², p, x, L,
     if Δm² == 0 # specific to self-int only
         ω = zeros(params.N_sites)
     elseif Δm² == 2 * π # specific to vac_osc only
-       global ω = fill(π, params.N_sites) # added global so we can access and use this global variable without the need to pass them as arguments to another function
+       ω = fill(π, params.N_sites) # added global so we can access and use this global variable without the need to pass them as arguments to another function
     elseif (Δm² == 0.5 || Δm² == 0.2 || Δm² == 2) &&  L==1 # addition for full Hamiltonian from main_Rogerro, Rog_bipolar, Rog_N_loop and t_p_vs_N_unsym tests 
         # Create arrays ω_a and ω_b
-        global ω_a = fill(Δm², div(params.N_sites, 2))
-        global ω_b = fill(0, div(params.N_sites, 2))
+        ω_a = fill(Δm², div(params.N_sites, 2))
+        ω_b = fill(0, div(params.N_sites, 2))
         # Concatenate ω_a and ω_b to form ω
         ω = vcat(ω_a, ω_b)
     elseif (Δm² == -0.5 || Δm² == 0.0 || Δm² ==0.05 || Δm² ==0.125 || Δm² ==0.25 || Δm² ==0.5 || Δm² ==1.0) && L==10 # addition for t_p_vs_N_sym and t_p_vs_sym_delta_w tests   
         Δω_array= fill(Δm², div(params.N_sites, 2))
         # Calculate ω_a and ω_b based on Δω
-        global ω_a = Δω_array 
-        global ω_b = -Δω_array 
+        ω_a = Δω_array 
+        ω_b = -Δω_array 
         ω = vcat(ω_a, ω_b)
     else 
         ω = [Δm² / (2 * p_mod[i]) * energy_sign[i] for i in 1:params.N_sites]
