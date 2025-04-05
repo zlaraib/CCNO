@@ -22,22 +22,22 @@ using DelimitedFiles
     cutoff = truncation threshold for the SVD in MPS representation (unitless and dimensionless)
     periodic = boolean indicating whether boundary conditions should be periodic
 """
-function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal, chkptdir, checkpoint_every, do_recover, recover_file, save_data::Bool, periodic=true)
+function evolve(params::CCNO.parameters, s, N, B, L, Δx, Δm², p, x, ψ, energy_sign, t1, t2)
 
     t_initial = 0.0
     iteration = 0
     t_recover = t_initial # Variable to store the initial recovery time 
 
-    if do_recover
+    if params.do_recover
         
-        println("Manual recovery from file ", recover_file)
+        println("Manual recovery from file ", params.recover_file)
         
-        if isfile(recover_file)
+        if isfile(params.recover_file)
             println("Recovering from checkpoint: $recover_file")
             # Increment t_initial by τ to ensure it starts from the next expected value
-            t_initial += τ
+            t_initial += params.τ
             # Recover data from the specified checkpoint
-            s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, t_initial, iteration = recover_checkpoint_hdf5(recover_file)
+            s, τ, N, B, L, Δx, p, x, ψ, energy_sign, t_initial, iteration = recover_checkpoint_hdf5(params.recover_file)
             
             s = siteinds(ψ)
         else
@@ -59,20 +59,20 @@ function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sh
     ρₑμ_array = [] # to store ρₑμ values for all sites 
     
     # extract output of p_hat and p_mod for the p vector defined above for all sites. 
-    p_mod, p̂ = momentum(p,N_sites) 
+    p_mod, p̂ = momentum(p,params.N_sites) 
     p̂ₓ= [sub_array[1] for sub_array in p̂]
     
     # Compute and print survival probability (found from <Sz>) at each time step then apply the gates to go to the next time
-    for t in t_initial:τ:ttotal
+    for t in t_initial:params.τ:params.ttotal
         # extract the gates array generated in the gates_function file
-        gates = create_gates(s, ψ,N, B, N_sites, Δx, Δm², p, x, Δp, theta_nu, shape_name,L, τ, energy_sign, periodic)
+        gates = create_gates(params, s, ψ,N, B, Δx, Δm², p, x, L, energy_sign)
         push!(x_values, copy(x))  # Record x values at each time step
         px = p[:, 1]  # Extracting the first column (which corresponds to px values)
         push!(pₓ_values, copy(px)) # Record px values at each time step
 
-        for i in 1:N_sites
-            x[i] += p̂ₓ[i] * c * τ
-            if periodic
+        for i in 1:params.N_sites
+            x[i] += p̂ₓ[i] * c * params.τ
+            if params.periodic
                 # wrap around position from 0 to domain size L
                 x[i] = mod(x[i],L)
 
@@ -109,7 +109,7 @@ function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sh
         println("iteration= $iteration time= $t ρₑₑ_tot= $ρₑₑ_tot")
         # Writing an if statement in a shorthand way that checks whether the current value of t is equal to ttotal, 
         # and if so, it executes the break statement, which causes the loop to terminate early.
-        t ≈ ttotal && break
+        t ≈ params.ttotal && break
 
         # apply each gate in gates(ITensors array) successively to the wavefunction ψ (MPS)(it is equivalent to time evolving psi according to the time-dependent Hamiltonian represented by gates).
         # The apply function is a matrix-vector multiplication operation that is smart enough to determine which site indices each gate has, and then figure out where to apply it to our MPS. 
@@ -117,27 +117,27 @@ function evolve(s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, sh
         # apply each gate in gates(ITensors array) successively to the wavefunction ψ (MPS)(it is equivalent to time evolving psi according to the time-dependent Hamiltonian represented by gates).
         # The apply function is a matrix-vector multiplication operation that is smart enough to determine which site indices each gate has, and then figure out where to apply it to our MPS. 
         # It truncates the MPS according to the set cutoff and maxdim for all the non-nearest-neighbor gates.
-        ψ = apply(gates, ψ; cutoff, maxdim)
+        ψ = apply(gates, ψ; params.cutoff, params.maxdim)
 
         # The normalize! function is used to ensure that the MPS is properly normalized after each application of the time evolution gates. 
         # This is necessary to ensure that the MPS represents a valid quantum state.
         normalize!(ψ)
 
 
-        if save_data
+        if params.save_data
 
-            store_data(datadir, t, sz_tot, sy_tot, sx_tot, prob_surv_tot,x, px, ρₑₑ_tot,ρ_μμ_tot, ρₑμ_tot)
+            store_data(params.datadir, t, sz_tot, sy_tot, sx_tot, prob_surv_tot,x, px, ρₑₑ_tot,ρ_μμ_tot, ρₑμ_tot)
 
-            mkpath(chkptdir)
-            if iteration % checkpoint_every == 0 
-                checkpoint_filename = joinpath(chkptdir, "checkpoint.chkpt.it" * lpad(iteration, 6, "0") * ".h5")
-                checkpoint_simulation_hdf5(checkpoint_filename, s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, t+τ, iteration)
+            mkpath(params.chkptdir)
+            if iteration % params.checkpoint_every == 0 
+                checkpoint_filename = joinpath(params.chkptdir, "checkpoint.chkpt.it" * lpad(iteration, 6, "0") * ".h5")
+                checkpoint_simulation_hdf5(params, s, N, B, L, Δx, Δm², p, x, ψ, energy_sign, t, iteration)
             end
 
             iteration = iteration + 1
         end
     end
-    t_array = t_initial:τ:ttotal
+    t_array = t_initial:params.τ:params.ttotal
 
     return Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, t_array, t_recover
 end

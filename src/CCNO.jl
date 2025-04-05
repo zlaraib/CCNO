@@ -4,9 +4,10 @@ __precompile__()
 
 # note, the order of these statements matter. Those without dependencies need to be first.
 
+include("physics/parameters.jl")
+
 include("initializations/initial_cond.jl")
 
-include("utilities/gen_input_file.jl")
 include("utilities/save_datafiles.jl")
 include("utilities/save_plots.jl")
 

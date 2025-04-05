@@ -15,7 +15,7 @@ function none(Δp, ξ)
     return 1 
 end
 
-function shape_func(x, Δp, i, j,L, shape_name, periodic)
+function shape_func(params::CCNO.parameters, x, i, j,L)
 
     # Define a dictionary mapping shape names to functions
     shapes = Dict(
@@ -24,28 +24,28 @@ function shape_func(x, Δp, i, j,L, shape_name, periodic)
         "none" => none
     )
     
-    if haskey(shapes, shape_name)
-        shape_function = shapes[shape_name]  # assign the corresponding function (selected in shape_name in the test file) to shape_function.
+    if haskey(shapes, params.shape_name)
+        shape_function = shapes[params.shape_name]  # assign the corresponding function (selected in shape_name in the test file) to shape_function.
         # ξ determines the overlap of neutrinos (i.e. their shapes) on top of each other to signify the neutrino-neutrino interaction strength.
-        ξ = (x[i] - x[j]) / Δp # dependent upon difference in distance of i and j sites and the width of the shape function. 
-        if periodic 
+        ξ = (x[i] - x[j]) / params.Δp # dependent upon difference in distance of i and j sites and the width of the shape function. 
+        if params.periodic 
             if x[i]-x[j] > L/2
-                ξ = ξ - L/Δp 
+                ξ = ξ - L/params.Δp 
             end
             if x[i] - x[j] < -L/2
-                ξ = ξ + L/Δp 
+                ξ = ξ + L/params.Δp 
             end
 
-            if shape_name == "none"
-                @assert (Δp == L)
-            else @assert (2*Δp <L)
+            if params.shape_name == "none"
+                @assert (params.Δp == L)
+            else @assert (2*params.Δp <L)
             end
-            @assert (abs(ξ)<= L/(2* Δp))
+            @assert (abs(ξ)<= L/(2* params.Δp))
         end
 
-        return shape_function(Δp, ξ)
+        return shape_function(params.Δp, ξ)
     else
-        error("Unknown shape: $shape_name")
+        error("Unknown shape: $params.shape_name")
     end
 
 end

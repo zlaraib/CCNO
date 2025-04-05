@@ -17,18 +17,18 @@ using ITensorMPS
     maxdim = max bond dimension in MPS truncation (unitless and dimensionless)
     cutoff = truncation threshold for the SVD in MPS representation (unitless and dimensionless)
 """
-function create_perturbation_gates(s, k, B_pert, α, x, L, N_sites, energy_sign, τ)
+function create_perturbation_gates(params::CCNO.parameters, s, k, B_pert, x, L, energy_sign, τ)
     
     # Make gates (1,2),(2,3),(3,4),... i.e. unitary gates which act on any (non-neighboring) pairs of sites in the chain.
     # Create an empty ITensors array that will be our Trotter gates
     gates = ITensor[] 
 
     # define an array of oscillation frequencies (units of ergs) of perturbation
-    ω_pert = asin.([α * sin(k*x[i])* energy_sign[i] for i in 1:N_sites])
+    ω_pert = asin.([params.α * sin(k*x[i])* energy_sign[i] for i in 1:params.N_sites])
     println("perturb_ω = ", ω_pert)
 
-    for i in 1:(N_sites-1)
-        for j in i+1:N_sites
+    for i in 1:(params.N_sites-1)
+        for j in i+1:params.N_sites
             #s_i, s_j are non-neighbouring spin site/indices from the s array
             s_i = s[i]                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
             s_j = s[j]
@@ -58,13 +58,13 @@ function create_perturbation_gates(s, k, B_pert, α, x, L, N_sites, energy_sign,
 end
 
 
-function evolve_perturbation(s,k, τ_pert, B_pert, α, x, L, N_sites, ψ, cutoff, maxdim, energy_sign,ttotal)
+function evolve_perturbation(params::CCNO.parameters, s,k, τ_pert, B_pert, x, L, ψ, energy_sign)
 
     # extract the gates array generated in the gates_function file
-    perturb_gates = create_perturbation_gates(s,k, B_pert, α, x, L, N_sites, energy_sign, τ_pert)
+    perturb_gates = create_perturbation_gates(params, s,k, B_pert, x, L, energy_sign, τ_pert)
 
      # Compute and print survival probability (found from <Sz>) at each time step then apply the gates to go to the next time
-     for t in 0.0:τ_pert:ttotal  #perhaps not perturn till the end? stop somewhere in the mid 
+     for t in 0.0:τ_pert:params.ttotal  #perhaps not perturn till the end? stop somewhere in the mid 
 
         # Writing an if statement in a shorthand way that checks whether the current value of t is equal to τ_pert, 
         # and if so, it executes the break statement, which causes the loop to terminate early.
@@ -72,9 +72,8 @@ function evolve_perturbation(s,k, τ_pert, B_pert, α, x, L, N_sites, ψ, cutoff
         # apply each gate in perturb_gates(ITensors array) successively to the wavefunction ψ (MPS)(it is equivalent to time evolving psi according to the time-dependent Hamiltonian represented by gates).
         # The apply function is a matrix-vector multiplication operation that is smart enough to determine which site indices each gate has, and then figure out where to apply it to our MPS. 
         # It truncates the MPS according to the set cutoff and maxdim for all the non-nearest-neighbor gates.
-        ψ = apply(perturb_gates, ψ; cutoff, maxdim)
+        ψ = apply(perturb_gates, ψ; params.cutoff, params.maxdim)
         
-
         # The normalize! function is used to ensure that the MPS is properly normalized after each application of the time evolution gates. 
         # This is necessary to ensure that the MPS represents a valid quantum state.
         normalize!(ψ)
