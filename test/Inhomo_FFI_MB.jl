@@ -14,7 +14,6 @@ using HDF5
 """ Richers(2021) Test 4 initial conditions for many-body dynamics: """
 function main()
     N_sites_eachflavor= 10 # total sites/particles that evenly spaced "for each (electron) flavor" 
-    τ_pert = 10^-8 # time step for perturbation evolution
     L = 1 # cm # domain size # (aka big box length)
     n_νₑ =  4.891290848285061e+32 # cm^-3 # number density of electron flavor neutrino
     n_νₑ̄ =  n_νₑ # cm^-3 # number density of electron flavor antineutrino
@@ -78,26 +77,8 @@ function main()
     # Initialize psi to be a product state (Of all electron flavor neutrino i.e. spin up in Richers notation which is equivalently half spin up and half chain spin down in my TN notation)
     @time ψ = productMPS(s, n -> n <= params.N_sites/2 ? "Up" : "Dn")
 
-    function generate_B_pert(α)
-        # Generate perturbations in x and y plane
-        x_pert = α  
-        y_pert = α  
-        # Calculate the z component to maintain normalization
-        z_pert = sqrt(max(0, 1 - x_pert^2 - y_pert^2))
-
-        # Return the B_pert vector
-        return [x_pert, y_pert, z_pert]
-    end
-
-    # Generate the perturbed B vector scaled by α  as mentioned in the paper
-    B_pert = generate_B_pert(params.α)
-
-    # Since the perturbation is small, B_pert should already be normalized, but you can normalize again for precision
-    B_pert = B_pert / norm(B_pert) 
-    # println("B_pert= ", B_pert)  
-
     # Perturb the state via one-body Hamiltonian
-    @time ψ₀= CCNO.evolve_perturbation(params,s,k, τ_pert, B_pert, x, L, ψ, energy_sign)
+    @time ψ₀= CCNO.evolve_perturbation(params,s,k, B, ψ)
 
     @time N = CCNO.Neutrino_number(params,Δx,L, n_νₑ,n_νₑ̄)
 
