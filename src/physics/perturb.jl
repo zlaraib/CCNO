@@ -17,8 +17,8 @@ using ITensorMPS
     maxdim = max bond dimension in MPS truncation (unitless and dimensionless)
     cutoff = truncation threshold for the SVD in MPS representation (unitless and dimensionless)
 """
-Base.@pure function create_perturbation_gates(params::CCNO.Parameters, state::CCNO.SimulationState, k::Float64, B_pert::Vector{Float64})
-    
+function perturb(params::CCNO.Parameters, state::CCNO.SimulationState,k::Float64,B_pert::Vector{Float64})
+
     # Make gates (1,2),(2,3),(3,4),... i.e. unitary gates which act on any (non-neighboring) pairs of sites in the chain.
     # Create an empty ITensors array that will be our Trotter gates
     gates = ITensor[] 
@@ -43,16 +43,8 @@ Base.@pure function create_perturbation_gates(params::CCNO.Parameters, state::CC
         # i.e. we append a new element Gj (which is an ITensor object representing a gate) to the end of the gates array.
         push!(gates, Gj)
     end
-    return gates
-end
 
-
-function evolve_perturbation(params::CCNO.Parameters, state::CCNO.SimulationState,k::Float64,B_pert::Vector{Float64})
-
-    # extract the gates array generated in the gates_function file
-    perturb_gates = create_perturbation_gates(params, state,k, B_pert)
-
-    state.ψ = apply(perturb_gates, state.ψ; params.cutoff, params.maxdim)
+    state.ψ = apply(gates, state.ψ; params.cutoff, params.maxdim)
         
     # The normalize! function is used to ensure that the MPS is properly normalized after each application of the time evolution gates. 
     # This is necessary to ensure that the MPS represents a valid quantum state.

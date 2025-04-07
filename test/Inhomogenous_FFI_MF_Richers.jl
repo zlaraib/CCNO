@@ -85,7 +85,7 @@ function main()
                                  xyz = hcat(x,y,z))
 
     # Perturb the state via one-body Hamiltonian
-    CCNO.evolve_perturbation(params, state,k, B)
+    CCNO.perturb(params, state,k, B)
 
     #extract output for the survival probability values at each timestep
     CCNO.evolve(params, state, B, L, Δx, Δm²)
