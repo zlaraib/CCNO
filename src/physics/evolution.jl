@@ -26,15 +26,15 @@ using ITensorMPS
 """
 function evolve(params::CCNO.Parameters, state::CCNO.SimulationState)
 
-    t_initial = 0.0
-    iteration = 0
-    t_recover = t_initial # Variable to store the initial recovery time 
+    t_initial::Float64 = 0.0
+    iteration::Int64 = 0
+    t_recover::Float64 = t_initial # Variable to store the initial recovery time 
     mkpath(params.chkptdir)
     mkpath(params.datadir)
 
     if params.do_recover
         if isfile(params.recover_file)
-            println("Recovering from checkpoint: $recover_file")
+            println("Recovering from checkpoint: $params.recover_file")
             state, t_initial, iteration = recover_checkpoint_hdf5(params.recover_file)
         else
             error("Checkpoint file not found")
