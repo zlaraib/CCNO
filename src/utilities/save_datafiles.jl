@@ -8,7 +8,7 @@ function append_data(filename::String, new_data)
     end
 end
 
-function store_data(datadir::String, t::Float64, state::CCNO.SimulationState, x::Vector{Float64})
+function store_data(datadir::String, t::Float64, state::CCNO.SimulationState)
     #================================#
     # calculate necessary quantities #
     #================================#
@@ -21,7 +21,7 @@ function store_data(datadir::String, t::Float64, state::CCNO.SimulationState, x:
     sx_arr = expect(state.ψ, "Sx")
     
     #survival probability for all sites (neutrino) to be found in its initial flavor state
-    prob_surv_arr = 0.5 * (1 .- 2 .* sz_arr)
+    #prob_surv_arr = 0.5 * (1 .- 2 .* sz_arr)
 
     # recall that in our code sigma_z = 2*Sz so make sure these expressions are consistent with "Sz in ITensors" 
     ρₑₑ_arr = ((2 .* sz_arr) .+ 1) ./ 2
@@ -48,13 +48,13 @@ function store_data(datadir::String, t::Float64, state::CCNO.SimulationState, x:
     fname3 = joinpath(datadir, "t_<Sx>.dat")
     append_data(fname3, [t transpose(sx_arr)])
 
-    # 4. prob_surv arrays
-    fname4 = joinpath(datadir, "t_probsurv.dat")
-    append_data(fname4, [t transpose(prob_surv_arr)])
-
     # 5. xsite values
     fname5 = joinpath(datadir, "t_xsiteval.dat")
-    append_data(fname5, [t transpose(x)])
+    append_data(fname5, [t transpose(state.xyz[:,1])])
+    fname5 = joinpath(datadir, "t_ysiteval.dat")
+    append_data(fname5, [t transpose(state.xyz[:,2])])
+    fname5 = joinpath(datadir, "t_zsiteval.dat")
+    append_data(fname5, [t transpose(state.xyz[:,3])])
 
     # 6. pxsite values
     fname6 = joinpath(datadir, "t_pxsiteval.dat")

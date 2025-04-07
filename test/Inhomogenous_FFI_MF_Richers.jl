@@ -81,17 +81,14 @@ function main()
                                  s=s,
                                  p=p,
                                  energy_sign = energy_sign,
-                                 N=N)
-    
+                                 N=N,
+                                 xyz = hcat(x,y,z))
+
     # Perturb the state via one-body Hamiltonian
     CCNO.evolve_perturbation(params, state,k, B)
 
-    ρₑμ_at_t1 = nothing  # Initialize a variable to store ρₑμ at t1
-    ρₑμ_at_t2 = nothing  # Initialize a variable to store ρₑμ at t2
-    Δt = t2 - t1 #time difference between growth rates
-
     #extract output for the survival probability values at each timestep
-    CCNO.evolve(params, state, B, L, Δx, Δm², x)
+    CCNO.evolve(params, state, B, L, Δx, Δm²)
 
     #=====================#
     # Read the data files #
@@ -99,7 +96,6 @@ function main()
     t_Sz_tot = readdlm(joinpath(params.datadir, "t_<Sz>.dat"))
     t_Sy_tot = readdlm(joinpath(params.datadir, "t_<Sy>.dat"))
     t_Sx_tot = readdlm(joinpath(params.datadir, "t_<Sx>.dat"))
-    t_probsurv_tot = readdlm(joinpath(params.datadir, "t_probsurv.dat"))
     t_xsiteval = readdlm(joinpath(params.datadir, "t_xsiteval.dat"))
     t_pxsiteval = readdlm(joinpath(params.datadir, "t_pxsiteval.dat"))
     t_ρₑₑ_tot = readdlm(joinpath(params.datadir, "t_ρₑₑ.dat"))
@@ -111,7 +107,6 @@ function main()
     Sz_array =  t_Sz_tot[:, 2:N_sites_eachflavor+1]
     Sy_array = t_Sy_tot[:, 2:N_sites_eachflavor+1]  
     Sx_array= t_Sx_tot[:, 2:N_sites_eachflavor+1] 
-    prob_surv_array = t_probsurv_tot[:, 2:N_sites_eachflavor+1] 
     ρₑₑ_array = t_ρₑₑ_tot[:, 2:N_sites_eachflavor+1] 
     ρ_μμ_array =t_ρ_μμ_tot[:, 2:N_sites_eachflavor+1]  
     ρₑμ_array = t_ρₑμ_tot[:, 2:N_sites_eachflavor+1]
@@ -119,6 +114,10 @@ function main()
     println(size(ρₑμ_array))
     # Take the abs value fo all enteries till N_sites_eachflavor and then take the mean of that first half of the array, then do this for each row in ρₑμ_array 
     ρₑμ_array_domain_avg = mean(abs.(ρₑμ_array), dims=2) 
+
+    ρₑμ_at_t1 = nothing  # Initialize a variable to store ρₑμ at t1
+    ρₑμ_at_t2 = nothing  # Initialize a variable to store ρₑμ at t2
+    Δt = t2 - t1 #time difference between growth rates
 
     # Loop over the time array to match t1 and t2
     for (i, t) in enumerate(t_array) 
@@ -153,14 +152,13 @@ function main()
         Sz_array_domain_avgd = [mean(abs.(row)) for row in eachrow(Sz_array)]
         Sy_array_domain_avgd = [mean(abs.(row)) for row in eachrow(Sy_array)]
         Sx_array_domain_avgd = [mean(abs.(row)) for row in eachrow(Sx_array)]
-        prob_surv_array_domain_avgd = [mean(abs.(row)) for row in eachrow(prob_surv_array)]
         ρₑₑ_array_domain_avgd = [mean(abs.(row)) for row in eachrow(ρₑₑ_array)]
         ρ_μμ_array_domain_avgd = [mean(abs.(row)) for row in eachrow(ρ_μμ_array)]
         ρₑμ_array_domain_avgd= [mean(abs.(row)) for row in eachrow(ρₑμ_array)]
 
         x_values = t_xsiteval[:, 2:end]  # All rows, all columns except the first
         pₓ_values = t_pxsiteval[:, 2:end]  # All rows, all columns except the first
-        CCNO.save_plots(params, L,t_array, Sz_array_domain_avgd, Sy_array_domain_avgd, Sx_array_domain_avgd, prob_surv_array_domain_avgd, x_values, pₓ_values, ρₑₑ_array_domain_avgd,ρ_μμ_array_domain_avgd, ρₑμ_array_domain_avgd)
+        CCNO.save_plots(params, L,t_array, Sz_array_domain_avgd, Sy_array_domain_avgd, Sx_array_domain_avgd, x_values, pₓ_values, ρₑₑ_array_domain_avgd,ρ_μμ_array_domain_avgd, ρₑμ_array_domain_avgd)
         
         # Call the function to generate the inputs file in the specified directory
         CCNO.generate_inputs_file(plotdir, "inputs.txt", input_data)

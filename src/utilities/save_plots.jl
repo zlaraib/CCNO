@@ -2,7 +2,7 @@ using Measures
 using Plots
 
 # This function reads data from output files and saves the plots
-function save_plots(params::CCNO.Parameters, L, t_array, Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array)
+function save_plots(params::CCNO.Parameters, L, t_array, Sz_array, Sy_array, Sx_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array)
     
         save_plot_flag = isdir(params.plotdir) || mkpath(params.plotdir)
 
@@ -23,11 +23,6 @@ function save_plots(params::CCNO.Parameters, L, t_array, Sz_array, Sy_array, Sx_
             left_margin = 20mm, right_margin = 10mm, top_margin = 5mm, bottom_margin = 10mm) 
         # Save the plot as a PDF file
         savefig(joinpath(params.plotdir, "<ρₑμ>_vs_t.pdf"))
-
-        # Plotting P_surv vs t
-        plot(t_array, prob_surv_array, xlabel = "t", ylabel = "Survival Probability p(t)",
-            legend = false, left_margin = 20mm, right_margin = 10mm, top_margin = 5mm, bottom_margin = 10mm)
-        savefig(joinpath(params.plotdir, "Survival_probability_vs_t_for_N_sites$(N_sites).pdf"))
 
         # Plotting Sz vs t
         plot(t_array, Sz_array, xlabel = "t", ylabel = "<Sz>", legend = false,

@@ -3,9 +3,7 @@ using ITensors
 
 # Struct of state variables
 Base.@kwdef mutable struct SimulationState
-    #x::Vector{Float64}
-    #y::Vector{Float64}
-    #z::Vector{Float64}
+    xyz::Array{Float64,2}
     p::Array{Float64, 2}
 
     # s is an array of spin 1/2 tensor indices (Index objects) which will be the site or physical indices of the MPS.

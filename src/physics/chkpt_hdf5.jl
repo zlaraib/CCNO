@@ -4,7 +4,7 @@ using ITensorMPS
 
 # This file generates functions that read and write into an hdf5 File
 # for the values needed for recovery in the evolution process.
-function checkpoint_simulation_hdf5(params::CCNO.Parameters, checkpoint_filename::String, state::CCNO.SimulationState, B::Vector{Float64}, L::Float64, Δx::Float64, Δm²::Float64, x::Vector{Float64}, t::Float64, iteration::Int)
+function checkpoint_simulation_hdf5(params::CCNO.Parameters, checkpoint_filename::String, state::CCNO.SimulationState, B::Vector{Float64}, L::Float64, Δx::Float64, Δm²::Float64, t::Float64, iteration::Int)
     # Open an HDF5 file for writing (or create it if it doesn't exist)
     f = h5open(checkpoint_filename, "w")
     
@@ -26,7 +26,7 @@ function checkpoint_simulation_hdf5(params::CCNO.Parameters, checkpoint_filename
     write(f, "N(unitless array)", state.N)
     write(f, "B(unitless array)", B)
     write(f, "p(erg)", state.p)
-    write(f, "x(cm)", x)
+    write(f, "xyz(cm)", state.xyz)
     write(f, "energy_sign(unitless array)", state.energy_sign)
     
     # Write string values
@@ -58,7 +58,7 @@ function recover_checkpoint_hdf5(checkpoint_filename::String)
     N = read(f, "N(unitless array)")
     B = read(f, "B(unitless array)")
     p = read(f, "p(erg)")
-    x = read(f, "x(cm)")
+    xyz = read(f, "xyz(cm)")
     energy_sign = read(f, "energy_sign(unitless array)")
     
     # Read string values
@@ -72,5 +72,5 @@ function recover_checkpoint_hdf5(checkpoint_filename::String)
     
     println("Recovered checkpoint from $checkpoint_filename, iteration $iteration, time $t_initial")
 
-    return s, τ, N, B, L, Δx, Δm², p, x, ψ, energy_sign, t_initial, iteration
+    return s, τ, N, B, L, Δx, Δm², p, xyz, ψ, energy_sign, t_initial, iteration
 end
