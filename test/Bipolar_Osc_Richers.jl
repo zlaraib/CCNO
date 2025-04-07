@@ -15,8 +15,9 @@ function main()
     N_sites_eachflavor= 1 # total sites/particles that evenly spaced "for each (electron) flavor" 
     t_bipolar = 8.96e-4 #characteristic bipolar time #sec
     L = 1e7 # cm # domain size # (aka big box length)
+    Δx = L # length of the box of interacting neutrinos at a site in cm 
 
-    params = CCNO.parameters(
+    params = CCNO.Parameters(
         N_sites = 2* (N_sites_eachflavor),
         τ = 1e-8 / t_bipolar, # time step # sec/sec = unitless # variable # using this time step for faster unit testing in jenkins, actually the bipolar richers results are obtained with timestep= 1e-9/t_bipolar.
         ttotal = 0.002 / t_bipolar, # total time of evolution # sec/sec = unitless #using this total time for faster unit testing in jenkins, actually bipolar richers results are produced with ttotal = 0.01 / t_bipolar
@@ -27,6 +28,8 @@ function main()
         cutoff = 1e-100, # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT) #variable
         shape_name = "none",  # Change this to the desired shape name #variable 
         Δp = L, # width of shape function  # cm #variable
+        Δx=Δx,
+        L=L,
         periodic = true,  # true = imposes periodic boundary conditions while false doesn't
         theta_nu= 0.01, #mixing angle # =34.3 degrees
         checkpoint_every = 4,
@@ -35,13 +38,11 @@ function main()
         datadir = joinpath(@__DIR__,"datafiles"),
         chkptdir = joinpath(@__DIR__, "checkpoints"),
         plotdir = joinpath(@__DIR__, "plots"),
-        save_data = false,
         save_plots_flag = false,
         α = 0
     )
     
     Δm² = (params.m2^2-params.m1^2) # mass square difference # (erg^2) #not used in the test
-    Δx = L # length of the box of interacting neutrinos at a site in cm 
     Eνₑ =  50.0*CCNO.MeV #ergs # energy of all neutrinos (P.S the its negative is energy of all antineutrinos) 
     Eνₑ̄ = -1 * Eνₑ # specific to my case only. Since all neutrinos have same energy, except in my case anti neutrinos are moving in opposite direction to give it a negative sign
     n_νₑ =  (10* (params.m2-params.m1)^2 )/(2*(√2)*CCNO.G_F*Eνₑ) # cm^-3 # number density of electron flavor neutrino
@@ -71,62 +72,55 @@ function main()
     s = siteinds("S=1/2", params.N_sites; conserve_qns=false) #fixed #switched conserve_qns to false to avoid fluxes error in expect function
 
     # Initialize psi to be a product state (Of first half electron flavor neutrino i.e. spin up while other half anti-neutrinos electron flavor i.e. half spin down)
-    ψ₀= productMPS(s, N -> N <= params.N_sites/2 ? "Up" : "Dn")
+    ψ = productMPS(s, N -> N <= params.N_sites/2 ? "Up" : "Dn")
 
     # @time main(s, τ, B,L, N_sites, N_sites_eachflavor, tolerance,
     # n_νₑ,n_νₑ̄,Eνₑ,Eνₑ̄,Δx,Δm², p, x, Δp, ψ₀, shape_name, energy_sign, cutoff, maxdim, ttotal,periodic)
-    N = CCNO.Neutrino_number(params, Δx, L, n_νₑ,n_νₑ̄)
+    N = CCNO.Neutrino_number(params, n_νₑ,n_νₑ̄)
+
+    state = CCNO.SimulationState(ψ=ψ,
+                                 s=s,
+                                 p=p,
+                                 energy_sign = energy_sign,
+                                 N=N,
+                                 xyz = hcat(x,y,z))
 
     #extract output for the survival probability values at each timestep
-    Sz_array, Sy_array, Sx_array,  prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, t_array, t_recover = CCNO.evolve(params,
-        s, N, B, L, Δx, Δm², p, x, ψ₀, energy_sign, t1, t2)
+    CCNO.evolve(params, state)
 
-    ρₑₑ_array_site1= [row[1] for row in ρₑₑ_array]
-    # insert assert condition here 
-
-    if params.save_data
-        # Generate input data
-        input_data = CCNO.extract_initial_conditions(params,N_sites_eachflavor,
-        Δm², p,ψ₀,L, Δx,n_νₑ,n_νₑ̄,Eνₑ,Eνₑ̄,B, N)
-        
-        # Call the function to generate the inputs file in the specified directory
-        CCNO.generate_inputs_file(params.datadir, "inputs.txt", input_data)
-    end
+    # Read the data files
+    t_Sz_tot = readdlm(joinpath(params.datadir, "t_<Sz>.dat"))
+    t_Sy_tot = readdlm(joinpath(params.datadir, "t_<Sy>.dat"))
+    t_Sx_tot = readdlm(joinpath(params.datadir, "t_<Sx>.dat"))
+    t_xsiteval = readdlm(joinpath(params.datadir, "t_xsiteval.dat"))
+    t_pxsiteval = readdlm(joinpath(params.datadir, "t_pxsiteval.dat"))
+    t_ρₑₑ_tot = readdlm(joinpath(params.datadir, "t_ρₑₑ.dat"))
+    t_ρ_μμ_tot = readdlm(joinpath(params.datadir, "t_ρ_μμ.dat"))
+    t_ρₑμ_tot = readdlm(joinpath(params.datadir, "t_ρₑμ.dat"))
+    
+    # Extract time array and corresponding values for plotting
+    t_array = t_Sz_tot[:, 1]  
+    
+    #Extract the array for first site only
+    Sz_array = t_Sz_tot[:,2]
+    Sy_array = t_Sy_tot[:,2]
+    Sx_array= t_Sx_tot[:,2] 
+    ρₑₑ_array = t_ρₑₑ_tot[:, 2]
+    ρ_μμ_array = t_ρ_μμ_tot[:, 2]
+    ρₑμ_array = t_ρₑμ_tot[:, 2]
 
     if params.save_plots_flag 
-        # Read the data files
-        t_Sz_tot = readdlm(joinpath(params.datadir, "t_<Sz>.dat"))
-        t_Sy_tot = readdlm(joinpath(params.datadir, "t_<Sy>.dat"))
-        t_Sx_tot = readdlm(joinpath(params.datadir, "t_<Sx>.dat"))
-        t_probsurv_tot = readdlm(joinpath(params.datadir, "t_probsurv.dat"))
-        t_xsiteval = readdlm(joinpath(params.datadir, "t_xsiteval.dat"))
-        t_pxsiteval = readdlm(joinpath(params.datadir, "t_pxsiteval.dat"))
-        t_ρₑₑ_tot = readdlm(joinpath(params.datadir, "t_ρₑₑ.dat"))
-        t_ρ_μμ_tot = readdlm(joinpath(params.datadir, "t_ρ_μμ.dat"))
-        t_ρₑμ_tot = readdlm(joinpath(params.datadir, "t_ρₑμ.dat"))
-
-        # Extract time array and corresponding values for plotting
-        t_array = t_Sz_tot[:, 1]  
-
-        #Extract the array for first site only
-        Sz_array = t_Sz_tot[:,2]
-        Sy_array = t_Sy_tot[:,2]
-        Sx_array= t_Sx_tot[:,2] 
-        prob_surv_array = t_probsurv_tot[:, 2]
-        ρₑₑ_array = t_ρₑₑ_tot[:, 2]
-        ρ_μμ_array = t_ρ_μμ_tot[:, 2]
-        ρₑμ_array = t_ρₑμ_tot[:, 2]
         
         x_values = t_xsiteval[:, 2:end]  # All rows, all columns except the first
         pₓ_values = t_pxsiteval[:, 2:end]  # All rows, all columns except the first
         
-        CCNO.save_plots(params, L,t_array, Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array)
+        CCNO.save_plots(params, L,t_array, Sz_array, Sy_array, Sx_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array)
         # Call the function to generate the inputs file in the specified directory
         CCNO.generate_inputs_file(params, "inputs.txt")
     end
     if !params.save_plots_flag
         # Plotting ρ_ee vs t # for jenkins file 
-        plot(t_array, ρₑₑ_array_site1, xlabel = "t", ylabel = "<ρₑₑ>", legend = false, 
+        plot(t_array, ρₑₑ_array, xlabel = "t", ylabel = "<ρₑₑ>", legend = false, 
         left_margin = 20mm, right_margin = 10mm, top_margin = 5mm, bottom_margin = 10mm) 
         # Save the plot as a PDF file
         savefig("Bipolar Richers_site1 for $(params.N_sites) particles <ρₑₑ>_vs_t.pdf")

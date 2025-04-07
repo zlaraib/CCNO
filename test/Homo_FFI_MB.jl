@@ -18,8 +18,9 @@ function main()
     L = 1e7 # cm # domain size # (aka big box length)
     t1 = 0.0084003052 #choose initial time for growth rate calculation
     t2 = 0.011700318 #choose final time for growth rate calculation
+    Δx = L # length of the box of interacting neutrinos at a site in cm
 
-    params = CCNO.parameters(
+    params = CCNO.Parameters(
         N_sites = 2* (N_sites_eachflavor),
         τ = 1.666e-7,
         ttotal = 1.666e-2,
@@ -30,6 +31,8 @@ function main()
         cutoff = 1e-100,
         theta_nu = 1.74532925E-8,  #1e-6 degrees # mixing_angle # = 1.74532925E-8 radians
         Δp = L,
+        Δx=Δx,
+        L=L,
         shape_name = "none",
         periodic = true,
         checkpoint_every = 4,
@@ -38,7 +41,6 @@ function main()
         datadir = joinpath(@__DIR__,"datafiles"),
         chkptdir = joinpath(@__DIR__, "checkpoints"),
         plotdir = joinpath(@__DIR__, "plots"),
-        save_data = false,
         save_plots_flag = false,
         α = 1e-6
     )
@@ -48,7 +50,6 @@ function main()
     n_νₑ̄ =  n_νₑ # cm^-3 # number density of electron flavor antineutrino
     Eνₑ =  50*CCNO.MeV # energy of all neutrinos (P.S the its negative is energy of all antineutrinos)
     Eνₑ̄ = -1 * Eνₑ # specific to my case only. Since all neutrinos have same energy, except in my case anti neutrinos are moving in opposite direction to give it a negative sign
-    Δx = L # length of the box of interacting neutrinos at a site in cm
 
     B = [-sin(2 * params.theta_nu), 0, cos(2 * params.theta_nu)]  # actual b vector that activates the vacuum oscillation term in Hamiltonian
     B = B / norm(B) 
@@ -74,19 +75,44 @@ function main()
     s = siteinds("S=1/2", params.N_sites; conserve_qns=false) #fixed #switched conserve_qns to false to avoid fluxes error in expect function
 
     # Initialize psi to be a product state (Of all electron flavor neutrino i.e. spin up in Richers notation which is equivalently half spin up and half chain spin down in my TN notation)
-    ψ₀ = productMPS(s, n -> n <= params.N_sites/2 ? "Up" : "Dn")
+    ψ = productMPS(s, n -> n <= params.N_sites/2 ? "Up" : "Dn")
 
-    N = CCNO.Neutrino_number(params, Δx, L, n_νₑ,n_νₑ̄)
+    N = CCNO.Neutrino_number(params, n_νₑ,n_νₑ̄)
 
-
+    state = CCNO.SimulationState(ψ=ψ,
+                                 s=s,
+                                 p=p,
+                                 energy_sign = energy_sign,
+                                 N=N,
+                                 xyz = hcat(x,y,z))
+    
     ρₑμ_at_t1 = nothing  # Initialize a variable to store ρₑμ at t1
     ρₑμ_at_t2 = nothing  # Initialize a variable to store ρₑμ at t2
     Δt = t2 - t1 #time difference between growth rates
 
     #extract output for the survival probability values at each timestep
-    Sz_array, Sy_array, Sx_array,  prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, t_array, t_recover = CCNO.evolve(params, s, N, B, L, Δx, Δm², p, x, ψ₀, energy_sign, t1, t2)
+    CCNO.evolve(params, state)
     
-    ρₑμ_array_site1= [row[1] for row in ρₑμ_array]
+    # Read the data files
+    t_Sz_tot = readdlm(joinpath(params.datadir, "t_<Sz>.dat"))
+    t_Sy_tot = readdlm(joinpath(params.datadir, "t_<Sy>.dat"))
+    t_Sx_tot = readdlm(joinpath(params.datadir, "t_<Sx>.dat"))
+    t_xsiteval = readdlm(joinpath(params.datadir, "t_xsiteval.dat"))
+    t_pxsiteval = readdlm(joinpath(params.datadir, "t_pxsiteval.dat"))
+    t_ρₑₑ_tot = readdlm(joinpath(params.datadir, "t_ρₑₑ.dat"))
+    t_ρ_μμ_tot = readdlm(joinpath(params.datadir, "t_ρ_μμ.dat"))
+    t_ρₑμ_tot = readdlm(joinpath(params.datadir, "t_ρₑμ.dat"))
+    
+    # Extract time array and corresponding values for plotting
+    t_array = t_Sz_tot[:, 1]  
+    
+    #Extract the array for first site only
+    Sz_array = t_Sz_tot[:,2]
+    Sy_array = t_Sy_tot[:,2]
+    Sx_array= t_Sx_tot[:,2] 
+    ρₑₑ_array = t_ρₑₑ_tot[:, 2]
+    ρ_μμ_array = t_ρ_μμ_tot[:, 2]
+    ρₑμ_array = t_ρₑμ_tot[:, 2]
 
     # Loop over the time array to match t1 and t2
     for (i, t) in enumerate(t_array) 
@@ -113,38 +139,17 @@ function main()
         println("ρₑμ was not captured at both t1 and t2.")
     end
 
+    
     if params.save_plots_flag 
-        # Read the data files
-        t_Sz_tot = readdlm(joinpath(datadir, "t_<Sz>.dat"))
-        t_Sy_tot = readdlm(joinpath(datadir, "t_<Sy>.dat"))
-        t_Sx_tot = readdlm(joinpath(datadir, "t_<Sx>.dat"))
-        t_probsurv_tot = readdlm(joinpath(datadir, "t_probsurv.dat"))
-        t_xsiteval = readdlm(joinpath(datadir, "t_xsiteval.dat"))
-        t_pxsiteval = readdlm(joinpath(datadir, "t_pxsiteval.dat"))
-        t_ρₑₑ_tot = readdlm(joinpath(datadir, "t_ρₑₑ.dat"))
-        t_ρ_μμ_tot = readdlm(joinpath(datadir, "t_ρ_μμ.dat"))
-        t_ρₑμ_tot = readdlm(joinpath(datadir, "t_ρₑμ.dat"))
-
-        # Extract time array and corresponding values for plotting
-        t_array = t_Sz_tot[:, 1]  
-
-        #Extract the array for first site only
-        Sz_array = t_Sz_tot[:,2]
-        Sy_array = t_Sy_tot[:,2]
-        Sx_array= t_Sx_tot[:,2] 
-        prob_surv_array = t_probsurv_tot[:, 2]
-        ρₑₑ_array = t_ρₑₑ_tot[:, 2]
-        ρ_μμ_array = t_ρ_μμ_tot[:, 2]
-        ρₑμ_array = t_ρₑμ_tot[:, 2]
         
         x_values = t_xsiteval[:, 2:end]  # All rows, all columns except the first
         pₓ_values = t_pxsiteval[:, 2:end]  # All rows, all columns except the first
 
-        CCNO.save_plots(τ, N_sites,L,t_array, ttotal,Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array,datadir, plotdir, save_plots_flag)
+        CCNO.save_plots(τ, N_sites,L,t_array, ttotal,Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array,params.datadir, plotdir, save_plots_flag)
     end
     if !params.save_plots_flag 
         # Plotting ρₑμ vs t # for jenkins file 
-        plot(t_array, ρₑμ_array_site1, xlabel = "t", ylabel = "<ρₑμ>_1", legend = false, 
+        plot(t_array, ρₑμ_array, xlabel = "t", ylabel = "<ρₑμ>_1", legend = false, 
         left_margin = 20mm, right_margin = 10mm, top_margin = 5mm, bottom_margin = 10mm) 
         # Save the plot as a PDF file
         savefig( "Homo_MF_<ρₑμ>_site1_vs_t for $(params.N_sites) particles.pdf")

@@ -21,8 +21,7 @@ function main()
     Eνₑ̄ = -1 * Eνₑ # specific to my case only. Since all neutrinos have same energy, except in my case anti neutrinos are moving in opposite direction to give it a negative sign
     Δx = L/N_sites_eachflavor # length of the box of interacting neutrinos at a site in cm  #variable
 
-    params = CCNO.parameters(
-        save_data = false,
+    params = CCNO.Parameters(
         save_plots_flag = false,
         N_sites = 2* (N_sites_eachflavor),
         τ = 5E-13,
@@ -40,6 +39,8 @@ function main()
         recover_file = "",
         theta_nu = 1.74532925E-8,
         α = 1e-6,
+        Δx=Δx,
+        L=L,
         datadir = joinpath(@__DIR__,"datafiles"),
         chkptdir = joinpath(@__DIR__, "checkpoints"),
         plotdir = joinpath(@__DIR__, "plots")
@@ -75,36 +76,67 @@ function main()
     s = siteinds("S=1/2", params.N_sites; conserve_qns=false) #fixed #switched conserve_qns to false to avoid fluxes error in expect function
 
     # Initialize psi to be a product state (Of all electron flavor neutrino i.e. spin up in Richers notation which is equivalently half spin up and half chain spin down in my TN notation)
-    @time ψ = productMPS(s, n -> n <= params.N_sites/2 ? "Up" : "Dn")
+    ψ = productMPS(s, n -> n <= params.N_sites/2 ? "Up" : "Dn")
 
-    # Perturb the state via one-body Hamiltonian
-    @time ψ₀= CCNO.evolve_perturbation(params,s,k, B, ψ)
+    N = CCNO.Neutrino_number(params,n_νₑ,n_νₑ̄)
 
-    @time N = CCNO.Neutrino_number(params,Δx,L, n_νₑ,n_νₑ̄)
+    state = CCNO.SimulationState(ψ=ψ,
+                                 s=s,
+                                 p=p,
+                                 energy_sign = energy_sign,
+                                 N=N,
+                                 xyz = hcat(x,y,z))
 
     ρₑμ_at_t1 = nothing  # Initialize a variable to store ρₑμ at t1
     ρₑμ_at_t2 = nothing  # Initialize a variable to store ρₑμ at t2
     Δt = t2 - t1 #time difference between growth rates
 
+    # Perturb the state via one-body Hamiltonian
+    CCNO.perturb(params,state,k, params.theta_nu)
+
     #extract output for the survival probability values at each timestep
-    @time Sz_array, Sy_array, Sx_array,  prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, t_array, t_recover = CCNO.evolve(params, s, N, B, L, Δx, Δm², p, x, ψ₀, energy_sign, t1, t2)
+    CCNO.evolve(params, state)
 
-    # Take the abs value fo all enteries till N_sites_eachflavor and then take the mean of that first half of the array, then do this for each row in ρₑμ_array
-    @time ρₑμ_array_domain_avg = [mean(abs.(row[1:N_sites_eachflavor])) for row in ρₑμ_array] 
-
+    # Read the data files
+    t_Sz_tot = readdlm(joinpath(params.datadir, "t_<Sz>.dat"))
+    t_Sy_tot = readdlm(joinpath(params.datadir, "t_<Sy>.dat"))
+    t_Sx_tot = readdlm(joinpath(params.datadir, "t_<Sx>.dat"))
+    t_xsiteval = readdlm(joinpath(params.datadir, "t_xsiteval.dat"))
+    t_pxsiteval = readdlm(joinpath(params.datadir, "t_pxsiteval.dat"))
+    t_ρₑₑ_tot = readdlm(joinpath(params.datadir, "t_ρₑₑ.dat"))
+    t_ρ_μμ_tot = readdlm(joinpath(params.datadir, "t_ρ_μμ.dat"))
+    t_ρₑμ_tot = readdlm(joinpath(params.datadir, "t_ρₑμ.dat"))
+    
+    # Extract time array and corresponding values for plotting
+    t_array = t_Sz_tot[:, 1]  
+    Sz_array =  t_Sz_tot[:, 2:N_sites_eachflavor+1]
+    Sy_array = t_Sy_tot[:, 2:N_sites_eachflavor+1]  
+    Sx_array= t_Sx_tot[:, 2:N_sites_eachflavor+1] 
+    ρₑₑ_array = t_ρₑₑ_tot[:, 2:N_sites_eachflavor+1] 
+    ρ_μμ_array =t_ρ_μμ_tot[:, 2:N_sites_eachflavor+1]  
+    ρₑμ_array = t_ρₑμ_tot[:, 2:N_sites_eachflavor+1]
+    
+    # Parsing arrays containing strings like "[1.0,", into a numeric array suitable for plotting
+    Sz_array_domain_avgd = [mean(abs.(row)) for row in eachrow(Sz_array)]
+    Sy_array_domain_avgd = [mean(abs.(row)) for row in eachrow(Sy_array)]
+    Sx_array_domain_avgd = [mean(abs.(row)) for row in eachrow(Sx_array)]
+    ρₑₑ_array_domain_avgd = [mean(abs.(row)) for row in eachrow(ρₑₑ_array)]
+    ρ_μμ_array_domain_avgd = [mean(abs.(row)) for row in eachrow(ρ_μμ_array)]
+    ρₑμ_array_domain_avgd= [mean(abs.(row)) for row in eachrow(ρₑμ_array)]
+    
     # Loop over the time array to match t1 and t2
     for (i, t) in enumerate(t_array) 
         # Check if the current time is approximately t1
         if abs(t - t1) < params.τ / 2
             println("corresponding ρₑμ index from the time array =",i)
-            ρₑμ_at_t1 = ρₑμ_array_domain_avg[i]
+            ρₑμ_at_t1 = ρₑμ_array_domain_avgd[i]
             println("ρₑμ_at_t1=",ρₑμ_at_t1)
         end
 
         # Check if the current time is approximately t2
         if abs(t - t2) < params.τ / 2
             println("corresponding ρₑμ index from the time array =",i)
-            ρₑμ_at_t2 = ρₑμ_array_domain_avg[i]
+            ρₑμ_at_t2 = ρₑμ_array_domain_avgd[i]
             println("ρₑμ_at_t2=",ρₑμ_at_t2)
         end
     end
@@ -118,37 +150,6 @@ function main()
     end
 
     if params.save_plots_flag 
-        # Read the data files
-        t_Sz_tot = readdlm(joinpath(params.datadir, "t_<Sz>.dat"))
-        t_Sy_tot = readdlm(joinpath(params.datadir, "t_<Sy>.dat"))
-        t_Sx_tot = readdlm(joinpath(params.datadir, "t_<Sx>.dat"))
-        t_probsurv_tot = readdlm(joinpath(params.datadir, "t_probsurv.dat"))
-        t_xsiteval = readdlm(joinpath(params.datadir, "t_xsiteval.dat"))
-        t_pxsiteval = readdlm(joinpath(params.datadir, "t_pxsiteval.dat"))
-        t_ρₑₑ_tot = readdlm(joinpath(params.datadir, "t_ρₑₑ.dat"))
-        t_ρ_μμ_tot = readdlm(joinpath(params.datadir, "t_ρ_μμ.dat"))
-        t_ρₑμ_tot = readdlm(joinpath(params.datadir, "t_ρₑμ.dat"))
-
-        # Extract time array and corresponding values for plotting
-        t_array = t_Sz_tot[:, 1]  
-        Sz_array =  t_Sz_tot[:, 2:N_sites_eachflavor+1]
-        Sy_array = t_Sy_tot[:, 2:N_sites_eachflavor+1]  
-        Sx_array= t_Sx_tot[:, 2:N_sites_eachflavor+1] 
-        prob_surv_array = t_probsurv_tot[:, 2:N_sites_eachflavor+1] 
-        ρₑₑ_array = t_ρₑₑ_tot[:, 2:N_sites_eachflavor+1] 
-        ρ_μμ_array =t_ρ_μμ_tot[:, 2:N_sites_eachflavor+1]  
-        ρₑμ_array = t_ρₑμ_tot[:, 2:N_sites_eachflavor+1]
-
-        # Parsing arrays containing strings like "[1.0,", into a numeric array suitable for plotting
-
-        Sz_array_domain_avgd = [mean(abs.(row)) for row in eachrow(Sz_array)]
-        Sy_array_domain_avgd = [mean(abs.(row)) for row in eachrow(Sy_array)]
-        Sx_array_domain_avgd = [mean(abs.(row)) for row in eachrow(Sx_array)]
-        prob_surv_array_domain_avgd = [mean(abs.(row)) for row in eachrow(prob_surv_array)]
-        ρₑₑ_array_domain_avgd = [mean(abs.(row)) for row in eachrow(ρₑₑ_array)]
-        ρ_μμ_array_domain_avgd = [mean(abs.(row)) for row in eachrow(ρ_μμ_array)]
-        ρₑμ_array_domain_avgd= [mean(abs.(row)) for row in eachrow(ρₑμ_array)]
-
         x_values = t_xsiteval[:, 2:end]  # All rows, all columns except the first
         pₓ_values = t_pxsiteval[:, 2:end]  # All rows, all columns except the first
         CCNO.save_plots(params,L,t_array, Sz_array_domain_avgd, Sy_array_domain_avgd, Sx_array_domain_avgd, prob_surv_array_domain_avgd, x_values, pₓ_values, ρₑₑ_array_domain_avgd,ρ_μμ_array_domain_avgd, ρₑμ_array_domain_avgd)
@@ -156,7 +157,7 @@ function main()
 
     if !params.save_plots_flag 
         # Plotting ρₑμ vs t # for jenkins file 
-        plot(t_array, ρₑμ_array_domain_avg, xlabel = "t", ylabel = "<ρₑμ>", legend = false, 
+        plot(t_array, ρₑμ_array_domain_avgd, xlabel = "t", ylabel = "<ρₑμ>", legend = false, 
         left_margin = 20mm, right_margin = 10mm, top_margin = 5mm, bottom_margin = 10mm) 
         # Save the plot as a PDF file
         savefig( "Inhomo_MB_<ρₑμ>_domain_avg_vs_t for $(params.N_sites) particles.pdf")
