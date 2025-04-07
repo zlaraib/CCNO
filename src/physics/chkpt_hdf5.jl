@@ -8,7 +8,7 @@ function checkpoint_simulation_hdf5(params::CCNO.parameters, checkpoint_filename
     f = h5open(checkpoint_filename, "w")
     
     # Write scalar values
-    write(f, "τ(sec)", τ)
+    #write(f, "τ(sec)", τ)
     write(f, "L(cm)", L)
     write(f, "N_sites(unitless const)", params.N_sites)
     write(f, "Δx(cm)", Δx)

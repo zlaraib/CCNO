@@ -46,18 +46,6 @@ function evolve(params::CCNO.parameters, s, N, B, L, Δx, Δm², p, x, ψ, energ
      
     end    
 
-    # Create empty array s to... 
-    Sz_array = [] # to store sz values for all sites  
-    Sy_array = [] # to store sy values for all sites 
-    Sx_array = [] # to store sx values for all sites 
-    t_array = [] # to store t values (same for all sites)
-    prob_surv_array = []   # to store survival probability values for all sites 
-    x_values = []  # to store x values for all sites 
-    pₓ_values = [] # to store px vector values for all sites
-    ρₑₑ_array = [] # to store ρₑₑ values for all sites 
-    ρ_μμ_array = [] # to store ρ_μμ values for all sites 
-    ρₑμ_array = [] # to store ρₑμ values for all sites 
-    
     # extract output of p_hat and p_mod for the p vector defined above for all sites. 
     p_mod, p̂ = momentum(p,params.N_sites) 
     p̂ₓ= [sub_array[1] for sub_array in p̂]
@@ -66,9 +54,6 @@ function evolve(params::CCNO.parameters, s, N, B, L, Δx, Δm², p, x, ψ, energ
     for t in t_initial:params.τ:params.ttotal
         # extract the gates array generated in the gates_function file
         gates = create_gates(params, s, ψ,N, B, Δx, Δm², p, x, L, energy_sign)
-        push!(x_values, copy(x))  # Record x values at each time step
-        px = p[:, 1]  # Extracting the first column (which corresponds to px values)
-        push!(pₓ_values, copy(px)) # Record px values at each time step
 
         for i in 1:params.N_sites
             x[i] += p̂ₓ[i] * c * params.τ
@@ -81,32 +66,7 @@ function evolve(params::CCNO.parameters, s, N, B, L, Δx, Δm², p, x, ψ, energ
             end
         end
 
-        # compute the avg expectation value of Sz at all sites
-        sz_tot = expect(ψ, "Sz")  # Compute Sz for each site and store the values in sz_tot
-
-        # compute expectation value of sy and sx (inbuilt operator in ITensors library) at all sites on the chain
-        sy_tot = expect(complex(ψ), "Sy")
-        sx_tot = expect(ψ, "Sx")
-
-        push!(Sz_array, sz_tot)  # Add all elements of sz_tot to Sz_array
-        push!(Sy_array, sy_tot)  # Add all elements of sz_tot to Sz_array
-        push!(Sx_array, sx_tot)  # Add all elements of sz_tot to Sz_array
-        
-        #survival probability for all sites (neutrino) to be found in its initial flavor state
-        prob_surv_tot = 0.5 * (1 .- 2 .* sz_tot)
-        push!(prob_surv_array, prob_surv_tot)
-
-        # recall that in our code sigma_z = 2*Sz so make sure these expressions are consistent with "Sz in ITensors" 
-        ρₑₑ_tot = ((2 .* sz_tot) .+ 1) ./ 2
-        push!(ρₑₑ_array, abs.(ρₑₑ_tot))
-
-        ρ_μμ_tot = ((-2 .* sz_tot) .+ 1) ./ 2
-        push!(ρ_μμ_array, abs.(ρ_μμ_tot))
-        
-        ρₑμ_tot = sqrt.(sx_tot.^2 .+ sy_tot.^2)
-        push!(ρₑμ_array, ρₑμ_tot)
-
-        println("iteration= $iteration time= $t ρₑₑ_tot= $ρₑₑ_tot")
+        println("iteration= $iteration time= $t")
         # Writing an if statement in a shorthand way that checks whether the current value of t is equal to ttotal, 
         # and if so, it executes the break statement, which causes the loop to terminate early.
         t ≈ params.ttotal && break
@@ -123,15 +83,14 @@ function evolve(params::CCNO.parameters, s, N, B, L, Δx, Δm², p, x, ψ, energ
         # This is necessary to ensure that the MPS represents a valid quantum state.
         normalize!(ψ)
 
-
         if params.save_data
 
-            store_data(params.datadir, t, sz_tot, sy_tot, sx_tot, prob_surv_tot,x, px, ρₑₑ_tot,ρ_μμ_tot, ρₑμ_tot)
+            store_data(params.datadir, t, ψ, x, p)
 
             mkpath(params.chkptdir)
             if iteration % params.checkpoint_every == 0 
                 checkpoint_filename = joinpath(params.chkptdir, "checkpoint.chkpt.it" * lpad(iteration, 6, "0") * ".h5")
-                checkpoint_simulation_hdf5(params, s, N, B, L, Δx, Δm², p, x, ψ, energy_sign, t, iteration)
+                checkpoint_simulation_hdf5(params, checkpoint_filename, s, N, B, L, Δx, Δm², p, x, ψ, energy_sign, t, iteration)
             end
 
             iteration = iteration + 1
@@ -139,7 +98,6 @@ function evolve(params::CCNO.parameters, s, N, B, L, Δx, Δm², p, x, ψ, energ
     end
     t_array = t_initial:params.τ:params.ttotal
 
-    return Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, t_array, t_recover
 end
 
 

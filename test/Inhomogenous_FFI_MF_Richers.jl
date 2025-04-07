@@ -36,7 +36,7 @@ function main()
         plotdir = joinpath(@__DIR__, "plots"),
         datadir = joinpath(@__DIR__,"datafiles"),
         chkptdir = joinpath(@__DIR__, "checkpoints"),
-        save_data = false,
+        save_data = true,
         save_plots_flag = false,
         α = 1e-6
     )
@@ -87,10 +87,34 @@ function main()
     Δt = t2 - t1 #time difference between growth rates
 
     #extract output for the survival probability values at each timestep
-    Sz_array, Sy_array, Sx_array,  prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, t_array, t_recover = CCNO.evolve(params, s, N, B, L, Δx, Δm², p, x, ψ₀, energy_sign, t1, t2)
+    CCNO.evolve(params, s, N, B, L, Δx, Δm², p, x, ψ₀, energy_sign, t1, t2)
 
+    #=====================#
+    # Read the data files #
+    #=====================#
+    t_Sz_tot = readdlm(joinpath(params.datadir, "t_<Sz>.dat"))
+    t_Sy_tot = readdlm(joinpath(params.datadir, "t_<Sy>.dat"))
+    t_Sx_tot = readdlm(joinpath(params.datadir, "t_<Sx>.dat"))
+    t_probsurv_tot = readdlm(joinpath(params.datadir, "t_probsurv.dat"))
+    t_xsiteval = readdlm(joinpath(params.datadir, "t_xsiteval.dat"))
+    t_pxsiteval = readdlm(joinpath(params.datadir, "t_pxsiteval.dat"))
+    t_ρₑₑ_tot = readdlm(joinpath(params.datadir, "t_ρₑₑ.dat"))
+    t_ρ_μμ_tot = readdlm(joinpath(params.datadir, "t_ρ_μμ.dat"))
+    t_ρₑμ_tot = readdlm(joinpath(params.datadir, "t_ρₑμ.dat"))
+    
+    # Extract time array and corresponding values for plotting
+    t_array = t_Sz_tot[:, 1]  
+    Sz_array =  t_Sz_tot[:, 2:N_sites_eachflavor+1]
+    Sy_array = t_Sy_tot[:, 2:N_sites_eachflavor+1]  
+    Sx_array= t_Sx_tot[:, 2:N_sites_eachflavor+1] 
+    prob_surv_array = t_probsurv_tot[:, 2:N_sites_eachflavor+1] 
+    ρₑₑ_array = t_ρₑₑ_tot[:, 2:N_sites_eachflavor+1] 
+    ρ_μμ_array =t_ρ_μμ_tot[:, 2:N_sites_eachflavor+1]  
+    ρₑμ_array = t_ρₑμ_tot[:, 2:N_sites_eachflavor+1]
+
+    println(size(ρₑμ_array))
     # Take the abs value fo all enteries till N_sites_eachflavor and then take the mean of that first half of the array, then do this for each row in ρₑμ_array 
-    ρₑμ_array_domain_avg = [mean(abs.(row[1:N_sites_eachflavor])) for row in ρₑμ_array] 
+    ρₑμ_array_domain_avg = mean(abs.(ρₑμ_array), dims=2) 
 
     # Loop over the time array to match t1 and t2
     for (i, t) in enumerate(t_array) 
@@ -119,26 +143,6 @@ function main()
 
     if params.save_plots_flag 
             
-        # Read the data files
-        t_Sz_tot = readdlm(joinpath(params.datadir, "t_<Sz>.dat"))
-        t_Sy_tot = readdlm(joinpath(params.datadir, "t_<Sy>.dat"))
-        t_Sx_tot = readdlm(joinpath(params.datadir, "t_<Sx>.dat"))
-        t_probsurv_tot = readdlm(joinpath(params.datadir, "t_probsurv.dat"))
-        t_xsiteval = readdlm(joinpath(params.datadir, "t_xsiteval.dat"))
-        t_pxsiteval = readdlm(joinpath(params.datadir, "t_pxsiteval.dat"))
-        t_ρₑₑ_tot = readdlm(joinpath(params.datadir, "t_ρₑₑ.dat"))
-        t_ρ_μμ_tot = readdlm(joinpath(params.datadir, "t_ρ_μμ.dat"))
-        t_ρₑμ_tot = readdlm(joinpath(params.datadir, "t_ρₑμ.dat"))
-
-        # Extract time array and corresponding values for plotting
-        t_array = t_Sz_tot[:, 1]  
-        Sz_array =  t_Sz_tot[:, 2:N_sites_eachflavor+1]
-        Sy_array = t_Sy_tot[:, 2:N_sites_eachflavor+1]  
-        Sx_array= t_Sx_tot[:, 2:N_sites_eachflavor+1] 
-        prob_surv_array = t_probsurv_tot[:, 2:N_sites_eachflavor+1] 
-        ρₑₑ_array = t_ρₑₑ_tot[:, 2:N_sites_eachflavor+1] 
-        ρ_μμ_array =t_ρ_μμ_tot[:, 2:N_sites_eachflavor+1]  
-        ρₑμ_array = t_ρₑμ_tot[:, 2:N_sites_eachflavor+1]
 
         # Parsing arrays containing strings like "[1.0,", into a numeric array suitable for plotting
 
