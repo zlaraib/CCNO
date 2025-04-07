@@ -50,7 +50,6 @@ function evolve(params::CCNO.parameters, s::Vector{Index{Int64}}, N::Vector{Floa
 
     # extract output of p_hat and p_mod for the p vector defined above for all sites. 
     p_mod, p̂ = momentum(p,params.N_sites) 
-    p̂ₓ= [sub_array[1] for sub_array in p̂]
     
     # Compute and print survival probability (found from <Sz>) at each time step then apply the gates to go to the next time
     for t in t_initial:params.τ:params.ttotal
@@ -58,7 +57,7 @@ function evolve(params::CCNO.parameters, s::Vector{Index{Int64}}, N::Vector{Floa
         gates = create_gates(params, s, ψ,N, B, Δx, Δm², p, x, L, energy_sign)
 
         for i in 1:params.N_sites
-            x[i] += p̂ₓ[i] * c * params.τ
+            x[i] += p̂[i,1] * c * params.τ
             if params.periodic
                 # wrap around position from 0 to domain size L
                 x[i] = mod(x[i],L)
