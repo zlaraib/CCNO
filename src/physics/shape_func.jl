@@ -22,16 +22,17 @@ const shapes = Dict(
     "none" => none
 )
     
-@inline function shape_func(params::CCNO.Parameters, x::Vector{Float64}, i::Int, j::Int,L::Float64)
+@inline function shape_func(params::CCNO.Parameters, state::CCNO.SimulationState, d::Int, i::Int, j::Int,L::Float64)
 
     shape_function = shapes[params.shape_name]  # assign the corresponding function (selected in shape_name in the test file) to shape_function.
     # ξ determines the overlap of neutrinos (i.e. their shapes) on top of each other to signify the neutrino-neutrino interaction strength.
-    ξ::Float64 = (x[i] - x[j]) / params.Δp # dependent upon difference in distance of i and j sites and the width of the shape function. 
+    dx_ij::Float64 = state.xyz[i,d] - state.xyz[j,d]
+    ξ::Float64 = dx_ij / params.Δp # dependent upon difference in distance of i and j sites and the width of the shape function. 
     if params.periodic 
-        if x[i]-x[j] > L/2
+        if dx_ij > L/2
             ξ = ξ - L/params.Δp 
         end
-        if x[i] - x[j] < -L/2
+        if dx_ij < -L/2
             ξ = ξ + L/params.Δp 
         end
         

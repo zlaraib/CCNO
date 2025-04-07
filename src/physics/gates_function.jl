@@ -37,42 +37,47 @@ Base.@pure function create_gates(params::CCNO.Parameters, state::CCNO.Simulation
     # define an array of vacuum oscillation frequencies (units of ergs)
     ω = [Δm² / (2 * p_mod[i]) * state.energy_sign[i] for i in 1:params.N_sites]
 
+    # Precompute operators for all sites
+    Id = [op("Id", state.s[i]) for i in 1:length(state.s)]
+    Sx = [op("Sx", state.s[i]) for i in 1:length(state.s)]
+    Sy = [op("Sy", state.s[i]) for i in 1:length(state.s)]
+    Sp = [op("S+", state.s[i]) for i in 1:length(state.s)]
+    Sm = [op("S-", state.s[i]) for i in 1:length(state.s)]
+    Sz = [op("Sz", state.s[i]) for i in 1:length(state.s)]
+    
+    # add Vacuum Oscillation Hamiltonian 
+    for i in 1:(params.N_sites-1)
+        if ω[i] != 0
+            hj = (ω[i]/(params.N_sites-1)) * (B[1]*Sx[i] + B[2]*Sy[i] + B[3]*Sz[i])
+
+            Gj = exp(-im * params.τ/2 * hj / hbar)
+
+            push!(gates, Gj)
+        end
+    end
+    
+    # Our neutrino system Hamiltonian of self-interaction term represents 1D Heisenberg model.
+    # total Hamiltonian of the system is a sum of local terms hj, where hj acts on sites i and j which are paired for gates to latch onto.
+    # op function returns these operators as ITensors and we tensor product and add them together to compute the operator hj.
+    # ni and nj are the neutrions at site i and j respectively.
+    # mu pairs divided by 2 to avoid double counting
     for i in 1:(params.N_sites-1)
         for j in i+1:params.N_sites
-            #s_i, s_j are non-neighbouring spin site/indices from the s array
-
-            # Our neutrino system Hamiltonian of self-interaction term represents 1D Heisenberg model.
-            # total Hamiltonian of the system is a sum of local terms hj, where hj acts on sites i and j which are paired for gates to latch onto.
-            # op function returns these operators as ITensors and we tensor product and add them together to compute the operator hj.
-            # ni and nj are the neutrions at site i and j respectively.
-            # mu pairs divided by 2 to avoid double counting
 
             # get the shape function, multiplying all three directions together
-            shape_result = 1
+            shape_result::Float64 = 1
             for d in 1:1
-                shape_result *= shape_func(params, state.xyz[:,d], i, j,L)
+                shape_result *= shape_func(params, state, d, i, j,L)
             end
                 
-            geometric_factor = 1 - dot(p̂[i, :], p̂[j, :])
+            @views geometric_factor::Float64 = 1 - dot(p̂[i, :], p̂[j, :])
             interaction_strength = (2.0* √2 * G_F * (state.N[i]+ state.N[j])/(2*((Δx)^3))) * shape_result * geometric_factor
-            hj = interaction_strength *
-                (op("Sz", state.s[i]) * op("Sz", state.s[j]) +
-                1/2 * op("S+", state.s[i]) * op("S-", state.s[j]) +
-                1/2 * op("S-", state.s[i]) * op("S+", state.s[j]))
+            hj = interaction_strength * (Sz[i]*Sz[j] + 0.5*Sp[i]*Sm[j] + 0.5*Sm[i]*Sp[j])
 
             # if neutrinos interacting with antineutrinos, H changes???
             #if state.energy_sign[i]*state.energy_sign[j] < 0
             #    hj *= -2
             #end
-            
-            # add Vacuum Oscillation Hamiltonian 
-            if ω[i] != 0 || ω[j] != 0
-                
-                hj += (1/(params.N_sites-1))*( 
-                    (ω[i] * B[1] * op("Sx", state.s[i])* op("Id", state.s[j]))  + (ω[i] * B[2] * op("Sy", state.s[i])* op("Id", state.s[j]))  + (ω[i] * B[3] * op("Sz", state.s[i])* op("Id", state.s[j])) )
-                hj += (1/(params.N_sites-1))*(
-                    (ω[j] * B[1] * op("Id", state.s[i]) * op("Sx", state.s[j])) + (ω[j] * B[2]  * op("Id", state.s[i])* op("Sy", state.s[j])) + (ω[j] * B[3]  * op("Id", state.s[i])* op("Sz", state.s[j])) )
-            end
             
             # make Trotter gate Gj that would correspond to each gate in the gate array of ITensors             
             Gj = exp(-im * params.τ/2 * hj / hbar)
