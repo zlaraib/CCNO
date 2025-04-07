@@ -9,10 +9,10 @@ include("physics/SimulationState.jl")
 
 include("initializations/initial_cond.jl")
 
-include("utilities/save_datafiles.jl")
+include("utilities/store_data.jl")
 include("utilities/save_plots.jl")
+include("utilities/checkpoint_simulation_hdf5.jl")
 
-include("physics/chkpt_hdf5.jl")
 include("physics/constants.jl")
 include("physics/evolution.jl")
 include("physics/gates_function.jl")
