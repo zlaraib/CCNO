@@ -27,28 +27,22 @@ Base.@pure function create_perturbation_gates(params::CCNO.Parameters, state::CC
     @assert norm(B_pert) == 1
     
     for i in 1:(params.N_sites-1)
-        for j in i+1:params.N_sites
-            # total Hamiltonian of the system is a sum of local terms hj, where hj acts on sites i and j which are paired for gates to latch onto.
-            # op function returns these operators as ITensors and we tensor product and add them together to compute the operator hj.
-
-            # add perturbation via one-body oscillation term to the Hamiltonian
-            hj= B_pert[1] * op("Sx", state.s[i]) * op("Id", state.s[j]) +
-                B_pert[2] * op("Sy", state.s[i]) * op("Id", state.s[j]) +
-                B_pert[3] * op("Sz", state.s[i]) * op("Id", state.s[j])
-
-            # make Trotter gate Gj that would correspond to each gate in the gate array of ITensors             
-            Gj = exp(-im * params.α * hj) #Gj has factor of 1/hbar sinceonly Richers inhomo tests need perturbation
-
-            # The push! function adds (appends) an element to the end of an array;
-            # ! performs an operation without creating a new object, (in a way overwites the previous array in consideration); 
-            # i.e. we append a new element Gj (which is an ITensor object representing a gate) to the end of the gates array.
-            push!(gates, Gj)
-        end
+        # total Hamiltonian of the system is a sum of local terms hj, where hj acts on sites i and j which are paired for gates to latch onto.
+        # op function returns these operators as ITensors and we tensor product and add them together to compute the operator hj.
+        
+        # add perturbation via one-body oscillation term to the Hamiltonian
+        hj= B_pert[1] * op("Sx", state.s[i]) +
+            B_pert[2] * op("Sy", state.s[i]) +
+            B_pert[3] * op("Sz", state.s[i])
+        
+        # make Trotter gate Gj that would correspond to each gate in the gate array of ITensors             
+        Gj = exp(-im * params.α * hj) #Gj has factor of 1/hbar sinceonly Richers inhomo tests need perturbation
+        
+        # The push! function adds (appends) an element to the end of an array;
+        # ! performs an operation without creating a new object, (in a way overwites the previous array in consideration); 
+        # i.e. we append a new element Gj (which is an ITensor object representing a gate) to the end of the gates array.
+        push!(gates, Gj)
     end
-
-    # append! adds all the elements of a gates in reverse order (i.e. (N,N-1),(N-1,N-2),...) to the end of gates array.
-    # appending reverse gates to create a second-order Trotter-Suzuki integration
-    append!(gates, reverse(gates)) 
     return gates
 end
 
