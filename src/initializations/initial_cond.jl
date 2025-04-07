@@ -43,12 +43,10 @@ Combining (where index i represent a site and runs from 1:N_sites)
 ∑ᵢ Δxᵢ = L # domain size
 
 """
-function Neutrino_number(params::CCNO.Parameters, Δx, L, n_νₑ,n_νₑ̄)
-    V = L^3 # volume of the big box containing all sites/particles
-
-    N_νₑ  = n_νₑ * (Δx)^3 
+function Neutrino_number(params::CCNO.Parameters, n_νₑ,n_νₑ̄)
+    N_νₑ  = n_νₑ * (params.Δx)^3 
     N_1 = fill(N_νₑ, params.N_sites ÷ 2)
-    N_νₑ̄  = n_νₑ̄ * (Δx)^3 
+    N_νₑ̄  = n_νₑ̄ * (params.Δx)^3 
     N_2 = fill(N_νₑ̄, params.N_sites ÷ 2)
 
     N = vcat(N_1, N_2) # This is the total number of neutrinos in a unit cell

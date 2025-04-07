@@ -21,7 +21,8 @@ Base.@kwdef struct Parameters
     m2::Float64 #eV  2nd mass eigenstate of neutrino
     theta_nu::Float64 # mixing_angle
     cutoff::Float64 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT)
+    Δx::Float64 # assumed size of each particle cloud, used for determining neutrino density
     Δp::Float64 # width of shape function  # cm
-    α::Float64 # perturbation strength as mentioned in the paper for the inhomogenous Richers test 
-
+    α::Float64 # perturbation strength as mentioned in the paper for the inhomogenous Richers test
+    L::Float64 # periodic boundary conditions length
 end

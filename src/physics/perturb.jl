@@ -17,7 +17,10 @@ using ITensorMPS
     maxdim = max bond dimension in MPS truncation (unitless and dimensionless)
     cutoff = truncation threshold for the SVD in MPS representation (unitless and dimensionless)
 """
-function perturb(params::CCNO.Parameters, state::CCNO.SimulationState,k::Float64,B_pert::Vector{Float64})
+function perturb(params::CCNO.Parameters, state::CCNO.SimulationState,k::Float64,theta_pert::Float64)
+
+    B_pert = [-sin(2*theta_pert), 0, cos(2*theta_pert)] # actual b vector that activates the vacuum oscillation term in Hamiltonian
+    B_pert = B_pert / norm(B_pert) 
 
     # Make gates (1,2),(2,3),(3,4),... i.e. unitary gates which act on any (non-neighboring) pairs of sites in the chain.
     # Create an empty ITensors array that will be our Trotter gates

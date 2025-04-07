@@ -24,7 +24,7 @@ using ITensorMPS
     cutoff = truncation threshold for the SVD in MPS representation (unitless and dimensionless)
     periodic = boolean indicating whether boundary conditions should be periodic
 """
-function evolve(params::CCNO.Parameters, state::CCNO.SimulationState, B::Vector{Float64}, L::Float64, Δx::Float64, Δm²::Float64)
+function evolve(params::CCNO.Parameters, state::CCNO.SimulationState)
 
     t_initial = 0.0
     iteration = 0
@@ -41,7 +41,7 @@ function evolve(params::CCNO.Parameters, state::CCNO.SimulationState, B::Vector{
             # Increment t_initial by τ to ensure it starts from the next expected value
             t_initial += params.τ
             # Recover data from the specified checkpoint
-            s, τ, N, B, L, Δx, p, xyz, ψ, energy_sign, t_initial, iteration = recover_checkpoint_hdf5(params.recover_file)
+            s, N, p, xyz, ψ, energy_sign, t_initial, iteration = recover_checkpoint_hdf5(params.recover_file)
             
             s = siteinds(ψ)
 
@@ -58,17 +58,17 @@ function evolve(params::CCNO.Parameters, state::CCNO.SimulationState, B::Vector{
     # Compute and print survival probability (found from <Sz>) at each time step then apply the gates to go to the next time
     for t in t_initial:params.τ:params.ttotal
         # extract the gates array generated in the gates_function file
-        gates = create_gates(params, state,B, Δx, Δm², L)
+        gates = create_gates(params, state)
 
         for i in 1:params.N_sites
             for d in 1:3
                 state.xyz[i,d] += p̂[i,d] * c * params.τ
                 if params.periodic
                     # wrap around position from 0 to domain size L
-                    state.xyz[i,d] = mod(state.xyz[i,d],L)
+                    state.xyz[i,d] = mod(state.xyz[i,d],params.L)
                     
                     # Checking if the updated x[i] satisfies the boundary conditions
-                    @assert (state.xyz[i,d] >= 0 && state.xyz[i,d] <= L)
+                    @assert (state.xyz[i,d] >= 0 && state.xyz[i,d] <= params.L)
                 end
             end
         end
@@ -93,7 +93,7 @@ function evolve(params::CCNO.Parameters, state::CCNO.SimulationState, B::Vector{
 
         if iteration % params.checkpoint_every == 0 
             checkpoint_filename = joinpath(params.chkptdir, "checkpoint.chkpt.it" * lpad(iteration, 6, "0") * ".h5")
-            checkpoint_simulation_hdf5(params, checkpoint_filename, state, B, L, Δx, Δm², t, iteration)
+            checkpoint_simulation_hdf5(params, checkpoint_filename, state, t, iteration)
         end
         
     end

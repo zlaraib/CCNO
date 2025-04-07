@@ -4,16 +4,17 @@ using ITensorMPS
 
 # This file generates functions that read and write into an hdf5 File
 # for the values needed for recovery in the evolution process.
-function checkpoint_simulation_hdf5(params::CCNO.Parameters, checkpoint_filename::String, state::CCNO.SimulationState, B::Vector{Float64}, L::Float64, Δx::Float64, Δm²::Float64, t::Float64, iteration::Int)
+function checkpoint_simulation_hdf5(params::CCNO.Parameters, checkpoint_filename::String, state::CCNO.SimulationState, t::Float64, iteration::Int)
     # Open an HDF5 file for writing (or create it if it doesn't exist)
     f = h5open(checkpoint_filename, "w")
     
     # Write scalar values
     #write(f, "τ(sec)", τ)
-    write(f, "L(cm)", L)
+    write(f, "L(cm)", params.L)
     write(f, "N_sites(unitless const)", params.N_sites)
-    write(f, "Δx(cm)", Δx)
-    write(f, "Δm²(erg^2)", Δm²)
+    write(f, "Δx(cm)", params.Δx)
+    write(f, "m1(erg)", params.m1)
+    write(f, "m2(erg)", params.m2)
     write(f, "Δp(cm)", params.Δp)
     write(f, "theta_nu(rad)", params.theta_nu)
     write(f, "cutoff(unitless const)", params.cutoff)
@@ -24,7 +25,6 @@ function checkpoint_simulation_hdf5(params::CCNO.Parameters, checkpoint_filename
     # Write arrays and vectors
     write(f, "s(unitless array)", state.s)
     write(f, "N(unitless array)", state.N)
-    write(f, "B(unitless array)", B)
     write(f, "p(erg)", state.p)
     write(f, "xyz(cm)", state.xyz)
     write(f, "energy_sign(unitless array)", state.energy_sign)
@@ -49,14 +49,15 @@ function recover_checkpoint_hdf5(checkpoint_filename::String)
     τ = read(f, "τ(sec)")
     L = read(f, "L(cm)")
     Δx = read(f, "Δx(cm)")
-    Δm² = read(f, "Δm²(erg^2)")
+    m1 = read(f, "m1(erg)")
+    m2 = read(f, "m2(erg)")
     t_initial = read(f, "t(sec)")
     iteration = read(f, "iteration(unitless const)")
     
     # Read arrays and vectors with units
     s = read(f, "s(unitless array)")
     N = read(f, "N(unitless array)")
-    B = read(f, "B(unitless array)")
+    theta_nu = read(f, "theta_nu(rad)")
     p = read(f, "p(erg)")
     xyz = read(f, "xyz(cm)")
     energy_sign = read(f, "energy_sign(unitless array)")
@@ -72,5 +73,5 @@ function recover_checkpoint_hdf5(checkpoint_filename::String)
     
     println("Recovered checkpoint from $checkpoint_filename, iteration $iteration, time $t_initial")
 
-    return s, τ, N, B, L, Δx, Δm², p, xyz, ψ, energy_sign, t_initial, iteration
+    return s, N, p, xyz, ψ, energy_sign, t_initial, iteration
 end

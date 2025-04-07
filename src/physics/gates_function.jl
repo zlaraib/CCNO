@@ -22,10 +22,10 @@ using ITensorMPS
     cutoff = truncation threshold for the SVD in MPS representation (unitless and dimensionless)
     periodic = boolean indicating whether boundary conditions should be periodic
 """
-Base.@pure function create_gates(params::CCNO.Parameters, state::CCNO.SimulationState, B::Vector{Float64}, Δx::Float64, Δm²::Float64, L::Float64)
+Base.@pure function create_gates(params::CCNO.Parameters, state::CCNO.SimulationState)
     
-    # assert B vector to have a magnitude of 1 while preserving its direction.
-    @assert norm(B) == 1
+    B = [-sin(2*params.theta_nu), 0, cos(2*params.theta_nu)] # actual b vector that activates the vacuum oscillation term in Hamiltonian
+    B = B / norm(B) 
 
     # Make gates (1,2),(2,3),(3,4),... i.e. unitary gates which act on any (non-neighboring) pairs of sites in the chain.
     # Create an empty ITensors array that will be our Trotter gates
@@ -35,6 +35,7 @@ Base.@pure function create_gates(params::CCNO.Parameters, state::CCNO.Simulation
     p_mod, p̂ = momentum(state.p)  
     
     # define an array of vacuum oscillation frequencies (units of ergs)
+    Δm² = abs(params.m2^2 - params.m1^2)
     ω = [Δm² / (2 * p_mod[i]) * state.energy_sign[i] for i in 1:params.N_sites]
 
     # Precompute operators for all sites
@@ -67,11 +68,11 @@ Base.@pure function create_gates(params::CCNO.Parameters, state::CCNO.Simulation
             # get the shape function, multiplying all three directions together
             shape_result::Float64 = 1
             for d in 1:1
-                shape_result *= shape_func(params, state, d, i, j,L)
+                shape_result *= shape_func(params, state, d, i, j)
             end
                 
             @views geometric_factor::Float64 = 1 - dot(p̂[i, :], p̂[j, :])
-            interaction_strength = (2.0* √2 * G_F * (state.N[i]+ state.N[j])/(2*((Δx)^3))) * shape_result * geometric_factor
+            interaction_strength = 2.0 * √2 * G_F * (state.N[i] + state.N[j]) / (2*params.Δx^3) * shape_result * geometric_factor
             hj = interaction_strength * (Sz[i]*Sz[j] + 0.5*Sp[i]*Sm[j] + 0.5*Sm[i]*Sp[j])
 
             # if neutrinos interacting with antineutrinos, H changes???

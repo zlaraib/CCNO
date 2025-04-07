@@ -28,6 +28,8 @@ function main()
         cutoff = 1e-100,
         theta_nu = 1.74532925E-8,
         shape_name = "triangular",
+        Δx = Δx,
+        L = L,
         Δp = Δx,
         periodic = true,
         checkpoint_every = 4,
@@ -45,8 +47,6 @@ function main()
     n_νₑ̄ =  n_νₑ # cm^-3 # number density of electron flavor antineutrino
     Eνₑ =  50.0*CCNO.MeV # energy of all neutrinos (P.S the its negative is energy of all antineutrinos)
     Eνₑ̄ = -1 * Eνₑ # specific to my case only. Since all neutrinos have same energy, except in my case anti neutrinos are moving in opposite direction to give it a negative sign
-    B = [-sin(2*params.theta_nu), 0, cos(2*params.theta_nu)] # actual b vector that activates the vacuum oscillation term in Hamiltonian
-    B = B / norm(B) 
     #Select a shape function based on the shape_name variable form the list defined in dictionary in shape_func file
     t1 = 33e-12 #choose initial time for growth rate calculation
     t2 = 53e-12 #choose final time for growth rate calculation
@@ -75,7 +75,7 @@ function main()
     # Initialize psi to be a product state (Of all electron flavor neutrino i.e. spin up in Richers notation which is equivalently half spin up and half chain spin down in my TN notation)
     ψ = productMPS(s, n -> n <= params.N_sites/2 ? "Up" : "Dn")
 
-    N = CCNO.Neutrino_number(params, Δx, L, n_νₑ,n_νₑ̄)
+    N = CCNO.Neutrino_number(params, n_νₑ,n_νₑ̄)
 
     state = CCNO.SimulationState(ψ=ψ,
                                  s=s,
@@ -85,10 +85,10 @@ function main()
                                  xyz = hcat(x,y,z))
 
     # Perturb the state via one-body Hamiltonian
-    CCNO.perturb(params, state,k, B)
+    CCNO.perturb(params, state,k, params.theta_nu)
 
     #extract output for the survival probability values at each timestep
-    CCNO.evolve(params, state, B, L, Δx, Δm²)
+    CCNO.evolve(params, state)
 
     #=====================#
     # Read the data files #
