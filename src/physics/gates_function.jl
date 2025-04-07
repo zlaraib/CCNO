@@ -73,20 +73,22 @@ Base.@pure function create_gates(params::CCNO.Parameters, state::CCNO.Simulation
                 
             @views geometric_factor::Float64 = 1 - dot(p̂[i, :], p̂[j, :])
             interaction_strength = 2.0 * √2 * G_F * (state.N[i] + state.N[j]) / (2*params.Δx^3) * shape_result * geometric_factor
-            hj = interaction_strength * (Sz[i]*Sz[j] + 0.5*Sp[i]*Sm[j] + 0.5*Sm[i]*Sp[j])
+            if interaction_strength != 0
+                hj = interaction_strength * (Sz[i]*Sz[j] + 0.5*Sp[i]*Sm[j] + 0.5*Sm[i]*Sp[j])
 
-            # if neutrinos interacting with antineutrinos, H changes???
-            #if state.energy_sign[i]*state.energy_sign[j] < 0
-            #    hj *= -2
-            #end
-            
-            # make Trotter gate Gj that would correspond to each gate in the gate array of ITensors             
-            Gj = exp(-im * params.τ/2 * hj / hbar)
+                # if neutrinos interacting with antineutrinos, H changes???
+                #if state.energy_sign[i]*state.energy_sign[j] < 0
+                #    hj *= -2
+                #end
 
-            # The push! function adds (appends) an element to the end of an array;
-            # ! performs an operation without creating a new object, (in a way overwites the previous array in consideration); 
-            # i.e. we append a new element Gj (which is an ITensor object representing a gate) to the end of the gates array.
-            push!(gates, Gj)
+                # make Trotter gate Gj that would correspond to each gate in the gate array of ITensors
+                Gj = exp(-im * params.τ/2 * hj / hbar)
+
+                # The push! function adds (appends) an element to the end of an array;
+                # ! performs an operation without creating a new object, (in a way overwites the previous array in consideration); 
+                # i.e. we append a new element Gj (which is an ITensor object representing a gate) to the end of the gates array.
+                push!(gates, Gj)
+            end
         end 
     end
 
