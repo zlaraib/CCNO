@@ -73,5 +73,8 @@ function recover_checkpoint_hdf5(checkpoint_filename::String)
     
     println("Recovered checkpoint from $checkpoint_filename, iteration $iteration, time $t_initial")
 
-    return s, N, p, xyz, ψ, energy_sign, t_initial, iteration
+    s = siteinds(ψ)
+    state = simulation_state(ψ=ψ, s=s, energy_sign=energy_sign, N=N, p=p, xyz=xyz)
+    
+    return state, t_initial, iteration
 end

@@ -33,23 +33,12 @@ function evolve(params::CCNO.Parameters, state::CCNO.SimulationState)
     mkpath(params.datadir)
 
     if params.do_recover
-        
-        println("Manual recovery from file ", params.recover_file)
-        
         if isfile(params.recover_file)
             println("Recovering from checkpoint: $recover_file")
-            # Increment t_initial by τ to ensure it starts from the next expected value
-            t_initial += params.τ
-            # Recover data from the specified checkpoint
-            s, N, p, xyz, ψ, energy_sign, t_initial, iteration = recover_checkpoint_hdf5(params.recover_file)
-            
-            s = siteinds(ψ)
-
-            state = simulation_state(ψ=ψ, s=s, energy_sign=energy_sign, N=N, p=p, xyz=xyz)
+            state, t_initial, iteration = recover_checkpoint_hdf5(params.recover_file)
         else
             error("Checkpoint file not found")
         end
-     
     end    
 
     # extract output of p_hat and p_mod for the p vector defined above for all sites. 
@@ -87,7 +76,7 @@ function evolve(params::CCNO.Parameters, state::CCNO.SimulationState)
         # This is necessary to ensure that the MPS represents a valid quantum state.
         normalize!(state.ψ)
 
-        iteration = iteration + 1
+        iteration += 1
 
         store_data(params.datadir, t, state)
 
