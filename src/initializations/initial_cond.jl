@@ -43,7 +43,7 @@ Combining (where index i represent a site and runs from 1:N_sites)
 ∑ᵢ Δxᵢ = L # domain size
 
 """
-function Neutrino_number(params::CCNO.parameters, Δx, L, n_νₑ,n_νₑ̄)
+function Neutrino_number(params::CCNO.Parameters, Δx, L, n_νₑ,n_νₑ̄)
     V = L^3 # volume of the big box containing all sites/particles
 
     N_νₑ  = n_νₑ * (Δx)^3 

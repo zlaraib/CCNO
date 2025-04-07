@@ -17,7 +17,7 @@ function main()
     L = 1.0 # cm # domain size # (aka big box length)
     Δx = L/N_sites_eachflavor # length of the box of interacting neutrinos at a site in cm  #variable
 
-    params = CCNO.parameters(
+    params = CCNO.Parameters(
         N_sites = 2* (N_sites_eachflavor),
         τ = 5E-13,
         ttotal = 9.0E-11, 
@@ -75,7 +75,7 @@ function main()
     # Initialize psi to be a product state (Of all electron flavor neutrino i.e. spin up in Richers notation which is equivalently half spin up and half chain spin down in my TN notation)
     ψ = productMPS(s, n -> n <= params.N_sites/2 ? "Up" : "Dn")
 
-    state = CCNO.simulation_state(ψ=ψ,
+    state = CCNO.SimulationState(ψ=ψ,
                                   s=s)
     
     # Perturb the state via one-body Hamiltonian

@@ -24,7 +24,7 @@ using ITensorMPS
     cutoff = truncation threshold for the SVD in MPS representation (unitless and dimensionless)
     periodic = boolean indicating whether boundary conditions should be periodic
 """
-function evolve(params::CCNO.parameters, state::CCNO.simulation_state, N::Vector{Float64}, B::Vector{Float64}, L::Float64, Δx::Float64, Δm²::Float64, p::Array{Float64,2}, x::Vector{Float64}, energy_sign::Vector{Int})
+function evolve(params::CCNO.Parameters, state::CCNO.SimulationState, N::Vector{Float64}, B::Vector{Float64}, L::Float64, Δx::Float64, Δm²::Float64, p::Array{Float64,2}, x::Vector{Float64}, energy_sign::Vector{Int})
 
     t_initial = 0.0
     iteration = 0

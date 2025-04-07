@@ -15,7 +15,7 @@ end
     return 1 
 end
 
-Base.@pure function shape_func(params::CCNO.parameters, x::Vector{Float64}, i::Int, j::Int,L::Float64)
+Base.@pure function shape_func(params::CCNO.Parameters, x::Vector{Float64}, i::Int, j::Int,L::Float64)
 
     # Define a dictionary mapping shape names to functions
     shapes = Dict(

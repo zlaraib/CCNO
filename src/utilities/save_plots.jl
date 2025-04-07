@@ -2,7 +2,7 @@ using Measures
 using Plots
 
 # This function reads data from output files and saves the plots
-function save_plots(params::CCNO.parameters, L, t_array, Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array)
+function save_plots(params::CCNO.Parameters, L, t_array, Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array)
     
         save_plot_flag = isdir(params.plotdir) || mkpath(params.plotdir)
 
