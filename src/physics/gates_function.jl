@@ -35,16 +35,16 @@ Base.@pure function create_gates(params::CCNO.Parameters, state::CCNO.Simulation
     p_mod, p̂ = momentum(state.p)  
     
     # define an array of vacuum oscillation frequencies (units of ergs)
-    Δm² = abs(params.m2^2 - params.m1^2)
-    ω = [Δm² / (2 * p_mod[i]) * state.energy_sign[i] for i in 1:params.N_sites]
+    Δm²::Float64 = abs(params.m2^2 - params.m1^2)
+    ω::Vector{Float64} = [Δm² / (2 * p_mod[i]) * state.energy_sign[i] for i in 1:params.N_sites]
 
     # Precompute operators for all sites
-    Id = [op("Id", state.s[i]) for i in 1:length(state.s)]
-    Sx = [op("Sx", state.s[i]) for i in 1:length(state.s)]
-    Sy = [op("Sy", state.s[i]) for i in 1:length(state.s)]
-    Sp = [op("S+", state.s[i]) for i in 1:length(state.s)]
-    Sm = [op("S-", state.s[i]) for i in 1:length(state.s)]
-    Sz = [op("Sz", state.s[i]) for i in 1:length(state.s)]
+    Id::Vector{ITensor} = [op("Id", state.s[i]) for i in 1:length(state.s)]
+    Sx::Vector{ITensor} = [op("Sx", state.s[i]) for i in 1:length(state.s)]
+    Sy::Vector{ITensor} = [op("Sy", state.s[i]) for i in 1:length(state.s)]
+    Sp::Vector{ITensor} = [op("S+", state.s[i]) for i in 1:length(state.s)]
+    Sm::Vector{ITensor} = [op("S-", state.s[i]) for i in 1:length(state.s)]
+    Sz::Vector{ITensor} = [op("Sz", state.s[i]) for i in 1:length(state.s)]
     
     # add Vacuum Oscillation Hamiltonian 
     for i in 1:(params.N_sites-1)
@@ -74,7 +74,7 @@ Base.@pure function create_gates(params::CCNO.Parameters, state::CCNO.Simulation
             @views geometric_factor::Float64 = 1 - dot(p̂[i, :], p̂[j, :])
             interaction_strength = 2.0 * √2 * G_F * (state.N[i] + state.N[j]) / (2*params.Δx^3) * shape_result * geometric_factor
             if interaction_strength != 0
-                hj = interaction_strength * (Sz[i]*Sz[j] + 0.5*Sp[i]*Sm[j] + 0.5*Sm[i]*Sp[j])
+                hj::ITensor = interaction_strength * (Sz[i]*Sz[j] + 0.5*Sp[i]*Sm[j] + 0.5*Sm[i]*Sp[j])
 
                 # if neutrinos interacting with antineutrinos, H changes???
                 #if state.energy_sign[i]*state.energy_sign[j] < 0
@@ -82,7 +82,7 @@ Base.@pure function create_gates(params::CCNO.Parameters, state::CCNO.Simulation
                 #end
 
                 # make Trotter gate Gj that would correspond to each gate in the gate array of ITensors
-                Gj = exp(-im * params.τ/2 * hj / hbar)
+                Gj::ITensor = exp(-im * params.τ/2 * hj / hbar)
 
                 # The push! function adds (appends) an element to the end of an array;
                 # ! performs an operation without creating a new object, (in a way overwites the previous array in consideration); 
