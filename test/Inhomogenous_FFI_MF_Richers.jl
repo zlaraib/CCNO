@@ -36,7 +36,6 @@ function main()
         plotdir = joinpath(@__DIR__, "plots"),
         datadir = joinpath(@__DIR__,"datafiles"),
         chkptdir = joinpath(@__DIR__, "checkpoints"),
-        save_data = true,
         save_plots_flag = false,
         α = 1e-6
     )

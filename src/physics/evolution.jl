@@ -68,9 +68,6 @@ function evolve(params::CCNO.parameters, s::Vector{Index{Int64}}, N::Vector{Floa
         end
 
         println("iteration= $iteration time= $t")
-        # Writing an if statement in a shorthand way that checks whether the current value of t is equal to ttotal, 
-        # and if so, it executes the break statement, which causes the loop to terminate early.
-        t ≈ params.ttotal && break
 
         # apply each gate in gates(ITensors array) successively to the wavefunction ψ (MPS)(it is equivalent to time evolving psi according to the time-dependent Hamiltonian represented by gates).
         # The apply function is a matrix-vector multiplication operation that is smart enough to determine which site indices each gate has, and then figure out where to apply it to our MPS. 
@@ -84,20 +81,17 @@ function evolve(params::CCNO.parameters, s::Vector{Index{Int64}}, N::Vector{Floa
         # This is necessary to ensure that the MPS represents a valid quantum state.
         normalize!(ψ)
 
-        if params.save_data
+        iteration = iteration + 1
 
-            store_data(params.datadir, t, ψ, x, p)
+        store_data(params.datadir, t, ψ, x, p)
 
-            mkpath(params.chkptdir)
-            if iteration % params.checkpoint_every == 0 
-                checkpoint_filename = joinpath(params.chkptdir, "checkpoint.chkpt.it" * lpad(iteration, 6, "0") * ".h5")
-                checkpoint_simulation_hdf5(params, checkpoint_filename, s, N, B, L, Δx, Δm², p, x, ψ, energy_sign, t, iteration)
-            end
-
-            iteration = iteration + 1
+        mkpath(params.chkptdir)
+        if iteration % params.checkpoint_every == 0 
+            checkpoint_filename = joinpath(params.chkptdir, "checkpoint.chkpt.it" * lpad(iteration, 6, "0") * ".h5")
+            checkpoint_simulation_hdf5(params, checkpoint_filename, s, N, B, L, Δx, Δm², p, x, ψ, energy_sign, t, iteration)
         end
+        
     end
-    t_array = t_initial:params.τ:params.ttotal
 
 end
 

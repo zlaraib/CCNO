@@ -7,7 +7,6 @@ Base.@kwdef struct parameters
     plotdir::String
 
     do_recover::Bool    
-    save_data::Bool # true = saves datafiles for science runs while false doesn't. So change it to false for jenkins test runs
     save_plots_flag::Bool # true = saves plots for science runs while false doesn't. So change it to false for jenkins test runs
     periodic::Bool  # true = imposes periodic boundary conditions while false doesn't
 
