@@ -32,26 +32,7 @@ Base.@pure function create_gates(params::CCNO.Parameters, state::CCNO.Simulation
     p_mod, p̂ = momentum(state.p)  
     
     # define an array of vacuum oscillation frequencies (units of ergs)
-    if Δm² == 0 # specific to self-int only
-        ω = zeros(params.N_sites)
-    elseif Δm² == 2 * π # specific to vac_osc only
-       ω = fill(π, params.N_sites) # added global so we can access and use this global variable without the need to pass them as arguments to another function
-    elseif (Δm² == 0.5 || Δm² == 0.2 || Δm² == 2) &&  L==1 # addition for full Hamiltonian from main_Rogerro, Rog_bipolar, Rog_N_loop and t_p_vs_N_unsym tests 
-        # Create arrays ω_a and ω_b
-        ω_a = fill(Δm², div(params.N_sites, 2))
-        ω_b = fill(0, div(params.N_sites, 2))
-        # Concatenate ω_a and ω_b to form ω
-        ω = vcat(ω_a, ω_b)
-    elseif (Δm² == -0.5 || Δm² == 0.0 || Δm² ==0.05 || Δm² ==0.125 || Δm² ==0.25 || Δm² ==0.5 || Δm² ==1.0) && L==10 # addition for t_p_vs_N_sym and t_p_vs_sym_delta_w tests   
-        Δω_array= fill(Δm², div(params.N_sites, 2))
-        # Calculate ω_a and ω_b based on Δω
-        ω_a = Δω_array 
-        ω_b = -Δω_array 
-        ω = vcat(ω_a, ω_b)
-    else 
-        ω = [Δm² / (2 * p_mod[i]) * state.energy_sign[i] for i in 1:params.N_sites]
-    end
-    # println("ω = ", ω)
+    ω = [Δm² / (2 * p_mod[i]) * state.energy_sign[i] for i in 1:params.N_sites]
 
     for i in 1:(params.N_sites-1)
         for j in i+1:params.N_sites
@@ -65,26 +46,19 @@ Base.@pure function create_gates(params::CCNO.Parameters, state::CCNO.Simulation
             # ni and nj are the neutrions at site i and j respectively.
             # mu pairs divided by 2 to avoid double counting
             
-            # if state.energy_sign[i]*state.energy_sign[j]>0
-                shape_result = shape_func(params, x, i, j,L)
-                geometric_factor = 1 - dot(p̂[i, :], p̂[j, :])
-                interaction_strength = (2.0* √2 * G_F * (state.N[i]+ state.N[j])/(2*((Δx)^3))) * shape_result * geometric_factor
-                hj = interaction_strength *
+            shape_result = shape_func(params, x, i, j,L)
+            geometric_factor = 1 - dot(p̂[i, :], p̂[j, :])
+            interaction_strength = (2.0* √2 * G_F * (state.N[i]+ state.N[j])/(2*((Δx)^3))) * shape_result * geometric_factor
+            hj = interaction_strength *
                 (op("Sz", state.s[i]) * op("Sz", state.s[j]) +
                 1/2 * op("S+", state.s[i]) * op("S-", state.s[j]) +
                 1/2 * op("S-", state.s[i]) * op("S+", state.s[j]))
-            # else
-                # # Get the shape function result for each pair of i and j 
-                # shape_result = shape_func(x, Δp, i, j,L, shape_name, periodic)
-                # # Calculate the geometric factor for each pair of i and j within the loop
-                # geometric_factor = geometric_func(p, p̂, i, j, theta_nu)
-                # interaction_strength = (2.0* √2 * G_F * (N[i]+ N[j])/(2*((Δx)^3))) * shape_result * geometric_factor
-                # hj = - interaction_strength * 
-                # ((-2 *op("Sz",state.s[i]) * op("Sz",state.s[j])) + 
-                # op("S+", state.s[i]) * op("S-", state.s[j]) +
-                # op("S-", state.s[i]) * op("S+", state.s[j]))
-            # end
 
+            # if neutrinos interacting with antineutrinos, H changes???
+            #if state.energy_sign[i]*state.energy_sign[j] < 0
+            #    hj *= -2
+            #end
+            
             # add Vacuum Oscillation Hamiltonian 
             if ω[i] != 0 || ω[j] != 0
                 
@@ -95,20 +69,8 @@ Base.@pure function create_gates(params::CCNO.Parameters, state::CCNO.Simulation
             end
             
             # make Trotter gate Gj that would correspond to each gate in the gate array of ITensors             
-            if params.theta_nu == 0 ||  params.theta_nu == π/4 || params.theta_nu == π/2 
-                Gj = exp(-im * τ/2 * hj)
-            elseif params.theta_nu == 0.1 && Δm²== 0.2 # for Rog_bipolar
-                Gj = exp(-im * params.τ/2 * hj)
-            elseif params.theta_nu == 0.01 # for Richers bipolar
-                t_bipolar = 8.96e-4
-                Gj = exp(-im * params.τ/2 * hj* t_bipolar/hbar)
-            else 
-                Gj = exp(-im * params.τ/2 * hj* 1/hbar)
-            end
-            # println(imag(hj/hbar))
-            # println((Δm²))/(2 *hbar * p_mod[1])
-            # @assert imag(hj) == ((Δm²))/(2 *hbar * p_mod[1])
-            # println("Gj= ",Gj)            # has_fermion_string(hj) = true
+            Gj = exp(-im * params.τ/2 * hj / hbar)
+
             # The push! function adds (appends) an element to the end of an array;
             # ! performs an operation without creating a new object, (in a way overwites the previous array in consideration); 
             # i.e. we append a new element Gj (which is an ITensor object representing a gate) to the end of the gates array.
