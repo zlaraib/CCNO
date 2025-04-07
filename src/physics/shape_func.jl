@@ -15,15 +15,15 @@ end
     return 1 
 end
 
-Base.@pure function shape_func(params::CCNO.Parameters, x::Vector{Float64}, i::Int, j::Int,L::Float64)
-
-    # Define a dictionary mapping shape names to functions
-    shapes = Dict(
-        "flat_top" => flat_top,
-        "triangular" => triangular,
-        "none" => none
-    )
+# Define a dictionary mapping shape names to functions
+const shapes = Dict(
+    "flat_top" => flat_top,
+    "triangular" => triangular,
+    "none" => none
+)
     
+@inline function shape_func(params::CCNO.Parameters, x::Vector{Float64}, i::Int, j::Int,L::Float64)
+
     if haskey(shapes, params.shape_name)
         shape_function = shapes[params.shape_name]  # assign the corresponding function (selected in shape_name in the test file) to shape_function.
         # ξ determines the overlap of neutrinos (i.e. their shapes) on top of each other to signify the neutrino-neutrino interaction strength.
