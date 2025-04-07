@@ -68,7 +68,7 @@ function create_gates(params::CCNO.parameters, s, ψ, N, B, Δx, Δm², p, x, L,
                 # Get the shape function result for each pair of i and j 
                 shape_result = shape_func(params, x, i, j,L)
                 # Calculate the geometric factor for each pair of i and j within the loop
-                geometric_factor = geometric_func(params, p, p̂, i, j)
+                geometric_factor = 1 - dot(p̂[i, :], p̂[j, :])
                 interaction_strength = (2.0* √2 * G_F * (N[i]+ N[j])/(2*((Δx)^3))) * shape_result * geometric_factor
                 # println(x[i] ," ",x[j] ," ", interaction_strength)
                 hj = interaction_strength *
