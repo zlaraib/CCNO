@@ -22,7 +22,7 @@ using DelimitedFiles
     cutoff = truncation threshold for the SVD in MPS representation (unitless and dimensionless)
     periodic = boolean indicating whether boundary conditions should be periodic
 """
-function evolve(params::CCNO.parameters, s, N, B, L, Δx, Δm², p, x, ψ, energy_sign, t1, t2)
+function evolve(params::CCNO.parameters, s, N, B, L, Δx, Δm², p, x, ψ, energy_sign)
 
     t_initial = 0.0
     iteration = 0

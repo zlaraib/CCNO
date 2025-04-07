@@ -87,7 +87,7 @@ function main()
     Δt = t2 - t1 #time difference between growth rates
 
     #extract output for the survival probability values at each timestep
-    CCNO.evolve(params, s, N, B, L, Δx, Δm², p, x, ψ₀, energy_sign, t1, t2)
+    CCNO.evolve(params, s, N, B, L, Δx, Δm², p, x, ψ₀, energy_sign)
 
     #=====================#
     # Read the data files #
