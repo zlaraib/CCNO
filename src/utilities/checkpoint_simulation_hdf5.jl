@@ -4,7 +4,7 @@ using ITensorMPS
 
 # This file generates functions that read and write into an hdf5 File
 # for the values needed for recovery in the evolution process.
-function checkpoint_simulation_hdf5(params::CCNO.Parameters, checkpoint_filename::String, state::CCNO.SimulationState, t::Float64, iteration::Int)
+function checkpoint_simulation_hdf5(params::CCNO.Parameters, checkpoint_filename::String, state::CCNO.SimulationState, t::Float64, iteration::Int64)
     # Open an HDF5 file for writing (or create it if it doesn't exist)
     f = h5open(checkpoint_filename, "w")
     

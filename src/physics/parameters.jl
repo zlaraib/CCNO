@@ -10,9 +10,9 @@ Base.@kwdef struct Parameters
     save_plots_flag::Bool # true = saves plots for science runs while false doesn't. So change it to false for jenkins test runs
     periodic::Bool  # true = imposes periodic boundary conditions while false doesn't
 
-    N_sites::Int # total particles/sites for all neutrino and anti neutrino electron flavored
-    maxdim::Int # max bond dimension in MPS truncation
-    checkpoint_every::Int
+    N_sites::Int64 # total particles/sites for all neutrino and anti neutrino electron flavored
+    maxdim::Int64 # max bond dimension in MPS truncation
+    checkpoint_every::Int64
 
     τ::Float64 # time step to include 50 steps every 10 picoseconds # sec
     ttotal::Float64 # total time of evolution # sec

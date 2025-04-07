@@ -22,7 +22,7 @@ const shapes = Dict(
     "none" => none
 )
     
-@inline function shape_func(params::CCNO.Parameters, state::CCNO.SimulationState, d::Int, i::Int, j::Int)
+@inline function shape_func(params::CCNO.Parameters, state::CCNO.SimulationState, d::Int64, i::Int64, j::Int64)
 
     shape_function = shapes[params.shape_name]  # assign the corresponding function (selected in shape_name in the test file) to shape_function.
     # ξ determines the overlap of neutrinos (i.e. their shapes) on top of each other to signify the neutrino-neutrino interaction strength.
