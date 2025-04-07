@@ -23,10 +23,11 @@ Base.@pure function create_perturbation_gates(params::CCNO.Parameters, state::CC
     # Create an empty ITensors array that will be our Trotter gates
     gates = ITensor[] 
 
+    # assert B vector to have a magnitude of 1 while preserving its direction.
+    @assert norm(B_pert) == 1
+    
     for i in 1:(params.N_sites-1)
         for j in i+1:params.N_sites
-            # assert B vector to have a magnitude of 1 while preserving its direction.
-            @assert norm(B_pert) == 1
             # total Hamiltonian of the system is a sum of local terms hj, where hj acts on sites i and j which are paired for gates to latch onto.
             # op function returns these operators as ITensors and we tensor product and add them together to compute the operator hj.
 
