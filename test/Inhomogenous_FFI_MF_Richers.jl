@@ -14,7 +14,7 @@ using HDF5
 """ Richers(2021) Test 4 initial conditions: """
 function main()
     N_sites_eachflavor= 5 # total sites/particles that evenly spaced "for each (electron) flavor" 
-    L = 1 # cm # domain size # (aka big box length)
+    L = 1.0 # cm # domain size # (aka big box length)
     Δx = L/N_sites_eachflavor # length of the box of interacting neutrinos at a site in cm  #variable
 
     params = CCNO.parameters(

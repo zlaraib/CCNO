@@ -1,9 +1,10 @@
 using HDF5
-
+using ITensors
+using ITensorMPS
 
 # This file generates functions that read and write into an hdf5 File
 # for the values needed for recovery in the evolution process.
-function checkpoint_simulation_hdf5(params::CCNO.parameters, checkpoint_filename, s, N, B, L, Δx, Δm², p, x, ψ, energy_sign, t, iteration)
+function checkpoint_simulation_hdf5(params::CCNO.parameters, checkpoint_filename::String, s::Vector{Index{Int64}}, N::Vector{Float64}, B::Vector{Float64}, L::Float64, Δx::Float64, Δm²::Float64, p::Array{Float64,2}, x::Vector{Float64}, ψ::MPS, energy_sign::Vector{Int}, t::Float64, iteration::Int)
     # Open an HDF5 file for writing (or create it if it doesn't exist)
     f = h5open(checkpoint_filename, "w")
     
@@ -40,7 +41,7 @@ function checkpoint_simulation_hdf5(params::CCNO.parameters, checkpoint_filename
     println("Checkpoint created at $checkpoint_filename, iteration $iteration, time $t")
 end
 
-function recover_checkpoint_hdf5(checkpoint_filename)
+function recover_checkpoint_hdf5(checkpoint_filename::String)
     # Open the HDF5 file for reading
     f = h5open(checkpoint_filename, "r")
     
