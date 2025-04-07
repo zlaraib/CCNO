@@ -29,6 +29,7 @@ function evolve(params::CCNO.Parameters, state::CCNO.SimulationState, B::Vector{
     t_initial = 0.0
     iteration = 0
     t_recover = t_initial # Variable to store the initial recovery time 
+    mkpath(params.chkptdir)
 
     if params.do_recover
         
@@ -89,7 +90,6 @@ function evolve(params::CCNO.Parameters, state::CCNO.SimulationState, B::Vector{
 
         store_data(params.datadir, t, state)
 
-        mkpath(params.chkptdir)
         if iteration % params.checkpoint_every == 0 
             checkpoint_filename = joinpath(params.chkptdir, "checkpoint.chkpt.it" * lpad(iteration, 6, "0") * ".h5")
             checkpoint_simulation_hdf5(params, checkpoint_filename, state, B, L, Δx, Δm², t, iteration)
