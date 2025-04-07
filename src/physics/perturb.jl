@@ -52,7 +52,7 @@ function create_perturbation_gates(params::CCNO.parameters, s::Vector{Index{Int6
 end
 
 
-function evolve_perturbation(params::CCNO.parameters, s,k,B_pert,ψ)
+function evolve_perturbation(params::CCNO.parameters, s::Vector{Index{Int64}},k::Float64,B_pert::Vector{Float64},ψ::MPS)
 
     # extract the gates array generated in the gates_function file
     perturb_gates = create_perturbation_gates(params, s,k, B_pert)
