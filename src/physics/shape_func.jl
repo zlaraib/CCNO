@@ -3,19 +3,19 @@
     a dictionary to allow easy switching between shapes in test files. 
 """
 
-function flat_top(Δp, ξ)
+@inline function flat_top(Δp::Float64, ξ::Float64)
     return heaviside(1/2 - abs(ξ))
 end
 
-function triangular(Δp, ξ)
+@inline function triangular(Δp::Float64, ξ::Float64)
     return (1 - abs(ξ)) * heaviside(1 - abs(ξ))
 end
 
-function none(Δp, ξ)
+@inline function none(Δp::Float64, ξ::Float64)
     return 1 
 end
 
-function shape_func(params::CCNO.parameters, x, i, j,L)
+Base.@pure function shape_func(params::CCNO.parameters, x::Vector{Float64}, i::Int, j::Int,L::Float64)
 
     # Define a dictionary mapping shape names to functions
     shapes = Dict(

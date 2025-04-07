@@ -1,11 +1,14 @@
+using ITensors
+using ITensorMPS
+
 # Function to append data as new rows to the existing file after every `checkpoint_every` values
-function append_data(filename, new_data)
+function append_data(filename::String, new_data)
     open(filename, "a") do f
         writedlm(f, new_data)
     end
 end
 
-function store_data(datadir, t, ψ, x, p)
+function store_data(datadir::String, t::Float64, ψ::MPS, x::Vector{Float64}, p::Array{Float64,2})
     #================================#
     # calculate necessary quantities #
     #================================#

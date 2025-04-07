@@ -17,7 +17,7 @@ using ITensorMPS
     maxdim = max bond dimension in MPS truncation (unitless and dimensionless)
     cutoff = truncation threshold for the SVD in MPS representation (unitless and dimensionless)
 """
-function create_perturbation_gates(params::CCNO.parameters, s::Vector{Index{Int64}}, k::Float64, B_pert::Vector{Float64})
+Base.@pure function create_perturbation_gates(params::CCNO.parameters, s::Vector{Index{Int64}}, k::Float64, B_pert::Vector{Float64})
     
     # Make gates (1,2),(2,3),(3,4),... i.e. unitary gates which act on any (non-neighboring) pairs of sites in the chain.
     # Create an empty ITensors array that will be our Trotter gates

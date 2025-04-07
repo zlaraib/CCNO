@@ -1,6 +1,9 @@
 # This file generates the create_gates function that holds ITensors Trotter gates and returns the dimensionless unitary 
 # operators govered by the Hamiltonian which includes effects of the vacuum and self-interaction potential for each site.
 
+using ITensors
+using ITensorMPS
+
 @doc """
     Expected (CGS) units of the quantities defined in the files in tests directory that are being used in the gates function.                                                                   
     s = site index array (dimensionless and unitless)          
@@ -19,7 +22,7 @@
     cutoff = truncation threshold for the SVD in MPS representation (unitless and dimensionless)
     periodic = boolean indicating whether boundary conditions should be periodic
 """
-function create_gates(params::CCNO.parameters, s, ψ, N, B, Δx, Δm², p, x, L, energy_sign)
+Base.@pure function create_gates(params::CCNO.parameters, s::Vector{Index{Int64}}, ψ::MPS, N::Vector{Float64}, B::Vector{Float64}, Δx::Float64, Δm²::Float64, p::Array{Float64,2}, x::Vector{Float64}, L::Float64, energy_sign::Vector{Int64})
     
     # Make gates (1,2),(2,3),(3,4),... i.e. unitary gates which act on any (non-neighboring) pairs of sites in the chain.
     # Create an empty ITensors array that will be our Trotter gates

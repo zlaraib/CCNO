@@ -2,7 +2,7 @@
   This function takes in a momentum vector (for all sites) along with their directions 
   and returns its modulus (for all sites) and unit vectors (for all sites and directions)
 """
-function momentum(p, N_sites)
+Base.@pure function momentum(p::Array{Float64,2}, N_sites::Int)
 p_hat = []  # Initialize an empty array to collect p_i_hat vectors. This array will contain unit vector(hat) of all sites in all directions
 p_mod = [] #Initialize array that contains mod of all sites 
   for i in 1:N_sites

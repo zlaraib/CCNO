@@ -1,4 +1,6 @@
 using DelimitedFiles
+using ITensors
+using ITensorMPS
 
 # This file generates the evolve function which evolves the ψ state in time and computes the expectation values of Sz at each time step, along 
 # with their survival probabilities. The time evolution utilizes the unitary operators created as gates from the create_gates function.
@@ -22,7 +24,7 @@ using DelimitedFiles
     cutoff = truncation threshold for the SVD in MPS representation (unitless and dimensionless)
     periodic = boolean indicating whether boundary conditions should be periodic
 """
-function evolve(params::CCNO.parameters, s, N, B, L, Δx, Δm², p, x, ψ, energy_sign)
+function evolve(params::CCNO.parameters, s::Vector{Index{Int64}}, N::Vector{Float64}, B::Vector{Float64}, L::Float64, Δx::Float64, Δm²::Float64, p::Array{Float64,2}, x::Vector{Float64}, ψ::MPS, energy_sign::Vector{Int})
 
     t_initial = 0.0
     iteration = 0
