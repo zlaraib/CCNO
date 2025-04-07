@@ -17,7 +17,7 @@ using ITensorMPS
     maxdim = max bond dimension in MPS truncation (unitless and dimensionless)
     cutoff = truncation threshold for the SVD in MPS representation (unitless and dimensionless)
 """
-Base.@pure function create_perturbation_gates(params::CCNO.parameters, s::Vector{Index{Int64}}, k::Float64, B_pert::Vector{Float64})
+Base.@pure function create_perturbation_gates(params::CCNO.parameters, state::CCNO.simulation_state, k::Float64, B_pert::Vector{Float64})
     
     # Make gates (1,2),(2,3),(3,4),... i.e. unitary gates which act on any (non-neighboring) pairs of sites in the chain.
     # Create an empty ITensors array that will be our Trotter gates
@@ -31,9 +31,9 @@ Base.@pure function create_perturbation_gates(params::CCNO.parameters, s::Vector
             # op function returns these operators as ITensors and we tensor product and add them together to compute the operator hj.
 
             # add perturbation via one-body oscillation term to the Hamiltonian
-            hj= B_pert[1] * op("Sx", s[i]) * op("Id", s[j]) +
-                B_pert[2] * op("Sy", s[i]) * op("Id", s[j]) +
-                B_pert[3] * op("Sz", s[i]) * op("Id", s[j])
+            hj= B_pert[1] * op("Sx", state.s[i]) * op("Id", state.s[j]) +
+                B_pert[2] * op("Sy", state.s[i]) * op("Id", state.s[j]) +
+                B_pert[3] * op("Sz", state.s[i]) * op("Id", state.s[j])
 
             # make Trotter gate Gj that would correspond to each gate in the gate array of ITensors             
             Gj = exp(-im * params.α * hj) #Gj has factor of 1/hbar sinceonly Richers inhomo tests need perturbation
@@ -52,17 +52,16 @@ Base.@pure function create_perturbation_gates(params::CCNO.parameters, s::Vector
 end
 
 
-function evolve_perturbation(params::CCNO.parameters, s::Vector{Index{Int64}},k::Float64,B_pert::Vector{Float64},ψ::MPS)
+function evolve_perturbation(params::CCNO.parameters, state::CCNO.simulation_state,k::Float64,B_pert::Vector{Float64})
 
     # extract the gates array generated in the gates_function file
-    perturb_gates = create_perturbation_gates(params, s,k, B_pert)
+    perturb_gates = create_perturbation_gates(params, state,k, B_pert)
 
-    ψ = apply(perturb_gates, ψ; params.cutoff, params.maxdim)
+    state.ψ = apply(perturb_gates, state.ψ; params.cutoff, params.maxdim)
         
     # The normalize! function is used to ensure that the MPS is properly normalized after each application of the time evolution gates. 
     # This is necessary to ensure that the MPS represents a valid quantum state.
-    normalize!(ψ)
-    return ψ
+    normalize!(state.ψ)
 end
 
 

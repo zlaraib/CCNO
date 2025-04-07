@@ -75,9 +75,11 @@ function main()
     # Initialize psi to be a product state (Of all electron flavor neutrino i.e. spin up in Richers notation which is equivalently half spin up and half chain spin down in my TN notation)
     ψ = productMPS(s, n -> n <= params.N_sites/2 ? "Up" : "Dn")
 
-
+    state = CCNO.simulation_state(ψ=ψ,
+                                  s=s)
+    
     # Perturb the state via one-body Hamiltonian
-    ψ₀= CCNO.evolve_perturbation(params, s,k, B, ψ)
+    CCNO.evolve_perturbation(params, state,k, B)
 
     N = CCNO.Neutrino_number(params, Δx, L, n_νₑ,n_νₑ̄)
 
@@ -86,7 +88,7 @@ function main()
     Δt = t2 - t1 #time difference between growth rates
 
     #extract output for the survival probability values at each timestep
-    CCNO.evolve(params, s, N, B, L, Δx, Δm², p, x, ψ₀, energy_sign)
+    CCNO.evolve(params, state, N, B, L, Δx, Δm², p, x, energy_sign)
 
     #=====================#
     # Read the data files #

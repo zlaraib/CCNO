@@ -22,7 +22,7 @@ using ITensorMPS
     cutoff = truncation threshold for the SVD in MPS representation (unitless and dimensionless)
     periodic = boolean indicating whether boundary conditions should be periodic
 """
-Base.@pure function create_gates(params::CCNO.parameters, s::Vector{Index{Int64}}, ψ::MPS, N::Vector{Float64}, B::Vector{Float64}, Δx::Float64, Δm²::Float64, p::Array{Float64,2}, x::Vector{Float64}, L::Float64, energy_sign::Vector{Int64})
+Base.@pure function create_gates(params::CCNO.parameters, state::CCNO.simulation_state, N::Vector{Float64}, B::Vector{Float64}, Δx::Float64, Δm²::Float64, p::Array{Float64,2}, x::Vector{Float64}, L::Float64, energy_sign::Vector{Int64})
     
     # Make gates (1,2),(2,3),(3,4),... i.e. unitary gates which act on any (non-neighboring) pairs of sites in the chain.
     # Create an empty ITensors array that will be our Trotter gates
@@ -56,8 +56,6 @@ Base.@pure function create_gates(params::CCNO.parameters, s::Vector{Index{Int64}
     for i in 1:(params.N_sites-1)
         for j in i+1:params.N_sites
             #s_i, s_j are non-neighbouring spin site/indices from the s array
-            s_i = s[i]                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
-            s_j = s[j]
             # assert B vector to have a magnitude of 1 while preserving its direction.
             @assert norm(B) == 1
 
@@ -68,16 +66,13 @@ Base.@pure function create_gates(params::CCNO.parameters, s::Vector{Index{Int64}
             # mu pairs divided by 2 to avoid double counting
             
             # if energy_sign[i]*energy_sign[j]>0
-                # Get the shape function result for each pair of i and j 
                 shape_result = shape_func(params, x, i, j,L)
-                # Calculate the geometric factor for each pair of i and j within the loop
                 geometric_factor = 1 - dot(p̂[i, :], p̂[j, :])
                 interaction_strength = (2.0* √2 * G_F * (N[i]+ N[j])/(2*((Δx)^3))) * shape_result * geometric_factor
-                # println(x[i] ," ",x[j] ," ", interaction_strength)
                 hj = interaction_strength *
-                (op("Sz", s_i) * op("Sz", s_j) +
-                1/2 * op("S+", s_i) * op("S-", s_j) +
-                1/2 * op("S-", s_i) * op("S+", s_j))
+                (op("Sz", state.s[i]) * op("Sz", state.s[j]) +
+                1/2 * op("S+", state.s[i]) * op("S-", state.s[j]) +
+                1/2 * op("S-", state.s[i]) * op("S+", state.s[j]))
             # else
                 # # Get the shape function result for each pair of i and j 
                 # shape_result = shape_func(x, Δp, i, j,L, shape_name, periodic)
@@ -85,18 +80,18 @@ Base.@pure function create_gates(params::CCNO.parameters, s::Vector{Index{Int64}
                 # geometric_factor = geometric_func(p, p̂, i, j, theta_nu)
                 # interaction_strength = (2.0* √2 * G_F * (N[i]+ N[j])/(2*((Δx)^3))) * shape_result * geometric_factor
                 # hj = - interaction_strength * 
-                # ((-2 *op("Sz",s_i) * op("Sz",s_j)) + 
-                # op("S+", s_i) * op("S-", s_j) +
-                # op("S-", s_i) * op("S+", s_j))
+                # ((-2 *op("Sz",state.s[i]) * op("Sz",state.s[j])) + 
+                # op("S+", state.s[i]) * op("S-", state.s[j]) +
+                # op("S-", state.s[i]) * op("S+", state.s[j]))
             # end
 
             # add Vacuum Oscillation Hamiltonian 
             if ω[i] != 0 || ω[j] != 0
                 
                 hj += (1/(params.N_sites-1))*( 
-                    (ω[i] * B[1] * op("Sx", s_i)* op("Id", s_j))  + (ω[i] * B[2] * op("Sy", s_i)* op("Id", s_j))  + (ω[i] * B[3] * op("Sz", s_i)* op("Id", s_j)) )
+                    (ω[i] * B[1] * op("Sx", state.s[i])* op("Id", state.s[j]))  + (ω[i] * B[2] * op("Sy", state.s[i])* op("Id", state.s[j]))  + (ω[i] * B[3] * op("Sz", state.s[i])* op("Id", state.s[j])) )
                 hj += (1/(params.N_sites-1))*(
-                    (ω[j] * B[1] * op("Id", s_i) * op("Sx", s_j)) + (ω[j] * B[2]  * op("Id", s_i)* op("Sy", s_j)) + (ω[j] * B[3]  * op("Id", s_i)* op("Sz", s_j)) )
+                    (ω[j] * B[1] * op("Id", state.s[i]) * op("Sx", state.s[j])) + (ω[j] * B[2]  * op("Id", state.s[i])* op("Sy", state.s[j])) + (ω[j] * B[3]  * op("Id", state.s[i])* op("Sz", state.s[j])) )
             end
             
             # make Trotter gate Gj that would correspond to each gate in the gate array of ITensors             

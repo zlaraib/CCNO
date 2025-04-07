@@ -4,7 +4,7 @@ using ITensorMPS
 
 # This file generates functions that read and write into an hdf5 File
 # for the values needed for recovery in the evolution process.
-function checkpoint_simulation_hdf5(params::CCNO.parameters, checkpoint_filename::String, s::Vector{Index{Int64}}, N::Vector{Float64}, B::Vector{Float64}, L::Float64, Δx::Float64, Δm²::Float64, p::Array{Float64,2}, x::Vector{Float64}, ψ::MPS, energy_sign::Vector{Int}, t::Float64, iteration::Int)
+function checkpoint_simulation_hdf5(params::CCNO.parameters, checkpoint_filename::String, state::CCNO.simulation_state, N::Vector{Float64}, B::Vector{Float64}, L::Float64, Δx::Float64, Δm²::Float64, p::Array{Float64,2}, x::Vector{Float64}, energy_sign::Vector{Int}, t::Float64, iteration::Int)
     # Open an HDF5 file for writing (or create it if it doesn't exist)
     f = h5open(checkpoint_filename, "w")
     
@@ -22,7 +22,7 @@ function checkpoint_simulation_hdf5(params::CCNO.parameters, checkpoint_filename
     write(f, "iteration(unitless const)", iteration)
     
     # Write arrays and vectors
-    write(f, "s(unitless array)", s)
+    write(f, "s(unitless array)", state.s)
     write(f, "N(unitless array)", N)
     write(f, "B(unitless array)", B)
     write(f, "p(erg)", p)
@@ -33,7 +33,7 @@ function checkpoint_simulation_hdf5(params::CCNO.parameters, checkpoint_filename
     write(f, "shape_name(unitless string)", params.shape_name)
 
     # Write MPS ψ (ITensor type)
-    write(f, "ψ(unitless ITensor)", ψ)
+    write(f, "ψ(unitless ITensor)", state.ψ)
 
     # Close the HDF5 file after writing
     close(f)

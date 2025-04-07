@@ -5,6 +5,7 @@ __precompile__()
 # note, the order of these statements matter. Those without dependencies need to be first.
 
 include("physics/parameters.jl")
+include("physics/simulation_state.jl")
 
 include("initializations/initial_cond.jl")
 

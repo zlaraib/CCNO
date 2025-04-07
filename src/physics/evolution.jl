@@ -24,7 +24,7 @@ using ITensorMPS
     cutoff = truncation threshold for the SVD in MPS representation (unitless and dimensionless)
     periodic = boolean indicating whether boundary conditions should be periodic
 """
-function evolve(params::CCNO.parameters, s::Vector{Index{Int64}}, N::Vector{Float64}, B::Vector{Float64}, L::Float64, Δx::Float64, Δm²::Float64, p::Array{Float64,2}, x::Vector{Float64}, ψ::MPS, energy_sign::Vector{Int})
+function evolve(params::CCNO.parameters, state::CCNO.simulation_state, N::Vector{Float64}, B::Vector{Float64}, L::Float64, Δx::Float64, Δm²::Float64, p::Array{Float64,2}, x::Vector{Float64}, energy_sign::Vector{Int})
 
     t_initial = 0.0
     iteration = 0
@@ -42,6 +42,8 @@ function evolve(params::CCNO.parameters, s::Vector{Index{Int64}}, N::Vector{Floa
             s, τ, N, B, L, Δx, p, x, ψ, energy_sign, t_initial, iteration = recover_checkpoint_hdf5(params.recover_file)
             
             s = siteinds(ψ)
+
+            state = simulation_state(ψ=ψ, s=s)
         else
             error("Checkpoint file not found")
         end
@@ -54,7 +56,7 @@ function evolve(params::CCNO.parameters, s::Vector{Index{Int64}}, N::Vector{Floa
     # Compute and print survival probability (found from <Sz>) at each time step then apply the gates to go to the next time
     for t in t_initial:params.τ:params.ttotal
         # extract the gates array generated in the gates_function file
-        gates = create_gates(params, s, ψ,N, B, Δx, Δm², p, x, L, energy_sign)
+        gates = create_gates(params, state,N, B, Δx, Δm², p, x, L, energy_sign)
 
         for i in 1:params.N_sites
             x[i] += p̂[i,1] * c * params.τ
@@ -75,20 +77,20 @@ function evolve(params::CCNO.parameters, s::Vector{Index{Int64}}, N::Vector{Floa
         # apply each gate in gates(ITensors array) successively to the wavefunction ψ (MPS)(it is equivalent to time evolving psi according to the time-dependent Hamiltonian represented by gates).
         # The apply function is a matrix-vector multiplication operation that is smart enough to determine which site indices each gate has, and then figure out where to apply it to our MPS. 
         # It truncates the MPS according to the set cutoff and maxdim for all the non-nearest-neighbor gates.
-        ψ = apply(gates, ψ; params.cutoff, params.maxdim)
+        state.ψ = apply(gates, state.ψ; params.cutoff, params.maxdim)
 
         # The normalize! function is used to ensure that the MPS is properly normalized after each application of the time evolution gates. 
         # This is necessary to ensure that the MPS represents a valid quantum state.
-        normalize!(ψ)
+        normalize!(state.ψ)
 
         iteration = iteration + 1
 
-        store_data(params.datadir, t, ψ, x, p)
+        store_data(params.datadir, t, state.ψ, x, p)
 
         mkpath(params.chkptdir)
         if iteration % params.checkpoint_every == 0 
             checkpoint_filename = joinpath(params.chkptdir, "checkpoint.chkpt.it" * lpad(iteration, 6, "0") * ".h5")
-            checkpoint_simulation_hdf5(params, checkpoint_filename, s, N, B, L, Δx, Δm², p, x, ψ, energy_sign, t, iteration)
+            checkpoint_simulation_hdf5(params, checkpoint_filename, state, N, B, L, Δx, Δm², p, x, energy_sign, t, iteration)
         end
         
     end
