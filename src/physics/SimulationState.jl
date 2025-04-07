@@ -6,7 +6,7 @@ Base.@kwdef mutable struct SimulationState
     #x::Vector{Float64}
     #y::Vector{Float64}
     #z::Vector{Float64}
-    #p::Array{Float64, 2}
+    p::Array{Float64, 2}
 
     # s is an array of spin 1/2 tensor indices (Index objects) which will be the site or physical indices of the MPS.
     # We overload siteinds function, which generates custom Index array with Index objects having the tag of total spin quantum number for all N.
@@ -15,7 +15,7 @@ Base.@kwdef mutable struct SimulationState
     # conserving total Sz requires Sx and Sy in terms of S+ and S- by design choice.
     s::Vector{Index}
     
-    #energy_sign::Vector{Int}
+    energy_sign::Vector{Int}
     ψ::MPS
-    #N::Vector{Float64}
+    N::Vector{Float64}
 end

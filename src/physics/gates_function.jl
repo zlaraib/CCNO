@@ -22,14 +22,14 @@ using ITensorMPS
     cutoff = truncation threshold for the SVD in MPS representation (unitless and dimensionless)
     periodic = boolean indicating whether boundary conditions should be periodic
 """
-Base.@pure function create_gates(params::CCNO.Parameters, state::CCNO.SimulationState, N::Vector{Float64}, B::Vector{Float64}, Δx::Float64, Δm²::Float64, p::Array{Float64,2}, x::Vector{Float64}, L::Float64, energy_sign::Vector{Int64})
+Base.@pure function create_gates(params::CCNO.Parameters, state::CCNO.SimulationState, B::Vector{Float64}, Δx::Float64, Δm²::Float64, x::Vector{Float64}, L::Float64)
     
     # Make gates (1,2),(2,3),(3,4),... i.e. unitary gates which act on any (non-neighboring) pairs of sites in the chain.
     # Create an empty ITensors array that will be our Trotter gates
     gates = ITensor[] 
 
     # extract output of p_hat and p_mod for the p vector defined above for all sites. 
-    p_mod, p̂ = momentum(p,params.N_sites)  
+    p_mod, p̂ = momentum(state.p)  
     
     # define an array of vacuum oscillation frequencies (units of ergs)
     if Δm² == 0 # specific to self-int only
@@ -49,7 +49,7 @@ Base.@pure function create_gates(params::CCNO.Parameters, state::CCNO.Simulation
         ω_b = -Δω_array 
         ω = vcat(ω_a, ω_b)
     else 
-        ω = [Δm² / (2 * p_mod[i]) * energy_sign[i] for i in 1:params.N_sites]
+        ω = [Δm² / (2 * p_mod[i]) * state.energy_sign[i] for i in 1:params.N_sites]
     end
     # println("ω = ", ω)
 
@@ -65,10 +65,10 @@ Base.@pure function create_gates(params::CCNO.Parameters, state::CCNO.Simulation
             # ni and nj are the neutrions at site i and j respectively.
             # mu pairs divided by 2 to avoid double counting
             
-            # if energy_sign[i]*energy_sign[j]>0
+            # if state.energy_sign[i]*state.energy_sign[j]>0
                 shape_result = shape_func(params, x, i, j,L)
                 geometric_factor = 1 - dot(p̂[i, :], p̂[j, :])
-                interaction_strength = (2.0* √2 * G_F * (N[i]+ N[j])/(2*((Δx)^3))) * shape_result * geometric_factor
+                interaction_strength = (2.0* √2 * G_F * (state.N[i]+ state.N[j])/(2*((Δx)^3))) * shape_result * geometric_factor
                 hj = interaction_strength *
                 (op("Sz", state.s[i]) * op("Sz", state.s[j]) +
                 1/2 * op("S+", state.s[i]) * op("S-", state.s[j]) +

@@ -8,17 +8,17 @@ function append_data(filename::String, new_data)
     end
 end
 
-function store_data(datadir::String, t::Float64, ψ::MPS, x::Vector{Float64}, p::Array{Float64,2})
+function store_data(datadir::String, t::Float64, state::CCNO.SimulationState, x::Vector{Float64})
     #================================#
     # calculate necessary quantities #
     #================================#
 
     # compute the avg expectation value of Sz at all sites
-    sz_arr = expect(ψ, "Sz")  # Compute Sz for each site and store the values in sz_arr
+    sz_arr = expect(state.ψ, "Sz")  # Compute Sz for each site and store the values in sz_arr
     
     # compute expectation value of sy and sx (inbuilt operator in ITensors library) at all sites on the chain
-    sy_arr = expect(complex(ψ), "Sy")
-    sx_arr = expect(ψ, "Sx")
+    sy_arr = expect(complex(state.ψ), "Sy")
+    sx_arr = expect(state.ψ, "Sx")
     
     #survival probability for all sites (neutrino) to be found in its initial flavor state
     prob_surv_arr = 0.5 * (1 .- 2 .* sz_arr)
@@ -58,7 +58,7 @@ function store_data(datadir::String, t::Float64, ψ::MPS, x::Vector{Float64}, p:
 
     # 6. pxsite values
     fname6 = joinpath(datadir, "t_pxsiteval.dat")
-    append_data(fname6, [t transpose(p[:,1])])
+    append_data(fname6, [t transpose(state.p[:,1])])
     
     # 7. ρₑₑ arrays
     fname7 = joinpath(datadir, "t_ρₑₑ.dat")

@@ -24,7 +24,7 @@ using ITensorMPS
     cutoff = truncation threshold for the SVD in MPS representation (unitless and dimensionless)
     periodic = boolean indicating whether boundary conditions should be periodic
 """
-function evolve(params::CCNO.Parameters, state::CCNO.SimulationState, N::Vector{Float64}, B::Vector{Float64}, L::Float64, Δx::Float64, Δm²::Float64, p::Array{Float64,2}, x::Vector{Float64}, energy_sign::Vector{Int})
+function evolve(params::CCNO.Parameters, state::CCNO.SimulationState, B::Vector{Float64}, L::Float64, Δx::Float64, Δm²::Float64, x::Vector{Float64})
 
     t_initial = 0.0
     iteration = 0
@@ -43,7 +43,7 @@ function evolve(params::CCNO.Parameters, state::CCNO.SimulationState, N::Vector{
             
             s = siteinds(ψ)
 
-            state = simulation_state(ψ=ψ, s=s)
+            state = simulation_state(ψ=ψ, s=s, energy_sign=energy_sign, N=N, p=p)
         else
             error("Checkpoint file not found")
         end
@@ -51,12 +51,12 @@ function evolve(params::CCNO.Parameters, state::CCNO.SimulationState, N::Vector{
     end    
 
     # extract output of p_hat and p_mod for the p vector defined above for all sites. 
-    p_mod, p̂ = momentum(p,params.N_sites) 
+    p_mod, p̂ = momentum(state.p)
     
     # Compute and print survival probability (found from <Sz>) at each time step then apply the gates to go to the next time
     for t in t_initial:params.τ:params.ttotal
         # extract the gates array generated in the gates_function file
-        gates = create_gates(params, state,N, B, Δx, Δm², p, x, L, energy_sign)
+        gates = create_gates(params, state,B, Δx, Δm², x, L)
 
         for i in 1:params.N_sites
             x[i] += p̂[i,1] * c * params.τ
@@ -85,12 +85,12 @@ function evolve(params::CCNO.Parameters, state::CCNO.SimulationState, N::Vector{
 
         iteration = iteration + 1
 
-        store_data(params.datadir, t, state.ψ, x, p)
+        store_data(params.datadir, t, state, x)
 
         mkpath(params.chkptdir)
         if iteration % params.checkpoint_every == 0 
             checkpoint_filename = joinpath(params.chkptdir, "checkpoint.chkpt.it" * lpad(iteration, 6, "0") * ".h5")
-            checkpoint_simulation_hdf5(params, checkpoint_filename, state, N, B, L, Δx, Δm², p, x, energy_sign, t, iteration)
+            checkpoint_simulation_hdf5(params, checkpoint_filename, state, B, L, Δx, Δm², x, t, iteration)
         end
         
     end
