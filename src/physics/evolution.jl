@@ -46,23 +46,18 @@ function evolve(params::CCNO.Parameters, state::CCNO.SimulationState)
     
     # Compute and print survival probability (found from <Sz>) at each time step then apply the gates to go to the next time
     for t in t_initial:params.τ:params.ttotal
+        println("iteration= $iteration time= $t")
+
         # extract the gates array generated in the gates_function file
         gates = create_gates(params, state)
 
-        for i in 1:params.N_sites
-            for d in 1:3
-                state.xyz[i,d] += p̂[i,d] * c * params.τ
-                if params.periodic
-                    # wrap around position from 0 to domain size L
-                    state.xyz[i,d] = mod(state.xyz[i,d],params.L)
-                    
-                    # Checking if the updated x[i] satisfies the boundary conditions
-                    @assert (state.xyz[i,d] >= 0 && state.xyz[i,d] <= params.L)
-                end
-            end
+        # move particles
+        state.xyz += p̂ * c * params.τ
+        if params.periodic
+            state.xyz = mod.(state.xyz, params.L)
+            @assert all(state.xyz .>= 0 .&& state.xyz .<= params.L)
         end
 
-        println("iteration= $iteration time= $t")
 
         # apply each gate in gates(ITensors array) successively to the wavefunction ψ (MPS)(it is equivalent to time evolving psi according to the time-dependent Hamiltonian represented by gates).
         # The apply function is a matrix-vector multiplication operation that is smart enough to determine which site indices each gate has, and then figure out where to apply it to our MPS. 
