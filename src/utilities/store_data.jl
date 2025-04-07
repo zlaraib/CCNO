@@ -34,7 +34,6 @@ function store_data(datadir::String, t::Float64, state::CCNO.SimulationState)
     # save the data #
     #===============#
     
-    mkpath(datadir)
     # Writing data to files with corresponding headers
     # 1. Sz arrays
     fname1 = joinpath(datadir, "t_<Sz>.dat")

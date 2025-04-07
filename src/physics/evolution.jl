@@ -30,6 +30,7 @@ function evolve(params::CCNO.Parameters, state::CCNO.SimulationState, B::Vector{
     iteration = 0
     t_recover = t_initial # Variable to store the initial recovery time 
     mkpath(params.chkptdir)
+    mkpath(params.datadir)
 
     if params.do_recover
         
