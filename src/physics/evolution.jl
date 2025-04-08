@@ -43,10 +43,12 @@ function evolve(params::CCNO.Parameters, state::CCNO.SimulationState)
 
     # extract output of p_hat and p_mod for the p vector defined above for all sites. 
     p_mod, p̂ = momentum(state.p)
-    
+
     # Compute and print survival probability (found from <Sz>) at each time step then apply the gates to go to the next time
     for t in t_initial:params.τ:params.ttotal
         println("iteration= $iteration time= $t")
+
+        store_data(params.datadir, t, state)
 
         # extract the gates array generated in the gates_function file
         gates = create_gates(params, state)
@@ -58,13 +60,13 @@ function evolve(params::CCNO.Parameters, state::CCNO.SimulationState)
             @assert all(state.xyz .>= 0 .&& state.xyz .<= params.L)
         end
 
+        # apply each gate in gates(ITensors array) successively to the wavefunction ψ (MPS)(it is equivalent to time evolving psi according to the time-dependent Hamiltonian represented by gates).
+        # The apply function is a matrix-vector multiplication operation that is smart enough to determine which site indices each gate has, and then figure out where to apply it to our MPS. 
+        # It truncates the MPS according to the set cutoff and maxdim for all the non-nearest-neighbor gates.
+        # apply each gate in gates(ITensors array) successively to the wavefunction ψ (MPS)(it is equivalent to time evolving psi according to the time-dependent Hamiltonian represented by gates).
+        # The apply function is a matrix-vector multiplication operation that is smart enough to determine which site indices each gate has, and then figure out where to apply it to our MPS. 
+        # It truncates the MPS according to the set cutoff and maxdim for all the non-nearest-neighbor gates.
 
-        # apply each gate in gates(ITensors array) successively to the wavefunction ψ (MPS)(it is equivalent to time evolving psi according to the time-dependent Hamiltonian represented by gates).
-        # The apply function is a matrix-vector multiplication operation that is smart enough to determine which site indices each gate has, and then figure out where to apply it to our MPS. 
-        # It truncates the MPS according to the set cutoff and maxdim for all the non-nearest-neighbor gates.
-        # apply each gate in gates(ITensors array) successively to the wavefunction ψ (MPS)(it is equivalent to time evolving psi according to the time-dependent Hamiltonian represented by gates).
-        # The apply function is a matrix-vector multiplication operation that is smart enough to determine which site indices each gate has, and then figure out where to apply it to our MPS. 
-        # It truncates the MPS according to the set cutoff and maxdim for all the non-nearest-neighbor gates.
         state.ψ = apply(gates, state.ψ; params.cutoff, params.maxdim)
 
         # The normalize! function is used to ensure that the MPS is properly normalized after each application of the time evolution gates. 
@@ -72,8 +74,6 @@ function evolve(params::CCNO.Parameters, state::CCNO.SimulationState)
         normalize!(state.ψ)
 
         iteration += 1
-
-        store_data(params.datadir, t, state)
 
         if iteration % params.checkpoint_every == 0 
             checkpoint_filename = joinpath(params.chkptdir, "checkpoint.chkpt.it" * lpad(iteration, 6, "0") * ".h5")
