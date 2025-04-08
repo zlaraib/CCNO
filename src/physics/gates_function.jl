@@ -49,14 +49,14 @@ Base.@pure function create_gates(params::CCNO.Parameters, state::CCNO.Simulation
     # add Vacuum Oscillation Hamiltonian 
     for i in 1:(params.N_sites-1)
         if ω[i] != 0
-            hj = (ω[i]/(params.N_sites-1)) * (B[1]*Sx[i] + B[2]*Sy[i] + B[3]*Sz[i])
+            hj = ω[i] * (B[1]*Sx[i] + B[2]*Sy[i] + B[3]*Sz[i])
 
             Gj = exp(-im * params.τ/2 * hj / hbar)
 
             push!(gates, Gj)
         end
     end
-    
+
     # Our neutrino system Hamiltonian of self-interaction term represents 1D Heisenberg model.
     # total Hamiltonian of the system is a sum of local terms hj, where hj acts on sites i and j which are paired for gates to latch onto.
     # op function returns these operators as ITensors and we tensor product and add them together to compute the operator hj.
