@@ -20,6 +20,7 @@ include("physics/heaviside.jl")
 include("physics/momentum.jl")
 include("physics/perturb.jl")
 include("physics/shape_func.jl")
+include("physics/geometric_func.jl")
 
 
 end # module

@@ -26,7 +26,8 @@ function main()
         m2 = 0*CCNO.eV,   #ergs #2nd mass eigenstate of neutrino in Richers(2021)
         maxdim = 1, # max bond dimension in MPS truncation
         cutoff = 1e-100, # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT) #variable
-        shape_name = "none",  # Change this to the desired shape name #variable 
+        shape_name = "none",  # Change this to the desired shape name #variable
+        geometric_name = "physical",
         Δp = L, # width of shape function  # cm #variable
         Δx=Δx,
         L=L,

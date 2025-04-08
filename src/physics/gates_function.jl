@@ -69,8 +69,8 @@ Base.@pure function create_gates(params::CCNO.Parameters, state::CCNO.Simulation
                 shape_result *= shape_func(params, state, d, i, j)
             end
                 
-            @views geometric_factor::Float64 = 1 - dot(p̂[i, :], p̂[j, :])
-            interaction_strength = 2.0 * √2 * G_F * (state.N[i] + state.N[j]) / (2*params.Δx^3) * shape_result * geometric_factor
+            geometric_factor::Float64 = geometric_func(params, p̂, i, j)
+            interaction_strength::Float64 = 2.0 * √2 * G_F * (state.N[i] + state.N[j]) / (2*params.Δx^3) * shape_result * geometric_factor
             if interaction_strength != 0
                 hj::ITensor = interaction_strength * (Sz[i]*Sz[j] + 0.5*Sp[i]*Sm[j] + 0.5*Sm[i]*Sp[j])
 

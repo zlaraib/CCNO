@@ -33,6 +33,7 @@ function main()
         cutoff = 1e-100,
         theta_nu = 1.74532925E-8,  #1e-6 degrees # = 1.74532925E-8 radians 
         shape_name = "none",
+        geometric_name = "physical",
         periodic = true,
         checkpoint_every = 1000,
         do_recover = false,

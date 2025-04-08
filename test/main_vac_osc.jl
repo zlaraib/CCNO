@@ -39,6 +39,7 @@ function main()
         chkptdir = joinpath(@__DIR__, "checkpoints"),
         plotdir = joinpath(@__DIR__, "plots"),
         shape_name = "none",  # variable.
+        geometric_name = "physical",
         theta_nu = π/4, # mixing_angle #rad 
         α = 0,
         save_plots_flag = false # true = saves plots for science runs while false doesn't. So change it to false for jenkins test runs

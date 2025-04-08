@@ -1,6 +1,7 @@
 # Struct of parameters. Allow specifying arguments by keywords
 Base.@kwdef struct Parameters
     shape_name::String  # Change this to the desired shape name
+    geometric_name::String
     recover_file::String
     datadir::String
     chkptdir::String
