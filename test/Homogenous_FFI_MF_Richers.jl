@@ -21,12 +21,12 @@ function main()
     params = CCNO.Parameters(
         save_plots_flag = false,
         N_sites = 2* (N_sites_eachflavor),
-        τ = 1.666e-7,
+        τ = 1.666e-5,
         Δp = L,
         Δx=Δx,
         L=L,
         ttotal = 1.666e-2,
-        tolerance  = 5E-3,
+        tolerance  = 0.2,
         m1 = -0.008596511*CCNO.eV,
         m2 = 0*CCNO.eV,
         maxdim = 1,
@@ -34,13 +34,13 @@ function main()
         theta_nu = 1.74532925E-8,  #1e-6 degrees # = 1.74532925E-8 radians 
         shape_name = "none",
         periodic = true,
-        checkpoint_every = 4,
+        checkpoint_every = 1000,
         do_recover = false,
         recover_file = "",
         datadir = joinpath(@__DIR__,"datafiles"),
         chkptdir = joinpath(@__DIR__, "checkpoints"),
         plotdir = joinpath(@__DIR__, "plots"),
-        α = 1e-6
+        α = 0
     )
 
     Δm² = (params.m2^2-params.m1^2) # mass square difference # (erg^2)
@@ -52,10 +52,10 @@ function main()
     B = [-sin(2 * params.theta_nu), 0, cos(2 * params.theta_nu)]  # actual b vector that activates the vacuum oscillation term in Hamiltonian
     B = B / norm(B) 
     #Select a shape function based on the shape_name variable form the list defined in dictionary in shape_func file
-    t1 = 0.0084003052 #choose initial time for growth rate calculation
-    t2 = 0.011700318 #choose final time for growth rate calculation
+    t1 = 0.008 #choose initial time for growth rate calculation
+    t2 = 0.012 #choose final time for growth rate calculation
     analytic_growth_rate=  (abs(params.m2^2 - params.m1^2)/ (2*CCNO.hbar* Eνₑ)) # analytic growth rate 
-
+    println("analytic_growth_rate:",analytic_growth_rate)
 
     x = CCNO.generate_x_array(N_sites_eachflavor, L)
     y = CCNO.generate_x_array(N_sites_eachflavor, L)
@@ -120,14 +120,14 @@ function main()
         # Check if the current time is approximately t1
         if abs(t - t1) < params.τ / 2
             println("corresponding ρₑμ index from the time array =",i)
-            ρₑμ_at_t1 = ρₑμ_array_site1[i]
+            ρₑμ_at_t1 = ρₑμ_array[i]
             println("ρₑμ_at_t1=",ρₑμ_at_t1)
         end
 
         # Check if the current time is approximately t2
         if abs(t - t2) < params.τ / 2
             println("corresponding ρₑμ index from the time array =",i)
-            ρₑμ_at_t2 = ρₑμ_array_site1[i]
+            ρₑμ_at_t2 = ρₑμ_array[i]
             println("ρₑμ_at_t2=",ρₑμ_at_t2)
         end
     end
