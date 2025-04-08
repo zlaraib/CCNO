@@ -22,6 +22,11 @@ pipeline {
 	//=======//
 	// Tests //
 	//=======//
+	stage('Only Vacuum oscillations'){ steps{
+		sh 'julia --project=. test/main_vac_osc.jl'
+		archiveArtifacts artifacts: '*.pdf'
+    }
+} 
 	stage('Richers(2021)_Bipolar_Oscillations'){ steps{
 		sh 'julia --project=. test/Bipolar_Osc_Richers.jl'
 		archiveArtifacts artifacts: '*.pdf'
@@ -52,11 +57,6 @@ pipeline {
 		archiveArtifacts artifacts: '*.pdf'
     } 
 }
-	stage('Only Vacuum oscillations'){ steps{
-		sh 'julia --project=. test/main_vac_osc.jl'
-		archiveArtifacts artifacts: '*.pdf'
-    }
-} 
 	stage('Roggero(2021)_only_self_interactions'){ steps{
 		sh 'julia --project=. test/main_self_interaction_Rog.jl'
 		archiveArtifacts artifacts: '*.pdf'
