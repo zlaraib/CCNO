@@ -12,37 +12,35 @@ using Random
 using HDF5
 
 
-""" Richers(2021) Test 3 initial conditions for many-body dynamics: """
+""" Richers(2021) Test 3 initial conditions: """
 function main()
     N_sites_eachflavor= 1 # total sites/particles that evenly spaced "for each (electron) flavor" 
     L = 1e7 # cm # domain size # (aka big box length)
-    t1 = 0.0084003052 #choose initial time for growth rate calculation
-    t2 = 0.011700318 #choose final time for growth rate calculation
     Δx = L # length of the box of interacting neutrinos at a site in cm
 
     params = CCNO.Parameters(
+        save_plots_flag = false,
         N_sites = 2* (N_sites_eachflavor),
-        τ = 1.666e-7,
+        τ = 1.666e-5,
+        Δp = L,
+        Δx=Δx,
+        L=L,
         ttotal = 1.666e-2,
-        tolerance  = 5E-3,
+        tolerance  = 0.2,
         m1 = -0.008596511*CCNO.eV,
         m2 = 0*CCNO.eV,
         maxdim = 2,
         cutoff = 1e-100,
-        theta_nu = 1.74532925E-8,  #1e-6 degrees # mixing_angle # = 1.74532925E-8 radians
-        Δp = L,
-        Δx=Δx,
-        L=L,
+        theta_nu = 1.74532925E-8,  #1e-6 degrees # = 1.74532925E-8 radians 
         shape_name = "none",
         periodic = true,
-        checkpoint_every = 4,
+        checkpoint_every = 1000,
         do_recover = false,
         recover_file = "",
         datadir = joinpath(@__DIR__,"datafiles"),
         chkptdir = joinpath(@__DIR__, "checkpoints"),
         plotdir = joinpath(@__DIR__, "plots"),
-        save_plots_flag = false,
-        α = 1e-6
+        α = 0
     )
 
     Δm² = (params.m2^2-params.m1^2) # mass square difference # (erg^2)
@@ -54,8 +52,11 @@ function main()
     B = [-sin(2 * params.theta_nu), 0, cos(2 * params.theta_nu)]  # actual b vector that activates the vacuum oscillation term in Hamiltonian
     B = B / norm(B) 
     #Select a shape function based on the shape_name variable form the list defined in dictionary in shape_func file
+    t1 = 0.008 #choose initial time for growth rate calculation
+    t2 = 0.012 #choose final time for growth rate calculation
     analytic_growth_rate=  (abs(params.m2^2 - params.m1^2)/ (2*CCNO.hbar* Eνₑ)) # analytic growth rate 
-    
+    println("analytic_growth_rate:",analytic_growth_rate)
+
     x = CCNO.generate_x_array(N_sites_eachflavor, L)
     y = CCNO.generate_x_array(N_sites_eachflavor, L)
     z = CCNO.generate_x_array(N_sites_eachflavor, L)
@@ -85,7 +86,7 @@ function main()
                                  energy_sign = energy_sign,
                                  N=N,
                                  xyz = hcat(x,y,z))
-    
+
     ρₑμ_at_t1 = nothing  # Initialize a variable to store ρₑμ at t1
     ρₑμ_at_t2 = nothing  # Initialize a variable to store ρₑμ at t2
     Δt = t2 - t1 #time difference between growth rates
@@ -113,20 +114,20 @@ function main()
     ρₑₑ_array = t_ρₑₑ_tot[:, 2]
     ρ_μμ_array = t_ρ_μμ_tot[:, 2]
     ρₑμ_array = t_ρₑμ_tot[:, 2]
-
+        
     # Loop over the time array to match t1 and t2
     for (i, t) in enumerate(t_array) 
         # Check if the current time is approximately t1
         if abs(t - t1) < params.τ / 2
             println("corresponding ρₑμ index from the time array =",i)
-            ρₑμ_at_t1 = ρₑμ_array_site1[i]
+            ρₑμ_at_t1 = ρₑμ_array[i]
             println("ρₑμ_at_t1=",ρₑμ_at_t1)
         end
 
         # Check if the current time is approximately t2
         if abs(t - t2) < params.τ / 2
             println("corresponding ρₑμ index from the time array =",i)
-            ρₑμ_at_t2 = ρₑμ_array_site1[i]
+            ρₑμ_at_t2 = ρₑμ_array[i]
             println("ρₑμ_at_t2=",ρₑμ_at_t2)
         end
     end
@@ -139,24 +140,22 @@ function main()
         println("ρₑμ was not captured at both t1 and t2.")
     end
 
-    
     if params.save_plots_flag 
-        
         x_values = t_xsiteval[:, 2:end]  # All rows, all columns except the first
         pₓ_values = t_pxsiteval[:, 2:end]  # All rows, all columns except the first
 
-        CCNO.save_plots(τ, N_sites,L,t_array, ttotal,Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array,params.datadir, plotdir, save_plots_flag)
+        CCNO.save_plots(params, s,L,t_array, Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array)
     end
     if !params.save_plots_flag 
         # Plotting ρₑμ vs t # for jenkins file 
         plot(t_array, ρₑμ_array, xlabel = "t", ylabel = "<ρₑμ>_1", legend = false, 
         left_margin = 20mm, right_margin = 10mm, top_margin = 5mm, bottom_margin = 10mm) 
         # Save the plot as a PDF file
-        savefig( "Homo_MF_<ρₑμ>_site1_vs_t for $(params.N_sites) particles.pdf")
+        savefig( "Homo_MB_<ρₑμ>_site1_vs_t for $(params.N_sites) particles.pdf")
     end
 
-    # @assert abs((Im_Ω - analytic_growth_rate)/  analytic_growth_rate) < tolerance 
-
+    # comment out assert because we don't actually have analytic solution for MB case.
+    #@assert abs((Im_Ω - analytic_growth_rate)/  analytic_growth_rate) < params.tolerance 
 end
 
 @time main()
