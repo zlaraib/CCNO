@@ -35,7 +35,7 @@ Base.@pure function create_gates(params::CCNO.Parameters, state::CCNO.Simulation
     p_mod, p̂ = momentum(state.p)  
     
     # define an array of vacuum oscillation frequencies (units of ergs)
-    Δm²::Float64 = abs(params.m2^2 - params.m1^2)
+    Δm²::Float64 = params.m2^2 - params.m1^2
     ω::Vector{Float64} = [Δm² / (2 * p_mod[i]) * state.energy_sign[i] for i in 1:params.N_sites]
 
     # Precompute operators for all sites
@@ -46,13 +46,11 @@ Base.@pure function create_gates(params::CCNO.Parameters, state::CCNO.Simulation
     Sm::Vector{ITensor} = [op("S-", state.s[i]) for i in 1:length(state.s)]
     Sz::Vector{ITensor} = [op("Sz", state.s[i]) for i in 1:length(state.s)]
     
-    # add Vacuum Oscillation Hamiltonian 
+    # vacuum - one-site gate model. Faster, but order-dependent.
     for i in 1:(params.N_sites-1)
         if ω[i] != 0
-            hj = ω[i] * (B[1]*Sx[i] + B[2]*Sy[i] + B[3]*Sz[i])
-
-            Gj = exp(-im * params.τ/2 * hj / hbar)
-
+            hj::ITensor = ω[i] * (B[1]*Sx[i] + B[2]*Sy[i] + B[3]*Sz[i])
+            Gj::ITensor = exp(-im * params.τ/2 * hj / hbar)
             push!(gates, Gj)
         end
     end
@@ -79,7 +77,6 @@ Base.@pure function create_gates(params::CCNO.Parameters, state::CCNO.Simulation
                 # if neutrinos interacting with antineutrinos, H changes???
                 #if state.energy_sign[i]*state.energy_sign[j] < 0
                 #    hj *= -2
-                #end
 
                 # make Trotter gate Gj that would correspond to each gate in the gate array of ITensors
                 Gj::ITensor = exp(-im * params.τ/2 * hj / hbar)

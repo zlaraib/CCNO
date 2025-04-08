@@ -19,8 +19,8 @@ function main()
 
     params = CCNO.Parameters(
         N_sites = 2* (N_sites_eachflavor),
-        τ = 1e-8 / t_bipolar, # time step # sec/sec = unitless # variable # using this time step for faster unit testing in jenkins, actually the bipolar richers results are obtained with timestep= 1e-9/t_bipolar.
-        ttotal = 0.002 / t_bipolar, # total time of evolution # sec/sec = unitless #using this total time for faster unit testing in jenkins, actually bipolar richers results are produced with ttotal = 0.01 / t_bipolar
+        τ = 1e-7, # time step # sec/sec = unitless # variable # using this time step for faster unit testing in jenkins, actually the bipolar richers results are obtained with timestep= 1e-9/t_bipolar.
+        ttotal = 0.002, # total time of evolution # sec/sec = unitless #using this total time for faster unit testing in jenkins, actually bipolar richers results are produced with ttotal = 0.01 / t_bipolar
         tolerance  = 5E-1, # acceptable level of error or deviation from the exact value or solution #variable
         m1 = -0.008596511*CCNO.eV, #ergs #1st mass eigenstate of neutrino in Richers(2021)
         m2 = 0*CCNO.eV,   #ergs #2nd mass eigenstate of neutrino in Richers(2021)
@@ -32,7 +32,7 @@ function main()
         L=L,
         periodic = true,  # true = imposes periodic boundary conditions while false doesn't
         theta_nu= 0.01, #mixing angle # =34.3 degrees
-        checkpoint_every = 4,
+        checkpoint_every = 100000,
         do_recover = false,
         recover_file = "",
         datadir = joinpath(@__DIR__,"datafiles"),
@@ -120,7 +120,7 @@ function main()
     end
     if !params.save_plots_flag
         # Plotting ρ_ee vs t # for jenkins file 
-        plot(t_array, ρₑₑ_array, xlabel = "t", ylabel = "<ρₑₑ>", legend = false, 
+        plot(t_array/t_bipolar, ρₑₑ_array, xlabel = "t", ylabel = "<ρₑₑ>", legend = false, 
         left_margin = 20mm, right_margin = 10mm, top_margin = 5mm, bottom_margin = 10mm) 
         # Save the plot as a PDF file
         savefig("Bipolar Richers_site1 for $(params.N_sites) particles <ρₑₑ>_vs_t.pdf")
