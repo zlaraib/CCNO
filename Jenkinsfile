@@ -23,12 +23,12 @@ pipeline {
 	// Tests //
 	//=======//
 	stage('Only Vacuum oscillations'){ steps{
-		sh 'rm-rf test/datafiles; julia --project=. test/main_vac_osc.jl'
+		sh 'rm -rf test/datafiles; julia --project=. test/main_vac_osc.jl'
 		archiveArtifacts artifacts: '*.pdf'
     }
 } 
 	stage('Richers(2021)_Bipolar_Oscillations'){ steps{
-		sh 'rm-rf test/datafiles; julia --project=. test/Bipolar_Osc_Richers.jl'
+		sh 'rm -rf test/datafiles; julia --project=. test/Bipolar_Osc_Richers.jl'
 		archiveArtifacts artifacts: '*.pdf'
     } 
 }
