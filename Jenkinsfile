@@ -37,23 +37,8 @@ pipeline {
 		archiveArtifacts artifacts: '*.pdf'
     } 
 }
-	stage('Homogenous_FFI_MB'){ steps{
-		sh 'julia --project=. test/Homo_FFI_MB.jl'
-		archiveArtifacts artifacts: '*.pdf'
-    } 
-}
 	stage('Richers(2021)_Inhomogenous_FFI'){ steps{
 		sh 'julia --project=. test/Inhomogenous_FFI_MF_Richers.jl'
-		archiveArtifacts artifacts: '*.pdf'
-    } 
-}
-	stage('Inhomogenous_FFI_MB'){ steps{
-		sh 'julia --project=. test/Inhomo_FFI_MB.jl'
-		archiveArtifacts artifacts: '*.pdf'
-    } 
-}
-	stage('Particles evolution'){ steps{
-		sh 'julia --project=. test/par_evolution.jl'
 		archiveArtifacts artifacts: '*.pdf'
     } 
 }
