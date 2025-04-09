@@ -1,4 +1,5 @@
 using ITensors
+using ITensorMPS
 
 N = 4
 chi = 4

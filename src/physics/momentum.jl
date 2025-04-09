@@ -1,4 +1,4 @@
-""" 
+@doc """ 
   This function takes in a momentum vector (for all sites) along with their directions 
   and returns its modulus (for all sites) and unit vectors (for all sites and directions)
 """

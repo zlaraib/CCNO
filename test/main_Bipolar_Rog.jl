@@ -1,35 +1,15 @@
+push!(LOAD_PATH, "..")
+using CCNO
+
 using ITensors
+using ITensorMPS
 using Plots
 using Measures
 using DelimitedFiles
 using HDF5
-"""
-For github unit tests runs: 
-src_dir = ../
-save_data and save_plots_flag should be false to run test files. 
-"""
 
-src_dir = "../"
 save_data = false  # true = saves datafiles for science runs while false doesn't. So change it to false for jenkins test runs
 save_plots_flag = false # true = saves plots for science runs while false doesn't. So change it to false for jenkins test runs
-
-
-"""
-For science runs: 
-src_dir = /home/zohalaraib/Oscillatrino/ # should be changed to users PATH
-save_data and save_plots_flag should be true to run test files. 
-
-"""
-# src_dir= "/home/zohalaraib/Oscillatrino/" # should be changed to users PATH
-# save_data = true  # true = saves datafiles for science runs while false doesn't. So change it to false for jenkins test runs
-# save_plots_flag = true # true = saves plots for science runs while false doesn't. So change it to false for jenkins test runs
-    
-include(src_dir * "src/evolution.jl")
-include(src_dir * "src/constants.jl")
-include(src_dir * "src/chkpt_hdf5.jl")
-include(src_dir * "Utilities/save_plots.jl")
-include(src_dir * "Initializations/initial_cond.jl")
-include(src_dir * "Utilities/save_datafiles.jl")
 
 # We are simulating the time evolution of a 1D spin chain with N_sites sites, where each site is a spin-1/2 particle. 
 # The simulation is done by applying a sequence of unitary gates to an initial state of the system, 
@@ -59,7 +39,7 @@ function main()
     mu = ones(N_sites) # erg
     
     # Create an array of dimension N_sites and fill it with the value 1/(sqrt(2) * G_F). This is the number of neutrinos. 
-    N = mu .* fill(((Δx)^3 )/(√2 * G_F * N_sites), N_sites)
+    N = mu .* fill(((Δx)^3 )/(√2 * CCNO.G_F * N_sites), N_sites)
 
     # Create a B vector which would be same for all N_sites particles 
     theta_nu= 0.1 #rad # =34.3 degrees
@@ -80,7 +60,7 @@ function main()
     shape_name = "none"  # Change this to the desired shape name # variable.
 
     # p matrix with numbers generated from the p_array for all components (x, y, z)
-    p = hcat(generate_p_array(N_sites),fill(0, N_sites), fill(0, N_sites))
+    p = hcat(CCNO.generate_p_array(N_sites),fill(0, N_sites), fill(0, N_sites))
     energy_sign = [i <= N_sites ÷ 2 ? 1 : 1 for i in 1:N_sites] # all of the sites are neutrinos
 
     # Specify the relative directory path
@@ -88,13 +68,13 @@ function main()
     chkptdir = joinpath(@__DIR__, "checkpoints")
     
     #extract output for the survival probability values at each timestep
-    Sz_array, Sy_array, Sx_array,  prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, t_array, t_recover = evolve(
+    Sz_array, Sy_array, Sx_array,  prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, t_array, t_recover = CCNO.evolve(
         s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal,chkptdir, checkpoint_every,  do_recover, recover_file ,save_data , periodic)
 
     # extract the prob_surv on the first site 
     prob_surv_array_site1= [row[1] for row in prob_surv_array]
     # Defining Δω as in Rogerro(2021)
-    Δω = vcat((ω_a - ω_b)/2, (ω_a - ω_b)/2)
+    Δω = vcat((CCNO.ω_a - CCNO.ω_b)/2, (CCNO.ω_a - CCNO.ω_b)/2)
     @assert all(Δω./mu .== 0.1)
 
     if save_plots_flag
@@ -127,7 +107,7 @@ function main()
         x_values = t_xsiteval[:, 2:end]  # All rows, all columns except the first
         pₓ_values = t_pxsiteval[:, 2:end]  # All rows, all columns except the first
 
-        save_plots(τ, N_sites,L,t_array, ttotal,Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array,datadir, plotdir, save_plots_flag)
+        CCNO.save_plots(τ, N_sites,L,t_array, ttotal,Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array,datadir, plotdir, save_plots_flag)
     end
     if !save_plots_flag 
         # Plotting P_surv vs t 

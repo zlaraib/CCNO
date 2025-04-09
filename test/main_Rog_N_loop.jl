@@ -1,118 +1,79 @@
+push!(LOAD_PATH, "..")
+using CCNO
+
 using ITensors
+using ITensorMPS
 using Plots
 using Measures
-using LinearAlgebra
+using DelimitedFiles
 using HDF5
-"""
-For github unit tests runs: 
-src_dir = ../
-save_data and save_plots_flag should be false to run test files. 
-"""
 
-src_dir = "../"
 save_data = false  # true = saves datafiles for science runs while false doesn't. So change it to false for jenkins test runs
 save_plots_flag = false # true = saves plots for science runs while false doesn't. So change it to false for jenkins test runs
 
+# This file evolves the system under the vaccum oscillations + self-interaction
+# Hamiltonian and then plots survival probability for 
+# multiple system sizes through loops. 
 
-"""
-For science runs: 
-src_dir = /home/zohalaraib/Oscillatrino/ # should be changed to users PATH
-save_data and save_plots_flag should be true to run test files. 
+N_start = 4 
+N_step= 4
+N_stop= 8
+ttotal = 4
 
-"""
-# src_dir= "/home/zohalaraib/Oscillatrino/" # should be changed to users PATH
-# save_data = true  # true = saves datafiles for science runs while false doesn't. So change it to false for jenkins test runs
-# save_plots_flag = true # true = saves plots for science runs while false doesn't. So change it to false for jenkins test runs
-    
-
-include(src_dir * "src/evolution.jl")
-include(src_dir * "src/constants.jl")
-include(src_dir * "src/shape_func.jl")
-include(src_dir * "Utilities/save_plots.jl")
-include(src_dir * "src/chkpt_hdf5.jl")
-include(src_dir * "Utilities/save_datafiles.jl")
-
-# We are simulating the time evolution of a 1D spin chain with N sites, where each site is a spin-1/2 particle. 
-# The simulation is done by applying a sequence of unitary gates to an initial state of the system, 
-# which is a product state where each site alternates between up and down.
-
-function main()
-    N_sites = 4 # number of sites (NEED TO GO TILL 96 for Rog_results) # variable.
-    cutoff = 1E-14 # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT) # variable.
-    τ = 0.05 # time step #sec #fixed for Rogerros result
-    ttotal = 5 # total time of evolution #sec # variable.
-    tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution # variable.
-    Δx = 1E-3 # length of the box of interacting neutrinos at a site in cm  # variable.
-    Δm²= 0.0 # erg^2 # Fixed for rog only self-int test case. Please dont play with it. 
-    maxdim = 1000 # max bond dimension in MPS truncation
+function main(N_sites)
+    cutoff = 1E-14
+    τ = 0.05
+    tolerance  = 5E-1
+    Δx = 1E-3
+    Δm² = 2
+    maxdim = 1000 #bond dimension
     L = 1 # cm # not being used in this test but defined to keep the evolve function arguments consistent.
     Δp = L # width of shape function # not being used in this test but defined to keep the evolve function arguments consistent.  
     t1 = 0.0084003052 #choose initial time for growth rate calculation #variable, not being used in this test
     t2 = 0.011700318 #choose final time for growth rate calculation #variable, not being used in this test
     periodic = false  # true = imposes periodic boundary conditions while false doesn't
-    
     checkpoint_every = 4
     do_recover = false
     recover_file = "" 
-
-    # s is an array of spin 1/2 tensor indices (Index objects) which will be the site or physical indices of the MPS.
-    # We overload siteinds function, which generates custom Index array with Index objects having the tag of total spin quantum number for all N.
-    # conserve_qns=true conserves the total spin quantum number "S" in the system as it evolves
-    s = siteinds("S=1/2", N_sites; conserve_qns=false)  #fixed
-
-    # Fixed Constants for Rogerro's fit (only self-interaction term)
-    a_t = 0
-    b_t = 2.105
+    s = siteinds("S=1/2", N_sites; conserve_qns=false)
+    a_t = 0.965
+    b_t = 0
     c_t = 0
-    
-    # Initialize an array of ones for all N sites
-    mu = ones(N_sites) # erg #fixed
-    
-    # Create an array of dimension N and fill it with the value 1/(sqrt(2) * G_F). This is the total number of neutrinos. 
-    N = mu .* fill(((Δx)^3 )/(√2 * G_F * N_sites), N_sites)
-
-    # Create a B vector which would be same for all N particles 
+    mu = ones(N_sites)
+    N = mu .* fill(((Δx)^3 )/(√2 * CCNO.G_F * N_sites), N_sites)
     theta_nu = 0 # mixing_angle #rad 
     B = [sin(2*theta_nu), 0, -cos(2*theta_nu)] # is equivalent to B = [0, 0, -1] # fixed for Rogerro's case
     B = B / norm(B)
 
+    # p matrix with numbers generated from the p_array for all components (x, y, z)
+    p = hcat(CCNO.generate_p_array(N_sites),fill(0, N_sites), fill(0, N_sites))
     x = fill(rand(), N_sites) # variable.
     y = fill(rand(), N_sites) # variable.
     z = fill(rand(), N_sites) # variable.
-
-    # Initialize psi to be a product state (First half to be spin down and other half to be spin up)
-    ψ = productMPS(s, N -> N <= N_sites/2 ? "Dn" : "Up") #fixed for Rog case
-
-    #Select a shape function based on the shape_name variable form the list defined in dictionary in shape_func file
+    ψ = productMPS(s, N -> N <= N_sites/2 ? "Dn" : "Up")
+    energy_sign = [i <= N_sites ÷ 2 ? 1 : 1 for i in 1:N_sites]
     shape_name = "none"  # Change this to the desired shape name # variable.
-
-    # array p with N rows and 3 columns, all initialized to 0.0 with colums representing components and rows representing sites
-    p = zeros(N_sites, 3) #fixed for Rogerro's case
-    energy_sign = fill(1, N_sites) # all of the sites are neutrinos
 
     # Specify the relative directory path
     datadir = joinpath(@__DIR__, "datafiles")
     chkptdir = joinpath(@__DIR__, "checkpoints")
 
     #extract output for the survival probability values at each timestep
-    Sz_array, Sy_array, Sx_array,  prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, t_array, t_recover = evolve(
-        s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal,chkptdir, checkpoint_every,  do_recover, recover_file, save_data , periodic)
+    Sz_array, Sy_array, Sx_array,  prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, t_array, t_recover = CCNO.evolve(
+        s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal,chkptdir, checkpoint_every,  do_recover, recover_file , save_data , periodic)
 
     # extract the prob_surv on the first site 
     prob_surv_array_site1= [row[1] for row in prob_surv_array]
-    # This function scans through the array, compares each element with its neighbors, 
-    # and returns the index of the first local minimum it encounters. 
-    # If no local minimum is found, it returns -1 to indicate that.
     function find_first_local_minima_index(arr)
-        n = length(arr)
-        for i in 2:(n-1)
+        N = length(arr)
+        for i in 2:(N-1)
             if arr[i] < arr[i-1] && arr[i] < arr[i+1]
                 return i
             end
         end
         return -1  
     end
-    
+ 
     tmin_ifirstlocalmin_file = joinpath(datadir, "tmin_ifirstlocalmin.dat")
     if !do_recover 
         # Index of first minimum of the prob_surv_array (containing survival probability values at each time step)
@@ -205,10 +166,22 @@ function main()
         end
         @assert abs(t_min - t_p_Rog) <  τ + tolerance
     end
+    if !save_plots_flag
+        plot!(t_array, prob_surv_array_site1, xlabel = "t", ylabel = "Survival Probability p(t)", title = "Running Rog_particle_loop script", aspect_ratio=:auto, margin= 10mm, legend= true, label= ["My_plot_for_N$(N_sites)"])
+        scatter!([t_p_Rog],[prob_surv_array[i_first_local_min]], label= ["t_p_Rog_site1_for_N$(N_sites)"])
+        scatter!([t_min],[prob_surv_array[i_first_local_min]], label= ["My_t_min_site1_for_N$(N_sites)"], legendfontsize=5, legend=:topright)
+        savefig("Survival probability_site1 vs t (Rog)_loop.pdf")
+    end
+    return τ, N_sites,L,tolerance, ttotal,Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array,datadir
+end
+
+# Loop from 4 to 8 particles with an increment of 4 particles each time
+for N_sites in N_start:N_step:N_stop
+
+    τ, N_sites,L,tolerance, ttotal,Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array,datadir = main(N_sites)
     if save_plots_flag
         # Specify the relative directory path
-        plotdir = joinpath(@__DIR__, "plots")
-        
+        global plotdir = joinpath(@__DIR__, "plots")
         # Read the data files
         t_Sz_tot = readdlm(joinpath(datadir, "t_<Sz>.dat"))
         t_Sy_tot = readdlm(joinpath(datadir, "t_<Sy>.dat"))
@@ -235,22 +208,7 @@ function main()
         x_values = t_xsiteval[:, 2:end]  # All rows, all columns except the first
         pₓ_values = t_pxsiteval[:, 2:end]  # All rows, all columns except the first
 
-        save_plots(τ, N_sites,L,t_array, ttotal,Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array,datadir, plotdir, save_plots_flag)
+        CCNO.save_plots(τ, N_sites,L,t_array, ttotal,Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array,datadir, plotdir, save_plots_flag)
+    
     end 
-
-    if !save_plots_flag
-        # Plotting P_surv vs t
-        plot(t_array, prob_surv_array_site1, xlabel = "t", ylabel = "Survival Probabillity p(t)",
-        title = "Running main_self_interaction_Rog script", legend = true, size=(800, 600), aspect_ratio=:auto,margin= 10mm, 
-        label= ["My_plot_for_N_sites$(N_sites)"]) 
-        scatter!([t_p_Rog],[prob_surv_array_site1[i_first_local_min]], label= ["t_p_Rog"])
-        scatter!([t_min],[prob_surv_array_site1[i_first_local_min]], label= ["My_t_min)"], legendfontsize=5, legend=:topright)
-        # Save the plot as a PDF file # for jenkins archive 
-        savefig("Survival probability_site1 vs t for N_sites$(N_sites).pdf")
-    end
-
-end 
-
-@time main()
-
-
+end

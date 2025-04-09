@@ -1,89 +1,95 @@
+push!(LOAD_PATH, "..")
+using CCNO
+
 using ITensors
+using ITensorMPS
 using Plots
 using Measures
 using DelimitedFiles
 using HDF5
-"""
-For github unit tests runs: 
-src_dir = ../
-save_data and save_plots_flag should be false to run test files. 
-"""
 
-src_dir = "../"
 save_data = false  # true = saves datafiles for science runs while false doesn't. So change it to false for jenkins test runs
 save_plots_flag = false # true = saves plots for science runs while false doesn't. So change it to false for jenkins test runs
 
+# this file plots δω on x axis while minimum time tp on y axis and compares
+# the values of our calculations with Rogerros calculations in Table I.
+# Here symmetric δω is used i.e. ω_a = - ω_b for a given δω plotted on x axis.
 
-"""
-For science runs: 
-src_dir = /home/zohalaraib/Oscillatrino/ # should be changed to users PATH
-save_data and save_plots_flag should be true to run test files. 
-
-"""
-# src_dir= "/home/zohalaraib/Oscillatrino/" # should be changed to users PATH
-# save_data = true  # true = saves datafiles for science runs while false doesn't. So change it to false for jenkins test runs
-# save_plots_flag = true # true = saves plots for science runs while false doesn't. So change it to false for jenkins test runs
-    
-include(src_dir * "src/evolution.jl")
-include(src_dir * "src/constants.jl")
-include(src_dir * "src/chkpt_hdf5.jl")
-include(src_dir * "Utilities/save_plots.jl")
-include(src_dir * "Initializations/initial_cond.jl")
-include(src_dir * "Utilities/save_datafiles.jl")
-
-# This file evolves the system under the vaccum oscillations + self-interaction
-# Hamiltonian and then plots the system size N_sites on x axis while minimum time tp  
-# on the y-axis. It then compares the values of our calculations with Rogerros 
-# calculations in Table I.
-# Here a fixed, but symmetric δω is used i.e. ω_a = - ω_b for a given δω = 0.25.
-
-#changing variables here 
-Δω = 0.25
-N_start = 4 
-N_step= 4
-N_stop= 8
+N_sites = 4
 ttotal = 5
-
-function main(N_sites, Δω)
+function main(Δω, N_sites, ttotal)
     cutoff = 1E-14
-    τ = 0.05
+    τ = 0.005
     tolerance  = 5E-1
     Δx = 1E-3
-    Δm² = Δω
     maxdim = 1000 #bond dimension
     L = 10 # cm # not being used in this test but defined to keep the evolve function arguments consistent.
-    Δp = L # width of shape function # not being used in this test but defined to keep the evolve function arguments consistent.
+    Δp = L # width of shape function # not being used in this test but defined to keep the evolve function arguments consistent. 
     t1 = 0.0084003052 #choose initial time for growth rate calculation #variable, not being used in this test
-    t2 = 0.011700318 #choose final time for growth rate calculation #variable, not being used in this test  
-    periodic = false
+    t2 = 0.011700318 #choose final time for growth rate calculation #variable, not being used in this test 
+    periodic = false 
     checkpoint_every = 4
     do_recover = false
     recover_file = "" 
+    
+    if Δω==-0.5
+        a_t = 0
+        b_t = 0
+        c_t = 1.82
+    end
+    if Δω==0.0
+        a_t = 0.0
+        b_t = 2.105
+        c_t = 0
+    end
+    if Δω==0.05
+        a_t = 2.586
+        b_t = 0
+        c_t = 0
+    end
+    if Δω==0.125
+        a_t = 1.656
+        b_t = 0
+        c_t = 1.42
+    end
+    if Δω==0.25
+        a_t = 1.224
+        b_t = 0
+        c_t = 1.62
+    end
+    if Δω==0.5
+        a_t = 1.064
+        b_t = 0
+        c_t = 1.42
+    end
+    if Δω==1.0
+        a_t = 0.965
+        b_t = 0
+        c_t = 0
+    end
+    Δm² = Δω
     s = siteinds("S=1/2", N_sites; conserve_qns=false)
-    # check for Δω = 0.25
-    a_t = 1.224
-    b_t = 0
-    c_t = 1.62
     mu = ones(N_sites)
-    N = mu .* fill(((Δx)^3 )/(√2 * G_F * N_sites), N_sites)
+    N = mu .* fill(((Δx)^3 )/(√2 * CCNO.G_F * N_sites), N_sites)
     theta_nu = 0 # mixing_angle #rad 
     B = [sin(2*theta_nu), 0, -cos(2*theta_nu)] # is equivalent to B = [0, 0, -1] # fixed for Rogerro's case
     B = B / norm(B)
 
     # p matrix with numbers generated from the p_array for all components (x, y, z)
-    p = hcat(generate_p_array(N_sites),fill(0, N_sites), fill(0, N_sites))
+    p = hcat(CCNO.generate_p_array(N_sites),fill(0, N_sites), fill(0, N_sites))
     x = fill(rand(), N_sites) # variable.
     y = fill(rand(), N_sites) # variable.
     z = fill(rand(), N_sites) # variable.
 
     ψ = productMPS(s, N -> N <= N_sites/2 ? "Dn" : "Up")
     energy_sign = [i <= N_sites ÷ 2 ? 1 : 1 for i in 1:N_sites]
-    shape_name = "none" 
+    shape_name = "none"  # Change this to the desired shape name # variable.
+    # Specify the relative directory path
     datadir = joinpath(@__DIR__, "datafiles")
     chkptdir = joinpath(@__DIR__, "checkpoints")
 
     #extract output for the survival probability values at each timestep
-    Sz_array, Sy_array, Sx_array,  prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, t_array, t_recover = evolve(
+    Sz_array, Sy_array, Sx_array,  prob_surv_array, x_values, pₓ_values, ρₑₑ_array, ρ_μμ_array, ρₑμ_array, t_array, t_recover = CCNO.evolve(
         s, τ, N, B, L, N_sites, Δx, Δm², p, x, Δp, theta_nu, ψ, shape_name, energy_sign, cutoff, maxdim, datadir, t1, t2, ttotal,chkptdir, checkpoint_every,  do_recover, recover_file, save_data , periodic)
     
     # extract the prob_surv on the first site 
@@ -97,7 +103,7 @@ function main(N_sites, Δω)
         end
         return -1  
     end
- 
+    
     tmin_ifirstlocalmin_file = joinpath(datadir, "tmin_ifirstlocalmin.dat")
     if !do_recover 
         # Index of first minimum of the prob_surv_array (containing survival probability values at each time step)
@@ -123,7 +129,7 @@ function main(N_sites, Δω)
         println("Saved t_min to file: ", tmin_ifirstlocalmin_file)
     else global t_min = t_min
     end
-    if do_recover 
+    if do_recover  
 
         # Read the saved t_min and i_first_local_min from the file
         tmin_data = readdlm(tmin_ifirstlocalmin_file)
@@ -192,39 +198,36 @@ function main(N_sites, Δω)
     end
     return t_p_Rog, t_min
 end
-datadir = joinpath(@__DIR__, "datafiles")
 
-# Arrays to store t_p_Rog and t_min for 1st site
+# Arrays to store t_p_Rog and t_min for each Δω for 1st site
+Δω_values = [-0.5, 0.0, 0.125, 0.25, 0.5, 1.0]
 t_p_Rog_array = Float64[]
 t_min_array = Float64[]
 
-# Loop from N_start to N_stop particles with an increment of N_step particles each time
-for N_sites in N_start: N_step:N_stop
-    t_p_Rog, t_min = @time main(N_sites, Δω)
+datadir = joinpath(@__DIR__, "datafiles")
+
+for Δω in Δω_values
+    t_p_Rog, t_min = main(Δω, N_sites, ttotal)
     push!(t_p_Rog_array, t_p_Rog)
     push!(t_min_array, t_min)
 end
-N_values = range(N_start, stop=N_stop, step=N_step)
-if save_data 
-    save_data = isdir(datadir) || mkpath(datadir)
-    fname1 = joinpath(datadir, "Nvals_tpRog_tpmine.dat")
-    writedlm(fname1, [N_values t_p_Rog_array t_min_array])
+if save_data
+    save_data= isdir(datadir) || mkpath(datadir)
+    fname1 = joinpath(datadir, "δω_tpRog_tpmine.dat")
+    writedlm(fname1, [Δω_values t_p_Rog_array t_min_array])
 end 
-
 if save_plots_flag
     plotdir = joinpath(@__DIR__, "plots")
-        
     # check if a directory exists, and if it doesn't, create it using mkpath
-    save_plot_flag =  isdir(plotdir) || mkpath(plotdir)
+    save_plots_flag = isdir(plotdir) || mkpath(plotdir)
     # Create the plot
-    plot(N_values, t_p_Rog_array, label="Rog_tp", xlabel="N_sites", ylabel="Minimum Time(t_p)", title = "Table I Rogerro(2021) \n expanded for a symmetric δω=0.25", legend=:topleft, aspect_ratio=:auto,margin= 10mm)
-    plot!(N_values, t_min_array, label="Our_tp")
-    savefig(joinpath(plotdir,"t_p_vs_N_for_symmetric_del_w.pdf"))
-end
-
+    plot(Δω_values, t_p_Rog_array, label="Rogerro(2021)", xlabel="δω", ylabel="Minimum Time(tₚ)", title="Table I. Rogerro(2021) ", aspect_ratio=:auto,margin= 10mm)
+    plot!(Δω_values, t_min_array, label="Our results")
+    savefig(joinpath(plotdir,"t_p_vs_symmetric del_omega for N_sites$(N_sites).pdf"))
+end 
 if !save_plots_flag
     # Create the plot
-    plot(N_values, t_p_Rog_array, label="Rog_tp", xlabel="N_sites", ylabel="Minimum Time(t_p)", title = "Table I Rogerro(2021) \n expanded for a symmetric δω=0.25", legend=:topleft, aspect_ratio=:auto,margin= 10mm)
-    plot!(N_values, t_min_array, label="Our_tp")
-    savefig("t_p_vs_N_for_symmetric_del_w.pdf")
+    plot(Δω_values, t_p_Rog_array, label="Rogerro(2021)", xlabel="δω", ylabel="Minimum Time(tₚ)", title="Table I. Rogerro(2021) ", aspect_ratio=:auto,margin= 10mm)
+    plot!(Δω_values, t_min_array, label="Our results")
+    savefig("t_p_vs_symmetric del_omega for N_sites$(N_sites).pdf")
 end

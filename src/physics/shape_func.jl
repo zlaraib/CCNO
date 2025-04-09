@@ -1,6 +1,4 @@
-include("heaviside.jl")
-
-""" 
+@doc """ 
     This file introduces the different shapes for neutrinos and map those shapes to
     a dictionary to allow easy switching between shapes in test files. 
 """
