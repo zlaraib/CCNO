@@ -47,7 +47,7 @@ Base.@pure function create_gates(params::CCNO.Parameters, state::CCNO.Simulation
     Sz::Vector{ITensor} = [op("Sz", state.s[i]) for i in 1:length(state.s)]
     
     # vacuum - one-site gate model. Faster, but order-dependent.
-    for i in 1:(params.N_sites-1)
+    for i in 1:params.N_sites
         if ω[i] != 0
             hj::ITensor = ω[i] * (B[1]*Sx[i] + B[2]*Sy[i] + B[3]*Sz[i])
             Gj::ITensor = exp(-im * params.τ/2 * hj / hbar)
