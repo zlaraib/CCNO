@@ -16,8 +16,13 @@ function main()
 
     L = 1 # cm # not being used in this test but defined to keep the evolve function arguments consistent.
     Δx = 1E-3 # length of the box of interacting neutrinos at a site/shape function width of neutrinos in cm
-    delta_omega = 0.25
     Δm²= 1.0 # erg^2 # Artifically Fixed for Rog bipolar test #change accordingly in gates_fnction too if need be.
+
+    # Constants for Rogerro's fit (corresponding to Δω = 0.25)
+    delta_omega = 0.25
+    a_t = 1.224
+    b_t = 0
+    c_t = 1.62
 
     params = CCNO.Parameters(
         N_sites = 4, # number of sites 
@@ -32,7 +37,7 @@ function main()
         L=L,
         Δp = L, # width of shape function # not being used in this test but defined to keep the evolve function arguments consistent.  
         periodic = true,  # true = imposes periodic boundary conditions while false doesn't
-        checkpoint_every = 20,
+        checkpoint_every = 100,
         do_recover = false,
         recover_file = "",
         shape_name = "none",  # Change this to the desired shape name # variable.
@@ -49,11 +54,6 @@ function main()
     # We overload siteinds function, which generates custom Index array with Index objects having the tag of total spin quantum number for all params.N_sites.
     # conserve_qns=false doesnt conserve the total spin quantum number "S" in the system as it evolves
     s = siteinds("S=1/2", params.N_sites; conserve_qns=false)  
-
-    # Constants for Rogerro's fit (corresponding to Δω = 0.25)
-    a_t = 1.224
-    b_t = 0
-    c_t = 1.62
     
     # Initialize an array of ones for all N_sites sites
     mu = ones(params.N_sites) # erg
