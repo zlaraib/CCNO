@@ -52,26 +52,6 @@ pipeline {
 		archiveArtifacts artifacts: '*.pdf'
     } 
 }
-	stage('Rog_full H looped over N'){ steps{
-		sh 'rm -rf test/datafiles; julia --project=. test/main_Rog_N_loop.jl'
-		archiveArtifacts artifacts: '*.pdf'
-    } 
-}
-	stage('t_p vs symmetric delta_omega (Rog)'){ steps{
-		sh 'rm -rf test/datafiles; julia --project=. test/t_p_vs_sym_delta_w.jl'
-		archiveArtifacts artifacts: '*.pdf'
-    } 
-}
-	stage('t_p vs N (unsymmetric)(Rog)'){ steps{
-		sh 'rm -rf test/datafiles; julia --project=. test/t_p_vs_N_unsym.jl'
-		archiveArtifacts artifacts: '*.pdf'
-    } 
-}
-	stage('t_p vs N (symmetric)(Rog)'){ steps{
-		sh 'rm -rf test/datafiles; julia --project=. test/t_p_vs_N_sym.jl'
-		archiveArtifacts artifacts: '*.pdf'
-    } 
-}
 }// stages{
 
     post {

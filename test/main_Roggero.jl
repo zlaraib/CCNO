@@ -12,20 +12,34 @@ using HDF5
 # The simulation is done by applying a sequence of unitary gates to an initial state of the system, 
 # which is a product state where each site alternates between up and down.
 
-function main()
+# array of initial parameters
+const delta_omega::Vector{Float64} = [0.25, 1.0, 1.0, -0.5, 0.0, 0.125, 0.25, 0.5, 1.0]
+const N_sites::Vector{Int64}       = [   4,   4,   8,    4,   4,     4,    4,   4,   4]
+
+# Roggero parameters from 10.1103/PhysRevD.104.103016
+const Roggero_table::Array{Float64,2} = [
+    −0.5 0 0 1.8 1.0;
+    0.0 0 2.10 0 0.36;
+    0.01 5.4 0 −8 0.35;
+    0.05 2.58 0 0 0.31;
+    0.125 1.65 0 1.4 0.32;
+    0.25 1.22 0 1.6 0.41;
+    0.5 1.06 0 1.4 0.61;
+    1.0 0.96 0 0 0.99]
+const delta_omega_Rog::Vector{Float64} = Roggero_table[:,1]
+const a_t::Vector{Float64} = Roggero_table[:,2]
+const b_t::Vector{Float64} = Roggero_table[:,3]
+const c_t::Vector{Float64} = Roggero_table[:,4]
+const pmin::Vector{Float64} = Roggero_table[:,5]
+
+function main(N_sites::Int64, delta_omega::Float64)
 
     L = 1 # cm # not being used in this test but defined to keep the evolve function arguments consistent.
     Δx = 1E-3 # length of the box of interacting neutrinos at a site/shape function width of neutrinos in cm
     Δm²= 1.0 # erg^2 # Artifically Fixed for Rog bipolar test #change accordingly in gates_fnction too if need be.
 
-    # Constants for Rogerro's fit (corresponding to Δω = 0.25)
-    delta_omega = 0.25
-    a_t = 1.224
-    b_t = 0
-    c_t = 1.62
-
     params = CCNO.Parameters(
-        N_sites = 4, # number of sites 
+        N_sites = N_sites, # number of sites 
         cutoff = 1E-14, # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT)
         τ = 0.05*CCNO.hbar, # time step 
         ttotal = 5*CCNO.hbar, # total time of evolution 
@@ -141,8 +155,14 @@ function main()
     writedlm(tmin_ifirstlocalmin_file, [t_min i_first_local_min])
     println("Saved t_min to file: ", tmin_ifirstlocalmin_file)
 
-    # Rogerro(2021)'s fit for the first minimum of the survival probability reached for a time t_p 
-    t_p_Rog = a_t*log(params.N_sites) + b_t * sqrt(params.N_sites) + c_t
+    # Rogerro(2021)'s fit for the first minimum of the survival probability reached for a time t_p
+    Rog_index = findfirst(x -> x == delta_omega, delta_omega_Rog)
+    t_p_Rog = a_t[Rog_index]*log(params.N_sites) + b_t[Rog_index] * sqrt(params.N_sites) + c_t[Rog_index]
+    println("N_sites=",params.N_sites)
+    println("delta_omega=",delta_omega)
+    println("a_t=", a_t[Rog_index])
+    println("b_t=", b_t[Rog_index])
+    println("c_t=", c_t[Rog_index])
     println("t_p_Rog= ",t_p_Rog)
 
     if params.save_plots_flag
@@ -160,9 +180,11 @@ function main()
     end
 
     # Check that our time of first minimum survival probability compared to Rogerro(2021) remains within the timestep and tolerance.
-@assert abs(t_min/CCNO.hbar - t_p_Rog) < params.τ/CCNO.hbar + params.tolerance
+    @assert abs(t_min/CCNO.hbar - t_p_Rog) < params.τ/CCNO.hbar + params.tolerance
 
 end 
 
-@time main()
+for i in 1:length(N_sites)
+    main(N_sites[i], delta_omega[i])
+end
 
