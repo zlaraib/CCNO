@@ -16,7 +16,7 @@ function main()
 
     L = 1 # cm # not being used in this test but defined to keep the evolve function arguments consistent.
     Δx = 1E-3 # length of the box of interacting neutrinos at a site/shape function width of neutrinos in cm
-    delta_omega = 0.5
+    delta_omega = 0.25
     Δm²= 1.0 # erg^2 # Artifically Fixed for Rog bipolar test #change accordingly in gates_fnction too if need be.
 
     params = CCNO.Parameters(
@@ -72,7 +72,7 @@ function main()
 
     # p matrix with numbers generated from the p_array for all components (x, y, z)
     # set energy such that omega_a = delta_omega and omega_b=0
-    px_a = fill(Δm²/(2.0*delta_omega), div(params.N_sites,2))
+    px_a = fill(Δm²/(2.0*2.0*delta_omega), div(params.N_sites,2))
     px_b = fill(10^6, div(params.N_sites,2))
     px = vcat(px_a, px_b)
     p = hcat(px,fill(0, params.N_sites), fill(0, params.N_sites))
