@@ -19,7 +19,7 @@ function checkpoint_simulation_hdf5(params::CCNO.Parameters, checkpoint_filename
     write(f, "theta_nu(rad)", params.theta_nu)
     write(f, "cutoff(unitless const)", params.cutoff)
     write(f, "maxdim(unitless const)", params.maxdim)
-    write(f, "t(sec)", t+params.τ)
+    write(f, "t(sec)", t)
     write(f, "iteration(unitless const)", iteration)
     
     # Write arrays and vectors

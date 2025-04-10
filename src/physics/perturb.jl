@@ -28,7 +28,7 @@ function perturb(params::CCNO.Parameters, state::CCNO.SimulationState,k::Float64
     # assert B vector to have a magnitude of 1 while preserving its direction.
     @assert norm(B_pert) == 1
     
-    for i in 1:(params.N_sites-1)
+    for i in 1:params.N_sites
         # total Hamiltonian of the system is a sum of local terms hj, where hj acts on sites i and j which are paired for gates to latch onto.
         # op function returns these operators as ITensors and we tensor product and add them together to compute the operator hj.
         
