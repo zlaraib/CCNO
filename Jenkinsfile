@@ -52,11 +52,6 @@ pipeline {
 		archiveArtifacts artifacts: '*.pdf'
     } 
 }
-	stage('Roggero(2021) Bipolar'){ steps{
-		sh 'rm -rf test/datafiles; julia --project=. test/main_Bipolar_Rog.jl'
-		archiveArtifacts artifacts: '*.pdf'
-    } 
-}
 	stage('Rog_full H looped over N'){ steps{
 		sh 'rm -rf test/datafiles; julia --project=. test/main_Rog_N_loop.jl'
 		archiveArtifacts artifacts: '*.pdf'
