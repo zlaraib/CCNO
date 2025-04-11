@@ -47,7 +47,7 @@ println("Initial p_vector of all particles=",p)
 function evolve(τ, L, N_sites, p, x, ttotal,save_data, periodic)
     x_values = []
     px_values = []
-    p_mod, p_hat = CCNO.momentum(p, N_sites)
+    p_mod, p_hat = CCNO.momentum(p)
     p_x_hat = [sub_array[1] for sub_array in p_hat]
     t_array = [] # to store t values 
 
