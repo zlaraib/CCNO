@@ -27,8 +27,8 @@ function main()
         L=L,
         ttotal = 1.666e-2,
         tolerance  = 0.2,
-        m1 = -0.008596511*CCNO.eV,
-        m2 = 0*CCNO.eV,
+        m1 = 0*CCNO.eV,
+        m2 = 0.008596511*CCNO.eV,
         maxdim = 1,
         cutoff = 1e-100,
         theta_nu = 1.74532925E-8,  #1e-6 degrees # = 1.74532925E-8 radians 

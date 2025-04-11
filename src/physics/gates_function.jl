@@ -24,7 +24,7 @@ using ITensorMPS
 """
 Base.@pure function create_gates(params::CCNO.Parameters, state::CCNO.SimulationState)
     
-    B = [-sin(2*params.theta_nu), 0, cos(2*params.theta_nu)] # actual b vector that activates the vacuum oscillation term in Hamiltonian
+    B = [sin(2*params.theta_nu), 0, -cos(2*params.theta_nu)] # actual b vector that activates the vacuum oscillation term in Hamiltonian
     B = B / norm(B) 
 
     # Make gates (1,2),(2,3),(3,4),... i.e. unitary gates which act on any (non-neighboring) pairs of sites in the chain.

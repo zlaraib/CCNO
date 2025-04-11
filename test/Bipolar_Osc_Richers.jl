@@ -22,8 +22,8 @@ function main()
         τ = 1e-7, # time step # sec/sec = unitless # variable # using this time step for faster unit testing in jenkins, actually the bipolar richers results are obtained with timestep= 1e-9/t_bipolar.
         ttotal = 0.002, # total time of evolution # sec/sec = unitless #using this total time for faster unit testing in jenkins, actually bipolar richers results are produced with ttotal = 0.01 / t_bipolar
         tolerance  = 5E-1, # acceptable level of error or deviation from the exact value or solution #variable
-        m1 = -0.008596511*CCNO.eV, #ergs #1st mass eigenstate of neutrino in Richers(2021)
-        m2 = 0*CCNO.eV,   #ergs #2nd mass eigenstate of neutrino in Richers(2021)
+        m2 = 0.008596511*CCNO.eV, #ergs #1st mass eigenstate of neutrino in Richers(2021)
+        m1 = 0*CCNO.eV,   #ergs #2nd mass eigenstate of neutrino in Richers(2021)
         maxdim = 1, # max bond dimension in MPS truncation
         cutoff = 1e-100, # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT) #variable
         shape_name = "none",  # Change this to the desired shape name #variable

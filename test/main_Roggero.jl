@@ -13,8 +13,8 @@ using HDF5
 # which is a product state where each site alternates between up and down.
 
 # array of initial parameters
-const delta_omega::Vector{Float64} = [0.25, 1.0, 1.0, -0.5, 0.0, 0.125, 0.25, 0.5, 1.0]
-const N_sites::Vector{Int64}       = [   4,   4,   8,    4,   4,     4,    4,   4,   4]
+const delta_omega::Vector{Float64} = [1.0, 1.0, 0.5, 0.25, 0.125]#-0.5, 0.0, 
+const N_sites::Vector{Int64}       = [  4,   8,   4,    4,     4]#   4,   4, 
 
 # Roggero parameters from 10.1103/PhysRevD.104.103016
 const Roggero_table::Array{Float64,2} = [
@@ -36,7 +36,7 @@ function main(N_sites::Int64, delta_omega::Float64)
 
     L = 1 # cm # not being used in this test but defined to keep the evolve function arguments consistent.
     Δx = 1E-3 # length of the box of interacting neutrinos at a site/shape function width of neutrinos in cm
-    Δm²= 1.0 # erg^2 # Artifically Fixed for Rog bipolar test #change accordingly in gates_fnction too if need be.
+    Δm²= (delta_omega==0 ? 0.0 : 1.0) # erg^2 # Artifically Fixed for Rog bipolar test #change accordingly in gates_fnction too if need be.
 
     params = CCNO.Parameters(
         N_sites = N_sites, # number of sites 
@@ -75,22 +75,26 @@ function main(N_sites::Int64, delta_omega::Float64)
     # Create an array of dimension N_sites and fill it with the value 1/(sqrt(2) * G_F). This is the number of neutrinos. 
     N = mu .* fill(((Δx)^3 )/(√2 * CCNO.G_F * params.N_sites), params.N_sites)
     
-    B = [sin(2*params.theta_nu), 0, -cos(2*params.theta_nu)] # is equivalent to B = [0, 0, -1] # fixed for Rogerro's case
-    B = B / norm(B)
-
-    x = fill(rand(), params.N_sites) # variable.
-    y = fill(rand(), params.N_sites) # variable.
-    z = fill(rand(), params.N_sites) # variable.
+    x = fill(0, params.N_sites) # variable.
+    y = fill(0, params.N_sites) # variable.
+    z = fill(0, params.N_sites) # variable.
 
     ψ = productMPS(s, N -> N <= params.N_sites/2 ? "Dn" : "Up")
 
     # p matrix with numbers generated from the p_array for all components (x, y, z)
-    # set energy such that omega_a = delta_omega and omega_b=0
-    px_a = fill(Δm²/(2.0*2.0*delta_omega), div(params.N_sites,2))
-    px_b = fill(10^6, div(params.N_sites,2))
+    # delta_omega = (omega_a - omega_b)/2
+    # set omega_a=delta_omega and omega_b=-delta_omega
+    # E = dm2/(2E)
+    omega_a = delta_omega==0 ? 1.0 : 1.0*delta_omega
+    omega_b = delta_omega==0 ? 1.0 : 1.0*delta_omega
+    E_a = Δm²/(2.0*omega_a)
+    E_b = Δm²/(2.0*omega_b)
+    px_a = fill(E_a, div(params.N_sites,2))
+    px_b = fill(E_b, div(params.N_sites,2)) # Δm²/(2.0*omega_b)
     px = vcat(px_a, px_b)
     p = hcat(px,fill(0, params.N_sites), fill(0, params.N_sites))
-    energy_sign = [i <= params.N_sites ÷ 2 ? 1 : 1 for i in 1:params.N_sites] # all of the sites are neutrinos
+
+    energy_sign = [i <= params.N_sites ÷ 2 ? 1 : -1 for i in 1:params.N_sites] # all of the sites are neutrinos
 
     state = CCNO.SimulationState(ψ=ψ,
                                  s=s,
