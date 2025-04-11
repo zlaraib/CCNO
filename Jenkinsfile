@@ -42,11 +42,6 @@ pipeline {
 		archiveArtifacts artifacts: '*.pdf'
     } 
 }
-	stage('Roggero(2021)_only_self_interactions'){ steps{
-		sh 'rm -rf test/datafiles; julia --project=. test/main_self_interaction_Rog.jl'
-		archiveArtifacts artifacts: '*.pdf'
-    } 
-}
 	stage('Roggero(2021) full Hamiltonian'){ steps{
 		sh 'rm -rf test/datafiles; julia --project=. test/main_Roggero.jl'
 		archiveArtifacts artifacts: '*.pdf'

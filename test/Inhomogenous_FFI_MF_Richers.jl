@@ -175,6 +175,9 @@ function main()
 
     @assert abs((Im_Ω - analytic_growth_rate)/  analytic_growth_rate) < params.tolerance 
     
+    # clean up
+    rm(params.datadir, recursive=true)
+    rm(params.chkptdir, recursive=true)
 end
 
 @time main()

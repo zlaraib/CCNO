@@ -155,6 +155,10 @@ function main()
         savefig( "Homo_MF_<ρₑμ>_site1_vs_t for $(params.N_sites) particles.pdf")
     end
     @assert abs((Im_Ω - analytic_growth_rate)/  analytic_growth_rate) < params.tolerance 
+
+    # clean up
+    rm(params.datadir, recursive=true)
+    rm(params.chkptdir, recursive=true)
 end
 
 @time main()

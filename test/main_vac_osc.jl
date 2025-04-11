@@ -134,6 +134,10 @@ function main()
     # Save the plot as a PDF file # for jenkins archive 
     savefig("<Sz>_site1 vs t.pdf")
   end
+    
+    # clean up
+    rm(params.datadir, recursive=true)
+    rm(params.chkptdir, recursive=true)
 end
 
 @time main()

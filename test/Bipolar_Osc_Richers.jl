@@ -126,6 +126,10 @@ function main()
         # Save the plot as a PDF file
         savefig("Bipolar Richers_site1 for $(params.N_sites) particles <ρₑₑ>_vs_t.pdf")
     end
+
+    # clean up
+    rm(params.datadir, recursive=true)
+    rm(params.chkptdir, recursive=true)
 end 
 
 @time main()
