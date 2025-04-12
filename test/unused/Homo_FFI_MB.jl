@@ -27,13 +27,12 @@ function main()
         L=L,
         ttotal = 1.666e-2,
         tolerance  = 0.2,
-        m1 = 0*CCNO.eV,
-        m2 = 0.008596511*CCNO.eV,
-        maxdim = 1,
+        m1 = -0.008596511*CCNO.eV,
+        m2 = 0*CCNO.eV,
+        maxdim = 2,
         cutoff = 1e-100,
         theta_nu = 1.74532925E-8,  #1e-6 degrees # = 1.74532925E-8 radians 
         shape_name = "none",
-        geometric_name = "physical",
         periodic = true,
         checkpoint_every = 1000,
         do_recover = false,
@@ -152,13 +151,11 @@ function main()
         plot(t_array, ρₑμ_array, xlabel = "t", ylabel = "<ρₑμ>_1", legend = false, 
         left_margin = 20mm, right_margin = 10mm, top_margin = 5mm, bottom_margin = 10mm) 
         # Save the plot as a PDF file
-        savefig( "Homo_MF_<ρₑμ>_site1_vs_t for $(params.N_sites) particles.pdf")
+        savefig( "Homo_MB_<ρₑμ>_site1_vs_t for $(params.N_sites) particles.pdf")
     end
-    @assert abs((Im_Ω - analytic_growth_rate)/  analytic_growth_rate) < params.tolerance 
 
-    # clean up
-    rm(params.datadir, recursive=true)
-    rm(params.chkptdir, recursive=true)
+    # comment out assert because we don't actually have analytic solution for MB case.
+    #@assert abs((Im_Ω - analytic_growth_rate)/  analytic_growth_rate) < params.tolerance 
 end
 
 @time main()
