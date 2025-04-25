@@ -23,7 +23,6 @@ function checkpoint_simulation_hdf5(params::CCNO.Parameters, checkpoint_filename
     write(f, "iteration(unitless const)", iteration)
     
     # Write arrays and vectors
-    write(f, "s(unitless array)", state.s)
     write(f, "N(unitless array)", state.N)
     write(f, "p(erg)", state.p)
     write(f, "xyz(cm)", state.xyz)

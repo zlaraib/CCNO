@@ -53,6 +53,14 @@ function evolve(params::CCNO.Parameters, state::CCNO.SimulationState)
         # extract the gates array generated in the gates_function file
         gates = create_gates(params, state)
 
+        # apply each gate in gates(ITensors array) successively to the wavefunction ψ (MPS)(it is equivalent to time evolving psi according to the time-dependent Hamiltonian represented by gates).
+        # The apply function is a matrix-vector multiplication operation that is smart enough to determine which site indices each gate has, and then figure out where to apply it to our MPS. 
+        # It truncates the MPS according to the set cutoff and maxdim for all the non-nearest-neighbor gates.
+        # apply each gate in gates(ITensors array) successively to the wavefunction ψ (MPS)(it is equivalent to time evolving psi according to the time-dependent Hamiltonian represented by gates).
+        # The apply function is a matrix-vector multiplication operation that is smart enough to determine which site indices each gate has, and then figure out where to apply it to our MPS. 
+        # It truncates the MPS according to the set cutoff and maxdim for all the non-nearest-neighbor gates.
+        state.ψ = apply(gates, state.ψ; params.cutoff, params.maxdim)
+
         # move particles
         state.xyz += p̂ * c * params.τ
         if params.periodic
@@ -60,14 +68,32 @@ function evolve(params::CCNO.Parameters, state::CCNO.SimulationState)
             @assert all(state.xyz .>= 0 .&& state.xyz .<= params.L)
         end
 
-        # apply each gate in gates(ITensors array) successively to the wavefunction ψ (MPS)(it is equivalent to time evolving psi according to the time-dependent Hamiltonian represented by gates).
-        # The apply function is a matrix-vector multiplication operation that is smart enough to determine which site indices each gate has, and then figure out where to apply it to our MPS. 
-        # It truncates the MPS according to the set cutoff and maxdim for all the non-nearest-neighbor gates.
-        # apply each gate in gates(ITensors array) successively to the wavefunction ψ (MPS)(it is equivalent to time evolving psi according to the time-dependent Hamiltonian represented by gates).
-        # The apply function is a matrix-vector multiplication operation that is smart enough to determine which site indices each gate has, and then figure out where to apply it to our MPS. 
-        # It truncates the MPS according to the set cutoff and maxdim for all the non-nearest-neighbor gates.
+        # change site ordering so adjacent sites are adjacent in the MPS
+        # TODO - sort y and z as well. For now, assumes only moving in x
+        x = state.xyz[:,1]
+        N = length(x)
+        perm = sortperm(x)
 
-        state.ψ = apply(gates, state.ψ; params.cutoff, params.maxdim)
+        # first do reordering of arrays that can be swizzled
+        state.energy_sign = state.energy_sign[perm]
+        state.N = state.N[perm]
+        for j in 1:3
+            state.xyz[:,j] = state.xyz[perm,j]
+            state.p[:,j] = state.p[perm,j]
+        end
+
+        # then reorder the quantum state using movesite
+        for i in 1:N
+            j = perm[i]
+            state.ψ = movesite(state.ψ, j => i)
+
+            # increment perm_inverse values smaller than j, since those sites just moved forward
+            for k in i:N
+                if perm[k]<j
+                    perm[k] += 1
+                end
+            end
+        end
 
         # The normalize! function is used to ensure that the MPS is properly normalized after each application of the time evolution gates. 
         # This is necessary to ensure that the MPS represents a valid quantum state.

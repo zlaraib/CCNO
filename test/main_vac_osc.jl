@@ -72,7 +72,6 @@ function main()
     ψ = productMPS(s, N -> N <= params.N_sites/2 ? "Dn" : "Up") # Fixed to produce consistent results for the test assert conditions 
     
     state = CCNO.SimulationState(ψ=ψ,
-                                 s=s,
                                  p=p,
                                  energy_sign = energy_sign,
                                  N=N,

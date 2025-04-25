@@ -27,15 +27,17 @@ function perturb(params::CCNO.Parameters, state::CCNO.SimulationState,k::Float64
 
     # assert B vector to have a magnitude of 1 while preserving its direction.
     @assert norm(B_pert) == 1
+
+    s = siteinds(state.ψ)
     
     for i in 1:params.N_sites
         # total Hamiltonian of the system is a sum of local terms hj, where hj acts on sites i and j which are paired for gates to latch onto.
         # op function returns these operators as ITensors and we tensor product and add them together to compute the operator hj.
         
         # add perturbation via one-body oscillation term to the Hamiltonian
-        hj::ITensor = B_pert[1] * op("Sx", state.s[i]) +
-            B_pert[2] * op("Sy", state.s[i]) +
-            B_pert[3] * op("Sz", state.s[i])
+        hj::ITensor = B_pert[1] * op("Sx", s[i]) +
+            B_pert[2] * op("Sy", s[i]) +
+            B_pert[3] * op("Sz", s[i])
 
         # make Trotter gate Gj that would correspond to each gate in the gate array of ITensors             
         Gj::ITensor = exp(-im * params.α * hj)

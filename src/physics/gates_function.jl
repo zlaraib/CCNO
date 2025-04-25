@@ -39,12 +39,13 @@ Base.@pure function create_gates(params::CCNO.Parameters, state::CCNO.Simulation
     ω::Vector{Float64} = [Δm² / (2 * p_mod[i]) * state.energy_sign[i] for i in 1:params.N_sites]
 
     # Precompute operators for all sites
-    Id::Vector{ITensor} = [op("Id", state.s[i]) for i in 1:length(state.s)]
-    Sx::Vector{ITensor} = [op("Sx", state.s[i]) for i in 1:length(state.s)]
-    Sy::Vector{ITensor} = [op("Sy", state.s[i]) for i in 1:length(state.s)]
-    Sp::Vector{ITensor} = [op("S+", state.s[i]) for i in 1:length(state.s)]
-    Sm::Vector{ITensor} = [op("S-", state.s[i]) for i in 1:length(state.s)]
-    Sz::Vector{ITensor} = [op("Sz", state.s[i]) for i in 1:length(state.s)]
+    s = siteinds(state.ψ)
+    Id::Vector{ITensor} = [op("Id", s[i]) for i in 1:length(s)]
+    Sx::Vector{ITensor} = [op("Sx", s[i]) for i in 1:length(s)]
+    Sy::Vector{ITensor} = [op("Sy", s[i]) for i in 1:length(s)]
+    Sp::Vector{ITensor} = [op("S+", s[i]) for i in 1:length(s)]
+    Sm::Vector{ITensor} = [op("S-", s[i]) for i in 1:length(s)]
+    Sz::Vector{ITensor} = [op("Sz", s[i]) for i in 1:length(s)]
     
     # vacuum - one-site gate model. Faster, but order-dependent.
     for i in 1:params.N_sites

@@ -96,7 +96,6 @@ function main(N_sites, delta_omega)
     energy_sign = [i <= params.N_sites ÷ 2 ? 1 : -1 for i in 1:params.N_sites] # all of the sites are neutrinos
 
     state = CCNO.SimulationState(ψ=ψ,
-                                 s=s,
                                  p=p,
                                  energy_sign = energy_sign,
                                  N=N,

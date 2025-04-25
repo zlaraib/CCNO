@@ -79,7 +79,6 @@ function main()
     N = CCNO.Neutrino_number(params, n_νₑ,n_νₑ̄)
 
     state = CCNO.SimulationState(ψ=ψ,
-                                 s=s,
                                  p=p,
                                  energy_sign = energy_sign,
                                  N=N,
