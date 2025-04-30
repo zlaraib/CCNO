@@ -35,7 +35,7 @@ function evolve(params::CCNO.Parameters, state::CCNO.SimulationState)
     if params.do_recover
         if isfile(params.recover_file)
             println("Recovering from checkpoint: $params.recover_file")
-            state, t_initial, iteration = recover_checkpoint_hdf5(params.recover_file)
+            state, t_initial, iteration = recover_checkpoint_hdf5(params,params.recover_file)
         else
             error("Checkpoint file not found")
         end
