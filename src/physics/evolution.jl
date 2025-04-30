@@ -28,7 +28,7 @@ function evolve(params::CCNO.Parameters, state::CCNO.SimulationState)
 
     t_initial::Float64 = 0.0
     iteration::Int64 = 0
-    t_recover::Float64 = t_initial # Variable to store the initial recovery time 
+
     mkpath(params.chkptdir)
     mkpath(params.datadir)
 
