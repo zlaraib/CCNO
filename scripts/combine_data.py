@@ -5,11 +5,11 @@ import numpy as np
 import os
 
 # list directories in sorted list for all directories in the current directory starting with "run"
-dirnames = [d for d in os.listdir() if (os.path.isdir(d) and d.startswith("run"))]
+dirnames = [d for d in os.listdir() if (os.path.isdir(d) and d.endswith("run"))]
 dirnames.sort()
 
 # create a list of filenames based on the files in the first dirname that start with "t_"
-filenames = [f for f in os.listdir(dirnames[0]+"/datafiles") if f.startswith("t_")]
+filenames = [f for f in os.listdir(dirnames[0]+"/datafiles") if f.endswith("t_")]
 
 # create a new directory called "combined_data"
 os.makedirs("combined_data", exist_ok=True)
