@@ -9,7 +9,7 @@ dirnames = [d for d in os.listdir() if (os.path.isdir(d) and d.endswith("run"))]
 dirnames.sort()
 
 # create a list of filenames based on the files in the first dirname that start with "t_"
-filenames = [f for f in os.listdir(dirnames[0]+"/datafiles") if f.endswith("t_")]
+filenames = [f for f in os.listdir(dirnames[0]+"/datafiles") if f.startswith("t_")]
 
 # create a new directory called "combined_data"
 os.makedirs("combined_data", exist_ok=True)
