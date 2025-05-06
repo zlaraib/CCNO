@@ -65,6 +65,7 @@ def plot_and_save(x, y, xlabel, ylabel, filename):
     plt.plot(x, y, marker="o", linestyle="-", markersize=2)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
+    plt.log_yscale()  # Use logarithmic scale for y-axis
     plt.grid(True)
     plt.savefig(os.path.join(combined_plot_dir, filename))
     plt.close()
