@@ -41,16 +41,10 @@ function checkpoint_simulation_hdf5(params::CCNO.Parameters, checkpoint_filename
     println("Checkpoint created at $checkpoint_filename, iteration $iteration, time $t")
 end
 
-function recover_checkpoint_hdf5(checkpoint_filename::String)
+function recover_checkpoint_hdf5(params::CCNO.Parameters)
     # Open the HDF5 file for reading
-    f = h5open(checkpoint_filename, "r")
+    f = h5open(params.recover_file, "r")
     
-    # Read scalar values with units
-    τ = read(f, "τ(sec)")
-    L = read(f, "L(cm)")
-    Δx = read(f, "Δx(cm)")
-    m1 = read(f, "m1(erg)")
-    m2 = read(f, "m2(erg)")
     t_initial = read(f, "t(sec)")
     iteration = read(f, "iteration(unitless const)")
     
@@ -71,10 +65,10 @@ function recover_checkpoint_hdf5(checkpoint_filename::String)
     # Close the file after reading
     close(f)
     
-    println("Recovered checkpoint from $checkpoint_filename, iteration $iteration, time $t_initial")
+    println("Recovered checkpoint from $params.recover_file, iteration $iteration, time $t_initial")
 
     s = siteinds(ψ)
-    state = simulation_state(ψ=ψ, s=s, energy_sign=energy_sign, N=N, p=p, xyz=xyz)
-    
+    state = CCNO.SimulationState(ψ=ψ, s=s, energy_sign=energy_sign, N=N, p=p, xyz=xyz)
+    t_initial += params.τ
     return state, t_initial, iteration
 end
