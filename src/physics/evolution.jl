@@ -29,9 +29,6 @@ function evolve(params::CCNO.Parameters, state::CCNO.SimulationState)
     t_initial::Float64 = 0.0
     iteration::Int64 = 0
 
-    mkpath(params.chkptdir)
-    mkpath(params.datadir)
-
     if params.do_recover
         if isfile(params.recover_file)
             println("Recovering from checkpoint: $params.recover_file")
@@ -39,6 +36,16 @@ function evolve(params::CCNO.Parameters, state::CCNO.SimulationState)
         else
             error("Checkpoint file not found")
         end
+    else
+        # make sure the data files don't already exist if starting from scratch
+        if ispath(params.chkptdir)
+            error("Path already exists: "*params.chkptdir)
+        end
+        if ispath(params.datadir)
+            error("Path already exists: "*params.datadir)
+        end
+        mkpath(params.chkptdir)
+        mkpath(params.datadir)
     end    
 
     # extract output of p_hat and p_mod for the p vector defined above for all sites. 
