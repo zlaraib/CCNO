@@ -4,8 +4,8 @@
 import numpy as np
 import os
 
-# list directories in sorted list for all directories in the current directory starting with "run"
-dirnames = [d for d in os.listdir() if (os.path.isdir(d) and d.startswith("run"))]
+# list directories in sorted list for all directories in the current directory ending with "run"
+dirnames = [d for d in os.listdir() if (os.path.isdir(d) and d.endswith("run"))]
 dirnames.sort()
 
 # create a list of filenames based on the files in the first dirname that start with "t_"
