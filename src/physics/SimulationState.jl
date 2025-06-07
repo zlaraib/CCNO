@@ -55,3 +55,51 @@ function sort_sites!(state::SimulationState)
     state.N = state.N[perm]
     state.s = state.s[perm]
 end
+
+# Find the site number (position) in the MPS where index i appears
+function find_site(i::Index, ψ::MPS)
+    for site in 1:length(ψ)
+        if i in inds(ψ[site])
+            return site
+        end
+    end
+    error("Index $i not found in MPS")
+end
+
+function apply_1site!(state::SimulationState, gate::ITensor)
+    # get the site index for the gate
+    s = siteind(gate)
+    i = find_site(s, state.ψ)
+
+    # create the gate
+    T = gate * state.ψ[i]
+    noprime!(T)
+
+    # apply the gate in place
+    state.ψ[i] = T
+end
+
+function apply_2site_adjacent!(state::SimulationState, gate::ITensor, parms::Parameters)
+    # get the site indices for the gate
+    s1, s2 = siteinds(gate)
+    i1 = find_site(s1, state.ψ)
+    i2 = find_site(s2, state.ψ)
+    @assert i2 == i1 + 1 "Site indices must be adjacent"
+
+    # orthogonalize to the left site
+    orthogonalize!(state.ψ, i1)
+
+    # apply the gate
+    T = gate * (state.ψ[i1] * state.ψ[i2])
+    noprime!(T)
+
+    # get the left indices to pass to the SVD
+    l = uniqueinds(state.ψ[i], state.ψ[i+1])
+
+    # apply the SVD to the pair of sites
+    U, S, V = ITensor.svd(T, l; maxdim=parms.maxdim, cutoff=parms.cutoff)
+
+    # update the MPS
+    state.ψ[i] = U
+    state.ψ[i+1] = S * V
+end
