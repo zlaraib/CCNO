@@ -66,40 +66,45 @@ function find_site(i::Index, ψ::MPS)
     error("Index $i not found in MPS")
 end
 
-function apply_1site!(state::SimulationState, gate::ITensor)
-    # get the site index for the gate
-    s = siteind(gate)
-    i = find_site(s, state.ψ)
+function apply_1site!(gates::Vector{ITensor}, state::SimulationState)
+    for gate in gates
+        # get the site index for the gate
+        s = siteind(gate)
+        i = find_site(s, state.ψ)
 
-    # create the gate
-    T = gate * state.ψ[i]
-    noprime!(T)
+        # create the gate
+        T = gate * state.ψ[i]
+        noprime!(T)
 
-    # apply the gate in place
-    state.ψ[i] = T
+        # apply the gate in place
+        state.ψ[i] = T
+    end
 end
 
-function apply_2site_adjacent!(state::SimulationState, gate::ITensor, parms::Parameters)
-    # get the site indices for the gate
-    s1, s2 = siteinds(gate)
-    i1 = find_site(s1, state.ψ)
-    i2 = find_site(s2, state.ψ)
-    @assert i2 == i1 + 1 "Site indices must be adjacent"
+function apply_2site_adjacent!(gates::Vector{ITensor}, state::SimulationState, parms::Parameters)
+    for gate in gates
+        # get the site indices for the gate
+        s = [i for i in inds(gate) if hastags(i,"Site") && plev(i) == 0]
+        @assert length(s) == 2 "Gate must act on exactly two sites"
+        i1 = find_site(s[1], state.ψ)
+        i2 = find_site(s[2], state.ψ)
+        @assert i2 == i1 + 1 "Site indices must be adjacent"
 
-    # orthogonalize to the left site
-    orthogonalize!(state.ψ, i1)
+        # orthogonalize to the left site
+        orthogonalize!(state.ψ, i1)
 
-    # apply the gate
-    T = gate * (state.ψ[i1] * state.ψ[i2])
-    noprime!(T)
+        # apply the gate
+        T = gate * (state.ψ[i1] * state.ψ[i2])
+        noprime!(T)
 
-    # get the left indices to pass to the SVD
-    l = uniqueinds(state.ψ[i], state.ψ[i+1])
+        # get the left indices to pass to the SVD
+        l = uniqueinds(state.ψ[i1], state.ψ[i2])
 
-    # apply the SVD to the pair of sites
-    U, S, V = ITensor.svd(T, l; maxdim=parms.maxdim, cutoff=parms.cutoff)
+        # apply the SVD to the pair of sites
+        U, S, V = svd(T, l; maxdim=parms.maxdim, cutoff=parms.cutoff)
 
-    # update the MPS
-    state.ψ[i] = U
-    state.ψ[i+1] = S * V
+        # update the MPS
+        state.ψ[i1] = U
+        state.ψ[i2] = S * V
+    end
 end

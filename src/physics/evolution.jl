@@ -81,12 +81,12 @@ function evolve(params::CCNO.Parameters, state::CCNO.SimulationState)
         gates_1site, gates_2site_even, gates_2site_odd, gates_2site_other = create_gates(params, state)
         
 
-        state.ψ = apply(        gates_2site_other , state.ψ; params.cutoff, params.maxdim)
-        state.ψ = apply(        gates_2site_even  , state.ψ; params.cutoff, params.maxdim)
-        state.ψ = apply(        gates_2site_odd   , state.ψ; params.cutoff, params.maxdim)
-        state.ψ = apply(        gates_1site       , state.ψ; params.cutoff, params.maxdim)
-        state.ψ = apply(reverse(gates_2site_odd)  , state.ψ; params.cutoff, params.maxdim)
-        state.ψ = apply(reverse(gates_2site_even) , state.ψ; params.cutoff, params.maxdim)
+        state.ψ = apply(              gates_2site_other , state.ψ; params.cutoff, params.maxdim)
+        apply_2site_adjacent!(        gates_2site_even  , state, params)
+        apply_2site_adjacent!(        gates_2site_odd   , state, params)
+        apply_1site!(                 gates_1site       , state)
+        apply_2site_adjacent!(reverse(gates_2site_odd)  , state, params)
+        apply_2site_adjacent!(reverse(gates_2site_even) , state, params)
         state.ψ = apply(reverse(gates_2site_other), state.ψ; params.cutoff, params.maxdim)
 
         # The normalize! function is used to ensure that the MPS is properly normalized after each application of the time evolution gates. 
