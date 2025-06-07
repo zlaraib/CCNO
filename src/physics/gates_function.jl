@@ -29,7 +29,10 @@ Base.@pure function create_gates(params::CCNO.Parameters, state::CCNO.Simulation
 
     # Make gates (1,2),(2,3),(3,4),... i.e. unitary gates which act on any (non-neighboring) pairs of sites in the chain.
     # Create an empty ITensors array that will be our Trotter gates
-    gates = ITensor[] 
+    gates_1site = ITensor[] 
+    gates_2site_even = ITensor[]
+    gates_2site_odd = ITensor[]
+    gates_2site_other = ITensor[]
 
     # extract output of p_hat and p_mod for the p vector defined above for all sites. 
     p_mod, p̂ = momentum(state.p)  
@@ -50,8 +53,8 @@ Base.@pure function create_gates(params::CCNO.Parameters, state::CCNO.Simulation
     for i in 1:params.N_sites
         if ω[i] != 0
             hj::ITensor = ω[i] * (B[1]*Sx[i] + B[2]*Sy[i] + B[3]*Sz[i])
-            Gj::ITensor = exp(-im * params.τ/2 * hj / hbar)
-            push!(gates, Gj)
+            Gj::ITensor = exp(-im * params.τ * hj / hbar)
+            push!(gates_1site, Gj)
         end
     end
 
@@ -84,14 +87,17 @@ Base.@pure function create_gates(params::CCNO.Parameters, state::CCNO.Simulation
                 # The push! function adds (appends) an element to the end of an array;
                 # ! performs an operation without creating a new object, (in a way overwites the previous array in consideration); 
                 # i.e. we append a new element Gj (which is an ITensor object representing a gate) to the end of the gates array.
-                push!(gates, Gj)
+                if i%2==0 && j==i+1
+                    push!(gates_2site_even, Gj)
+                elseif i%2==1 && j==i+1
+                    push!(gates_2site_odd, Gj)
+                else
+                    push!(gates_2site_other, Gj)
+                end
             end
         end 
     end
 
-    # append! adds all the elements of a gates in reverse order (i.e. (params.N_sites,params.N_sites-1),(params.N_sites-1,params.N_sites-2),...) to the end of gates array.
-    # appending reverse gates to create a second-order Trotter-Suzuki integration
-    append!(gates, reverse(gates))
-    return gates
+    return gates_1site, gates_2site_even, gates_2site_odd, gates_2site_other
 end
 

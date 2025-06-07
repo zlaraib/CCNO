@@ -57,9 +57,6 @@ function evolve(params::CCNO.Parameters, state::CCNO.SimulationState)
 
         store_data(params.datadir, t, state)
 
-        # extract the gates array generated in the gates_function file
-        gates = create_gates(params, state)
-
         # extract output of p_hat and p_mod for the p vector defined above for all sites. 
         p_mod, p̂ = momentum(state.p)
 
@@ -79,7 +76,18 @@ function evolve(params::CCNO.Parameters, state::CCNO.SimulationState)
         # The apply function is a matrix-vector multiplication operation that is smart enough to determine which site indices each gate has, and then figure out where to apply it to our MPS. 
         # It truncates the MPS according to the set cutoff and maxdim for all the non-nearest-neighbor gates.
 
-        state.ψ = apply(gates, state.ψ; params.cutoff, params.maxdim)
+
+        # extract the gates array generated in the gates_function file
+        gates_1site, gates_2site_even, gates_2site_odd, gates_2site_other = create_gates(params, state)
+        
+
+        state.ψ = apply(        gates_2site_other , state.ψ; params.cutoff, params.maxdim)
+        state.ψ = apply(        gates_2site_even  , state.ψ; params.cutoff, params.maxdim)
+        state.ψ = apply(        gates_2site_odd   , state.ψ; params.cutoff, params.maxdim)
+        state.ψ = apply(        gates_1site       , state.ψ; params.cutoff, params.maxdim)
+        state.ψ = apply(reverse(gates_2site_odd)  , state.ψ; params.cutoff, params.maxdim)
+        state.ψ = apply(reverse(gates_2site_even) , state.ψ; params.cutoff, params.maxdim)
+        state.ψ = apply(reverse(gates_2site_other), state.ψ; params.cutoff, params.maxdim)
 
         # The normalize! function is used to ensure that the MPS is properly normalized after each application of the time evolution gates. 
         # This is necessary to ensure that the MPS represents a valid quantum state.
