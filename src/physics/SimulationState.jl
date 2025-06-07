@@ -69,8 +69,9 @@ end
 function apply_1site!(gates::Vector{ITensor}, state::SimulationState)
     for gate in gates
         # get the site index for the gate
-        s = siteind(gate)
-        i = find_site(s, state.ψ)
+        s = [i for i in inds(gate) if hastags(i,"Site") && plev(i) == 0]
+        @assert length(s) == 1 "Gate must act on exactly one site"
+        i = find_site(s[1], state.ψ)
 
         # create the gate
         T = gate * state.ψ[i]
