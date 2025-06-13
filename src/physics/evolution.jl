@@ -7,22 +7,12 @@ using ITensorMPS
 # The <Sz> and Survival probabilities output from this function are unitless. 
 
 """
-    Expected (CGS) units of the quantities defined in the files in tests directory that are being used in the evolve function.                                                                   
-    s = site index array (dimensionless and unitless)          
-    N = array of no.of neutrinos contained on each site (dimensionless and unitless)
-    B = array of normalized vector related to mixing angle in vacuum oscillations (dimensionless constant)
-    N_sites = Total no.of sites (dimensionless and unitless)
-    Δx = length of the box of interacting neutrinos at a site (cm)
-    Δm² = difference in mass squared (erg^2)
-    p = array of momentum vectors (erg)
-    x = array of positions of sites (cm)
-    Δp = width of shape function (cm)
-    shape_name = name of the shape function (string) ["none","triangular","flat_top"]
-    τ = time step (sec)
-    energy_sign = array of sign of the energy (1 or -1): 1 for neutrinos and -1 for anti-neutrinos
-    maxdim = max bond dimension in MPS truncation (unitless and dimensionless)
-    cutoff = truncation threshold for the SVD in MPS representation (unitless and dimensionless)
-    periodic = boolean indicating whether boundary conditions should be periodic
+    Takes the simulation state and advances forward in time according to the parameters passed.
+
+    params = CCNO.Parameters object defined in physics/Parameters.jl
+    state = CCNO.SimulationState object defined in physics/SimulationState.jl
+
+    No return value
 """
 function evolve(params::CCNO.Parameters, state::CCNO.SimulationState)
 
@@ -55,6 +45,7 @@ function evolve(params::CCNO.Parameters, state::CCNO.SimulationState)
     for t in t_initial:params.τ:params.ttotal
         println("iteration= $iteration time= $t")
 
+        # store plottable data to file
         store_data(params.datadir, t, state)
 
         # extract output of p_hat and p_mod for the p vector defined above for all sites. 
@@ -72,14 +63,9 @@ function evolve(params::CCNO.Parameters, state::CCNO.SimulationState)
         # apply each gate in gates(ITensors array) successively to the wavefunction ψ (MPS)(it is equivalent to time evolving psi according to the time-dependent Hamiltonian represented by gates).
         # The apply function is a matrix-vector multiplication operation that is smart enough to determine which site indices each gate has, and then figure out where to apply it to our MPS. 
         # It truncates the MPS according to the set cutoff and maxdim for all the non-nearest-neighbor gates.
-        # apply each gate in gates(ITensors array) successively to the wavefunction ψ (MPS)(it is equivalent to time evolving psi according to the time-dependent Hamiltonian represented by gates).
-        # The apply function is a matrix-vector multiplication operation that is smart enough to determine which site indices each gate has, and then figure out where to apply it to our MPS. 
-        # It truncates the MPS according to the set cutoff and maxdim for all the non-nearest-neighbor gates.
-
 
         # extract the gates array generated in the gates_function file
         gates_1site, gates_2site_even, gates_2site_odd, gates_2site_other = create_gates(params, state)
-        
 
         state.ψ = apply(              gates_2site_other , state.ψ; params.cutoff, params.maxdim)
         apply_2site_adjacent!(        gates_2site_even  , state, params)
@@ -93,8 +79,8 @@ function evolve(params::CCNO.Parameters, state::CCNO.SimulationState)
         # This is necessary to ensure that the MPS represents a valid quantum state.
         normalize!(state.ψ)
 
+        # write checkpoints to file
         iteration += 1
-
         if iteration % params.checkpoint_every == 0 
             checkpoint_filename = joinpath(params.chkptdir, "checkpoint.chkpt.it" * lpad(iteration, 6, "0") * ".h5")
             checkpoint_simulation_hdf5(params, checkpoint_filename, state, t, iteration)
