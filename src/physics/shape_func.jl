@@ -1,8 +1,3 @@
-@doc """ 
-    This file introduces the different shapes for neutrinos and map those shapes to
-    a dictionary to allow easy switching between shapes in test files. 
-"""
-
 @inline function flat_top(Δp::Float64, ξ::Float64)
     return heaviside(1/2 - abs(ξ))
 end
@@ -22,6 +17,14 @@ const shapes = Dict(
     "none" => none
 )
     
+@doc """ 
+    Return normalized interaction strength used to quantify inhomogeneity.
+
+    params: CCNO.Parameters object defined in physics/Parameters.jl
+    state: CCNO.SimulationState object defined in physics/SimulationState.jl
+    d: [1,2,3] direction along which the shape function is to be evaluated (x/y/z)
+    i,j: integers of the two interacting sites
+"""
 @inline function shape_func(params::CCNO.Parameters, state::CCNO.SimulationState, d::Int64, i::Int64, j::Int64)
 
     shape_function = shapes[params.shape_name]  # assign the corresponding function (selected in shape_name in the test file) to shape_function.
