@@ -18,6 +18,7 @@ function main()
     
     L = 1 # cm # not being used in this test but defined to keep the evolve function arguments consistent.
     ttotal = 1.94e-4
+    tolerance  = 1E-5 # acceptable level of error or deviation from the exact value or solution #variable
     
     params = CCNO.Parameters(
         N_sites = 6, # number of sites, #variable
@@ -25,7 +26,6 @@ function main()
         τ = ttotal/50.0, # time step # sec #variable
         ttotal = ttotal, # total time of evolution #sec #variable
         Δx = 1E-3, # length of the box of interacting neutrinos at a site in cm #variable
-        tolerance  = 1E-5, # acceptable level of error or deviation from the exact value or solution #variable
         maxdim = 1000, # max bond dimension in MPS truncation
         L=L,
         Δp = L, # width of shape function # not being used in this test but defined to keep the evolve function arguments consistent.
@@ -73,6 +73,7 @@ function main()
     
     state = CCNO.SimulationState(ψ=ψ,
                                  s=s,
+                                 s0=s,
                                  p=p,
                                  energy_sign = energy_sign,
                                  N=N,
@@ -116,7 +117,7 @@ function main()
     # Check if every element in Sz_array is less than tolerance away from the corresponding element in expected_sz_array
     # for B vector in x, it checks that the value of Sz at the first spin site oscillates between -0.5 and 0.5 
     # for B vector in -z, it checks that the value of Sz at the firstspin site never oscillates from -0.5 
-    #@assert all(abs.(Sz_array .- expected_sz_array) .< params.tolerance)
+    #@assert all(abs.(Sz_array .- expected_sz_array) .< tolerance)
 
   if params.save_plots_flag
     

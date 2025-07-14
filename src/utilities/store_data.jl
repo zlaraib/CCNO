@@ -1,10 +1,28 @@
 using ITensors
 using ITensorMPS
 
-# Function to append data as new rows to the existing file after every `checkpoint_every` values
-function append_data(filename::String, new_data)
+# pass in the simulationstate to have access to both lists of indices
+# brute force search through data to output the values for each site based on their original ordering
+function write_ordered_array(state::CCNO.SimulationState, filename::String, t::Float64, data)
+    Nsites = length(state.s)
+    @assert Nsites == length(data)
+
+    # create the ouput array
+    data_reordered = Vector{Float64}(undef, Nsites)
+    
+    # loop through the output array.
+    # for each element of the output array, find the data corresponding to the index value stored in s0
+    for i in 1:Nsites
+        for j in 1:Nsites
+            if state.s0[i] == state.s[j]
+                data_reordered[i] = data[j]
+            end
+        end
+    end
+
+    # attach time time value and write transposed array as a single row
     open(filename, "a") do f
-        writedlm(f, new_data)
+        writedlm(f, [t transpose(data_reordered)])
     end
 end
 
@@ -36,39 +54,67 @@ function store_data(datadir::String, t::Float64, state::CCNO.SimulationState)
     
     # Writing data to files with corresponding headers
     # 1. Sz arrays
-    fname1 = joinpath(datadir, "t_<Sz>.dat")
-    append_data(fname1, [t transpose(sz_arr)])
+    write_ordered_array(state,
+                        joinpath(datadir, "t_<Sz>.dat"),
+                        t,
+                        sz_arr)
 
     # 2. Sy arrays
-    fname2 = joinpath(datadir, "t_<Sy>.dat")
-    append_data(fname2, [t transpose(sy_arr)])
+    write_ordered_array(state,
+                        joinpath(datadir, "t_<Sy>.dat"),
+                        t,
+                        sy_arr)
 
     # 3. Sx arrays
-    fname3 = joinpath(datadir, "t_<Sx>.dat")
-    append_data(fname3, [t transpose(sx_arr)])
+    write_ordered_array(state,
+                        joinpath(datadir, "t_<Sx>.dat"),
+                        t,
+                        sx_arr)
 
     # 5. xsite values
-    fname5 = joinpath(datadir, "t_xsiteval.dat")
-    append_data(fname5, [t transpose(state.xyz[:,1])])
-    fname5 = joinpath(datadir, "t_ysiteval.dat")
-    append_data(fname5, [t transpose(state.xyz[:,2])])
-    fname5 = joinpath(datadir, "t_zsiteval.dat")
-    append_data(fname5, [t transpose(state.xyz[:,3])])
+    write_ordered_array(state,
+                        joinpath(datadir, "t_xsiteval.dat"),
+                        t,
+                        state.xyz[:,1])
+    write_ordered_array(state,
+                        joinpath(datadir, "t_ysiteval.dat"),
+                        t,
+                        state.xyz[:,2])
+    write_ordered_array(state,
+                        joinpath(datadir, "t_zsiteval.dat"),
+                        t,
+                        state.xyz[:,3])
 
     # 6. pxsite values
-    fname6 = joinpath(datadir, "t_pxsiteval.dat")
-    append_data(fname6, [t transpose(state.p[:,1])])
+    write_ordered_array(state,
+                        joinpath(datadir, "t_pxsiteval.dat"),
+                        t,
+                        state.p[:,1])
+    write_ordered_array(state,
+                        joinpath(datadir, "t_pysiteval.dat"),
+                        t,
+                        state.p[:,2])
+    write_ordered_array(state,
+                        joinpath(datadir, "t_pzsiteval.dat"),
+                        t,
+                        state.p[:,3])
     
     # 7. ρₑₑ arrays
-    fname7 = joinpath(datadir, "t_ρₑₑ.dat")
-    append_data(fname7, [t transpose(ρₑₑ_arr)])
+    write_ordered_array(state,
+                        joinpath(datadir, "t_ρₑₑ.dat"),
+                        t,
+                        ρₑₑ_arr)
 
     # 8. ρ_μμ arrays
-    fname8 = joinpath(datadir, "t_ρ_μμ.dat")
-    append_data(fname8, [t transpose(ρ_μμ_arr)])
+    write_ordered_array(state,
+                        joinpath(datadir, "t_ρ_μμ.dat"),
+                        t,
+                        ρ_μμ_arr)
 
     # 9. ρₑμ arrays
-    fname9 = joinpath(datadir, "t_ρₑμ.dat")
-    append_data(fname9, [t transpose(ρₑμ_arr)])
+    write_ordered_array(state,
+                        joinpath(datadir, "t_ρₑμ.dat"),
+                        t,
+                        ρₑμ_arr)
     
 end 

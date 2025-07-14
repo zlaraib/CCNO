@@ -16,12 +16,12 @@ function main()
     N_sites_eachflavor= 5 # total sites/particles that evenly spaced "for each (electron) flavor" 
     L = 1.0 # cm # domain size # (aka big box length)
     Δx = L/N_sites_eachflavor # length of the box of interacting neutrinos at a site in cm  #variable
+    tolerance  = 5E-1
 
     params = CCNO.Parameters(
         N_sites = 2* (N_sites_eachflavor),
         τ = 5E-13,
         ttotal = 9.0E-11, 
-        tolerance  = 5E-1,
         m1 = 0.0,
         m2 = 0.0,
         maxdim = 1,
@@ -80,6 +80,7 @@ function main()
 
     state = CCNO.SimulationState(ψ=ψ,
                                  s=s,
+                                 s0=s,
                                  p=p,
                                  energy_sign = energy_sign,
                                  N=N,
@@ -173,7 +174,7 @@ function main()
         savefig( "Inhomo_MF_<ρₑμ>_domain_avg_vs_t for $(params.N_sites) particles.pdf")
     end
 
-    @assert abs((Im_Ω - analytic_growth_rate)/  analytic_growth_rate) < params.tolerance 
+    @assert abs((Im_Ω - analytic_growth_rate)/  analytic_growth_rate) < tolerance 
     
     # clean up
     rm(params.datadir, recursive=true)

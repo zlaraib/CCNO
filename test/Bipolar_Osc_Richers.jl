@@ -16,12 +16,12 @@ function main()
     t_bipolar = 8.96e-4 #characteristic bipolar time #sec
     L = 1e7 # cm # domain size # (aka big box length)
     Δx = L # length of the box of interacting neutrinos at a site in cm 
+    tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution #variable
 
     params = CCNO.Parameters(
         N_sites = 2* (N_sites_eachflavor),
         τ = 1e-7, # time step # sec/sec = unitless # variable # using this time step for faster unit testing in jenkins, actually the bipolar richers results are obtained with timestep= 1e-9/t_bipolar.
         ttotal = 0.002, # total time of evolution # sec/sec = unitless #using this total time for faster unit testing in jenkins, actually bipolar richers results are produced with ttotal = 0.01 / t_bipolar
-        tolerance  = 5E-1, # acceptable level of error or deviation from the exact value or solution #variable
         m2 = 0.008596511*CCNO.eV, #ergs #1st mass eigenstate of neutrino in Richers(2021)
         m1 = 0*CCNO.eV,   #ergs #2nd mass eigenstate of neutrino in Richers(2021)
         maxdim = 1, # max bond dimension in MPS truncation
@@ -81,6 +81,7 @@ function main()
 
     state = CCNO.SimulationState(ψ=ψ,
                                  s=s,
+                                 s0=s,
                                  p=p,
                                  energy_sign = energy_sign,
                                  N=N,
