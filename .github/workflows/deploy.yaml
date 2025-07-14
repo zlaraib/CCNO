@@ -3,10 +3,36 @@ on:
   push:
     branches:
       - main  # Trigger deployment when pushing to the main branch
+  pull_request:
+    branches:
+      - main
+      
 permissions:
   contents: write
+  
 jobs:
+  build-docs:
+    name: Build Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Julia
+        uses: julia-actions/setup-julia@v2
+        with:
+          version: '1.6'
+      - name: Install dependencies
+        run: |
+          julia --project=. -e 'import Pkg; Pkg.instantiate()'
+      - name: Build the documentation
+        run: |
+          cd docs
+          julia --project=.. make.jl
+          
   deploy:
+    name: Deploy to GitHub Pages
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: build-docs
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
@@ -17,12 +43,11 @@ jobs:
         version: '1.6'
     - name: Install dependencies
       run: |
-        julia -e 'import Pkg; Pkg.add(["Documenter", "HDF5", "Random", "Statistics", "LinearAlgebra", "DelimitedFiles", "Plots", "Measures"])'
-        julia -e 'import Pkg; Pkg.add(name="ITensors", version="0.3.66")'
+        julia --project=. -e 'import Pkg; Pkg.instantiate()'
     - name: Build the documentation
       run: |
         cd docs
-        julia --project make.jl
+        julia --project=.. make.jl
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
       with:
