@@ -1,14 +1,15 @@
 name: Deploy Documentation to GitHub Pages
 on:
   push:
-    branches:
-      - main  # Trigger deployment when pushing to the main branch
+    branches: [main]
   pull_request:
-    branches:
-      - main
+    branches: [main]
       
 permissions:
   contents: write
+  
+env:
+  JULIA_VERSION: '1.11.4'
   
 jobs:
   build-docs:
@@ -20,7 +21,7 @@ jobs:
       - name: Set up Julia
         uses: julia-actions/setup-julia@v2
         with:
-          version: '1.6'
+          version: ${{ env.JULIA_VERSION }}
       - name: Install dependencies
         run: |
           julia --project=. -e 'import Pkg; Pkg.instantiate()'
@@ -28,6 +29,11 @@ jobs:
         run: |
           cd docs
           julia --project=.. make.jl
+      - name: Upload built docs
+        uses: actions/upload-artifact@v4
+        with:
+          name: docs-build
+          path: docs/build
           
   deploy:
     name: Deploy to GitHub Pages
@@ -37,17 +43,11 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-    - name: Set up Julia
-      uses: julia-actions/setup-julia@v2
+    - name: Download built docs
+      uses: actions/download-artifact@v4
       with:
-        version: '1.6'
-    - name: Install dependencies
-      run: |
-        julia --project=. -e 'import Pkg; Pkg.instantiate()'
-    - name: Build the documentation
-      run: |
-        cd docs
-        julia --project=.. make.jl
+        name: docs-build
+        path: docs/build
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
       with:
