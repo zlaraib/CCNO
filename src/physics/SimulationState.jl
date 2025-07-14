@@ -12,6 +12,7 @@ Base.@kwdef mutable struct SimulationState
     # i.e. examples of conservation of quantum numbers are the total number of neutrino particles, or the total of all S_z components of this system of spins
     # conserving total Sz requires Sx and Sy in terms of S+ and S- by design choice.
     s::Vector{Index}
+    s0::Vector{Index}    
     
     energy_sign::Vector{Int}
     ψ::MPS

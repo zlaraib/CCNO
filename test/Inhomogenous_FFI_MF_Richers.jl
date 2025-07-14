@@ -80,6 +80,7 @@ function main()
 
     state = CCNO.SimulationState(ψ=ψ,
                                  s=s,
+                                 s0=s,
                                  p=p,
                                  energy_sign = energy_sign,
                                  N=N,
