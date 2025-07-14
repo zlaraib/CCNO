@@ -18,7 +18,7 @@ jobs:
     - name: Install dependencies
       run: |
         julia -e 'import Pkg; Pkg.add(["Documenter", "HDF5", "Random", "Statistics", "LinearAlgebra", "DelimitedFiles", "Plots", "Measures"])'
-        julia -e 'import Pkg; Pkg.add(PackageSpec(name="ITensors", version="0.3.66"))'  # Install ITensors@0.3.66
+        julia -e 'import Pkg; Pkg.add(name="ITensors", version="0.3.66")'
     - name: Build the documentation
       run: |
         cd docs
