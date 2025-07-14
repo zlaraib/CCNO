@@ -9,7 +9,7 @@ permissions:
   contents: write
   
 env:
-  JULIA_VERSION: '1.11.4'
+  JULIA_VERSION: '1.11.5'
   
 jobs:
   build-docs:
