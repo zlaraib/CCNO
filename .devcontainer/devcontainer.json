@@ -1,0 +1,19 @@
+{
+  "name": "CCNO Dev Container",
+  "image": "julia:1.11",
+  "features": {
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.11"
+    }
+  },
+  "postCreateCommand": "pip install numpy matplotlib h5py sympy scipy && julia --project=. -e 'import Pkg; Pkg.instantiate()'",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "julialang.language-julia",
+        "ms-python.python",
+        "mathematic.vscode-pdf"
+      ]
+    }
+  }
+}
