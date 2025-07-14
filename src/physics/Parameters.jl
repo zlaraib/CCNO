@@ -18,7 +18,6 @@ Base.@kwdef struct Parameters
 
     τ::Float64 # [seconds] size of time step
     ttotal::Float64 # [seconds] total time of evolution
-    tolerance::Float64 # acceptable level of error or deviation from the exact value or solution. TODO: remove from parameters struct
     m1::Float64 # [eV]  1st mass eigenstate of neutrino
     m2::Float64 # [eV]  2nd mass eigenstate of neutrino
     theta_nu::Float64 # mixing_angle

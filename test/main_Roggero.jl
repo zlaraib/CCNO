@@ -35,13 +35,13 @@ const pmin::Vector{Float64} = Roggero_table[:,5]
 function main(N_sites, delta_omega)
     L = 1 # cm # not being used in this test but defined to keep the evolve function arguments consistent.
     Δm²= delta_omega # erg^2 # Artifically Fixed for Rog bipolar test #change accordingly in gates_fnction too if need be.
+    tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution
 
     params = CCNO.Parameters(
         N_sites = N_sites, # number of sites 
         cutoff = 1E-14, # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT)
         τ = 0.05*CCNO.hbar, # time step 
         ttotal = 5*CCNO.hbar, # total time of evolution 
-        tolerance  = 5E-1, # acceptable level of error or deviation from the exact value or solution
         Δx = 1E-3, # length of the box of interacting neutrinos at a site/shape function width of neutrinos in cm
         maxdim = 1000, #bond dimension
         m1 = Δm²<0 ? sqrt(-Δm²) : 0.0,
@@ -156,7 +156,7 @@ function main(N_sites, delta_omega)
     savefig("main_self_interaction_Rog.pdf")
 
     # Check that our time of first minimum survival probability compared to Rogerro(2021) remains within the timestep and tolerance.
-    @assert abs(t_min/CCNO.hbar - t_p_Rog) < params.τ/CCNO.hbar + params.tolerance
+    @assert abs(t_min/CCNO.hbar - t_p_Rog) < params.τ/CCNO.hbar + tolerance
 
     # clean up
     rm(params.datadir, recursive=true)

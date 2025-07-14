@@ -17,6 +17,7 @@ function main()
     N_sites_eachflavor= 1 # total sites/particles that evenly spaced "for each (electron) flavor" 
     L = 1e7 # cm # domain size # (aka big box length)
     Δx = L # length of the box of interacting neutrinos at a site in cm
+    tolerance  = 0.2
 
     params = CCNO.Parameters(
         save_plots_flag = false,
@@ -26,7 +27,6 @@ function main()
         Δx=Δx,
         L=L,
         ttotal = 1.666e-2,
-        tolerance  = 0.2,
         m1 = 0*CCNO.eV,
         m2 = 0.008596511*CCNO.eV,
         maxdim = 1,
@@ -154,7 +154,7 @@ function main()
         # Save the plot as a PDF file
         savefig( "Homo_MF_<ρₑμ>_site1_vs_t for $(params.N_sites) particles.pdf")
     end
-    @assert abs((Im_Ω - analytic_growth_rate)/  analytic_growth_rate) < params.tolerance 
+    @assert abs((Im_Ω - analytic_growth_rate)/  analytic_growth_rate) < tolerance 
 
     # clean up
     rm(params.datadir, recursive=true)
