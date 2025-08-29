@@ -67,13 +67,23 @@ function evolve(params::CCNO.Parameters, state::CCNO.SimulationState)
         # extract the gates array generated in the gates_function file
         gates_1site, gates_2site_even, gates_2site_odd, gates_2site_other = create_gates(params, state)
 
-        state.ψ = apply(              gates_2site_other , state.ψ; params.cutoff, params.maxdim)
-        apply_2site_adjacent!(        gates_2site_even  , state, params)
-        apply_2site_adjacent!(        gates_2site_odd   , state, params)
-        apply_1site!(                 gates_1site       , state)
-        apply_2site_adjacent!(reverse(gates_2site_odd)  , state, params)
-        apply_2site_adjacent!(reverse(gates_2site_even) , state, params)
-        state.ψ = apply(reverse(gates_2site_other), state.ψ; params.cutoff, params.maxdim)
+        if(t%2==0)
+            state.ψ = apply(              gates_2site_other , state.ψ; params.cutoff, params.maxdim)
+            apply_2site_adjacent!(        gates_2site_even  , state, params)
+            apply_2site_adjacent!(        gates_2site_odd   , state, params)
+            apply_1site!(                 gates_1site       , state)
+            apply_2site_adjacent!(reverse(gates_2site_odd)  , state, params)
+            apply_2site_adjacent!(reverse(gates_2site_even) , state, params)
+            state.ψ = apply(reverse(gates_2site_other), state.ψ; params.cutoff, params.maxdim)
+        else
+            apply_2site_adjacent!(        gates_2site_odd   , state, params)
+            apply_2site_adjacent!(        gates_2site_even  , state, params)
+            state.ψ = apply(              gates_2site_other , state.ψ; params.cutoff, params.maxdim)
+            apply_1site!(                 gates_1site       , state)
+            state.ψ = apply(reverse(gates_2site_other), state.ψ; params.cutoff, params.maxdim)
+            apply_2site_adjacent!(reverse(gates_2site_even) , state, params)
+            apply_2site_adjacent!(reverse(gates_2site_odd)  , state, params)
+        end
 
         # The normalize! function is used to ensure that the MPS is properly normalized after each application of the time evolution gates. 
         # This is necessary to ensure that the MPS represents a valid quantum state.
