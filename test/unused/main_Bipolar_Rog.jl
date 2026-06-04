@@ -14,7 +14,7 @@ using HDF5
 # which is a product state where each site alternates between up and down.
 
 function main()
-    Δm²= 0.2 # erg^2 # Artifically Fixed for Rog bipolar test #change accordingly in gates_fnction too if need be.
+    Delta_m_squared= 0.2 # erg^2 # Artifically Fixed for Rog bipolar test #change accordingly in gates_fnction too if need be.
     L = 1 # cm # not being used in this test but defined to keep the evolve function arguments consistent.
 
     params = CCNO.Parameters(
@@ -24,11 +24,11 @@ function main()
         ttotal = 50*CCNO.hbar, # total time of evolution
         tolerance  = 5E-1, # acceptable level of error or deviation from the exact value or solution
         m1 = 0,
-        m2 = sqrt(Δm²),
+        m2 = sqrt(Delta_m_squared),
         L=L,
         theta_nu= 0.1, #rad # =34.3 degrees
-        Δx = 1E-3, # length of the box of interacting neutrinos at a site/shape function width of neutrinos in cm 
-        Δp = L, # width of shape function # not being used in this test but defined to keep the evolve function arguments consistent. 
+        Delta_x = 1E-3, # length of the box of interacting neutrinos at a site/shape function width of neutrinos in cm 
+        Delta_p = L, # width of shape function # not being used in this test but defined to keep the evolve function arguments consistent. 
         maxdim = 1, #bond dimension
         periodic = true,  # true = imposes periodic boundary conditions while false doesn't
         checkpoint_every = 100,
@@ -40,7 +40,7 @@ function main()
         chkptdir = joinpath(@__DIR__, "checkpoints"),
         plotdir = joinpath(@__DIR__, "plots"),
         save_plots_flag = false, # true = saves plots for science runs while false doesn't. So change it to false for jenkins test runs
-        α = 0
+        alpha = 0
     )
 
     # s is an array of spin 1/2 tensor indices (Index objects) which will be the site or physical indices of the MPS.
@@ -52,19 +52,19 @@ function main()
     mu = ones(params.N_sites) # erg
     
     # Create an array of dimension N_sites and fill it with the value 1/(sqrt(2) * G_F). This is the number of neutrinos. 
-    N = mu .* fill(((params.Δx)^3 )/(√2 * CCNO.G_F * params.N_sites), params.N_sites)
+    N = mu .* fill(((params.Delta_x)^3 )/(√2 * CCNO.G_F * params.N_sites), params.N_sites)
 
     x = fill(rand(), params.N_sites) # variable.
     y = fill(rand(), params.N_sites) # variable.
     z = fill(rand(), params.N_sites) # variable.
 
-    ψ = productMPS(s, N -> N <= params.N_sites/2 ? "Dn" : "Up")
+    Psi = productMPS(s, N -> N <= params.N_sites/2 ? "Dn" : "Up")
 
     # p matrix with numbers generated from the p_array for all components (x, y, z)
     p = hcat(CCNO.generate_p_array(params.N_sites),fill(0, params.N_sites), fill(0, params.N_sites))
     energy_sign = [i <= params.N_sites ÷ 2 ? 1 : 1 for i in 1:params.N_sites] # all of the sites are neutrinos
     
-    state = CCNO.SimulationState(ψ=ψ,
+    state = CCNO.SimulationState(Psi=Psi,
                                  s=s,
                                  p=p,
                                  energy_sign = energy_sign,
@@ -80,9 +80,9 @@ function main()
     t_Sx_tot = readdlm(joinpath(params.datadir, "t_<Sx>.dat"))
     t_xsiteval = readdlm(joinpath(params.datadir, "t_xsiteval.dat"))
     t_pxsiteval = readdlm(joinpath(params.datadir, "t_pxsiteval.dat"))
-    t_ρₑₑ_tot = readdlm(joinpath(params.datadir, "t_ρₑₑ.dat"))
-    t_ρ_μμ_tot = readdlm(joinpath(params.datadir, "t_ρ_μμ.dat"))
-    t_ρₑμ_tot = readdlm(joinpath(params.datadir, "t_ρₑμ.dat"))
+    t_rho_e_e_tot = readdlm(joinpath(params.datadir, "t_rho_e_e.dat"))
+    t_rho_mumu_tot = readdlm(joinpath(params.datadir, "t_rho_mumu.dat"))
+    t_rho_emu_tot = readdlm(joinpath(params.datadir, "t_rho_emu.dat"))
     
     # Extract time array and corresponding values for plotting
     t_array = t_Sz_tot[:, 1]  
@@ -91,16 +91,16 @@ function main()
     Sz_array = t_Sz_tot[:,2]
     Sy_array = t_Sy_tot[:,2]
     Sx_array= t_Sx_tot[:,2] 
-    ρₑₑ_array = t_ρₑₑ_tot[:, 2]
-    ρ_μμ_array = t_ρ_μμ_tot[:, 2]
-    ρₑμ_array = t_ρₑμ_tot[:, 2]
+    rho_e_e_array = t_rho_e_e_tot[:, 2]
+    rho_mumu_array = t_rho_mumu_tot[:, 2]
+    rho_emu_array = t_rho_emu_tot[:, 2]
         
     if params.save_plots_flag
 
         x_values = t_xsiteval[:, 2:end]  # All rows, all columns except the first
         pₓ_values = t_pxsiteval[:, 2:end]  # All rows, all columns except the first
 
-        CCNO.save_plots(τ, params.N_sites,L,t_array, ttotal,Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array,datadir, plotdir, save_plots_flag)
+        CCNO.save_plots(τ, params.N_sites,L,t_array, ttotal,Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, rho_e_e_array,rho_mumu_array, rho_emu_array,datadir, plotdir, save_plots_flag)
     end
     if !params.save_plots_flag 
         # Plotting P_surv vs t 

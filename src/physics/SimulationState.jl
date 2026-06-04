@@ -15,7 +15,7 @@ Base.@kwdef mutable struct SimulationState
     s0::Vector{Index}    
     
     energy_sign::Vector{Int}
-    ψ::MPS
+    Psi::MPS
     N::Vector{Float64}
 end
 
@@ -38,7 +38,7 @@ function sort_sites!(state::SimulationState)
         end
 
         # move the site
-        state.ψ = movesite(state.ψ, pos=>new_pos)
+        state.Psi = movesite(state.Psi, pos=>new_pos)
 
         # update current_pos. Every value between new_pos and pos increases by 1
         for i in 1:length(state.N)
@@ -58,9 +58,9 @@ function sort_sites!(state::SimulationState)
 end
 
 # Find the site number (position) in the MPS where index i appears
-function find_site(i::Index, ψ::MPS)
-    for site in 1:length(ψ)
-        if i in inds(ψ[site])
+function find_site(i::Index, Psi::MPS)
+    for site in 1:length(Psi)
+        if i in inds(Psi[site])
             return site
         end
     end
@@ -72,14 +72,14 @@ function apply_1site!(gates::Vector{ITensor}, state::SimulationState)
         # get the site index for the gate
         s = [i for i in inds(gate) if hastags(i,"Site") && plev(i) == 0]
         @assert length(s) == 1 "Gate must act on exactly one site"
-        i = find_site(s[1], state.ψ)
+        i = find_site(s[1], state.Psi)
 
         # create the gate
-        T = gate * state.ψ[i]
+        T = gate * state.Psi[i]
         noprime!(T)
 
         # apply the gate in place
-        state.ψ[i] = T
+        state.Psi[i] = T
     end
 end
 
@@ -88,25 +88,25 @@ function apply_2site_adjacent!(gates::Vector{ITensor}, state::SimulationState, p
         # get the site indices for the gate
         s = [i for i in inds(gate) if hastags(i,"Site") && plev(i) == 0]
         @assert length(s) == 2 "Gate must act on exactly two sites"
-        i1 = find_site(s[1], state.ψ)
-        i2 = find_site(s[2], state.ψ)
+        i1 = find_site(s[1], state.Psi)
+        i2 = find_site(s[2], state.Psi)
         @assert i2 == i1 + 1 "Site indices must be adjacent"
 
         # orthogonalize to the left site
-        orthogonalize!(state.ψ, i1)
+        orthogonalize!(state.Psi, i1)
 
         # apply the gate
-        T = gate * (state.ψ[i1] * state.ψ[i2])
+        T = gate * (state.Psi[i1] * state.Psi[i2])
         noprime!(T)
 
         # get the left indices to pass to the SVD
-        l = uniqueinds(state.ψ[i1], state.ψ[i2])
+        l = uniqueinds(state.Psi[i1], state.Psi[i2])
 
         # apply the SVD to the pair of sites
         U, S, V = svd(T, l; maxdim=parms.maxdim, cutoff=parms.cutoff)
 
         # update the MPS
-        state.ψ[i1] = U
-        state.ψ[i2] = S * V
+        state.Psi[i1] = U
+        state.Psi[i2] = S * V
     end
 end

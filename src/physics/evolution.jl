@@ -2,7 +2,7 @@ using DelimitedFiles
 using ITensors
 using ITensorMPS
 
-# This file generates the evolve function which evolves the ψ state in time and computes the expectation values of Sz at each time step, along 
+# This file generates the evolve function which evolves the Psi state in time and computes the expectation values of Sz at each time step, along 
 # with their survival probabilities. The time evolution utilizes the unitary operators created as gates from the create_gates function.
 # The <Sz> and Survival probabilities output from this function are unitless. 
 
@@ -49,10 +49,10 @@ function evolve(params::CCNO.Parameters, state::CCNO.SimulationState)
         store_data(params.datadir, t, state)
 
         # extract output of p_hat and p_mod for the p vector defined above for all sites. 
-        p_mod, p̂ = momentum(state.p)
+        p_mod, phat = momentum(state.p)
 
         # move particles
-        state.xyz += p̂ * c * params.τ
+        state.xyz += phat * c * params.τ
         if params.periodic
             state.xyz = mod.(state.xyz, params.L)
             @assert all(state.xyz .>= 0 .&& state.xyz .<= params.L)
@@ -60,7 +60,7 @@ function evolve(params::CCNO.Parameters, state::CCNO.SimulationState)
 
         sort_sites!(state)
 
-        # apply each gate in gates(ITensors array) successively to the wavefunction ψ (MPS)(it is equivalent to time evolving psi according to the time-dependent Hamiltonian represented by gates).
+        # apply each gate in gates(ITensors array) successively to the wavefunction Psi (MPS)(it is equivalent to time evolving psi according to the time-dependent Hamiltonian represented by gates).
         # The apply function is a matrix-vector multiplication operation that is smart enough to determine which site indices each gate has, and then figure out where to apply it to our MPS. 
         # It truncates the MPS according to the set cutoff and maxdim for all the non-nearest-neighbor gates.
 
@@ -68,26 +68,26 @@ function evolve(params::CCNO.Parameters, state::CCNO.SimulationState)
         gates_1site, gates_2site_even, gates_2site_odd, gates_2site_other = create_gates(params, state)
 
         if(t%2==0)
-            state.ψ = apply(              gates_2site_other , state.ψ; params.cutoff, params.maxdim)
+            state.Psi = apply(              gates_2site_other , state.Psi; params.cutoff, params.maxdim)
             apply_2site_adjacent!(        gates_2site_even  , state, params)
             apply_2site_adjacent!(        gates_2site_odd   , state, params)
             apply_1site!(                 gates_1site       , state)
             apply_2site_adjacent!(reverse(gates_2site_odd)  , state, params)
             apply_2site_adjacent!(reverse(gates_2site_even) , state, params)
-            state.ψ = apply(reverse(gates_2site_other), state.ψ; params.cutoff, params.maxdim)
+            state.Psi = apply(reverse(gates_2site_other), state.Psi; params.cutoff, params.maxdim)
         else
             apply_2site_adjacent!(        gates_2site_odd   , state, params)
             apply_2site_adjacent!(        gates_2site_even  , state, params)
-            state.ψ = apply(              gates_2site_other , state.ψ; params.cutoff, params.maxdim)
+            state.Psi = apply(              gates_2site_other , state.Psi; params.cutoff, params.maxdim)
             apply_1site!(                 gates_1site       , state)
-            state.ψ = apply(reverse(gates_2site_other), state.ψ; params.cutoff, params.maxdim)
+            state.Psi = apply(reverse(gates_2site_other), state.Psi; params.cutoff, params.maxdim)
             apply_2site_adjacent!(reverse(gates_2site_even) , state, params)
             apply_2site_adjacent!(reverse(gates_2site_odd)  , state, params)
         end
 
         # The normalize! function is used to ensure that the MPS is properly normalized after each application of the time evolution gates. 
         # This is necessary to ensure that the MPS represents a valid quantum state.
-        normalize!(state.ψ)
+        normalize!(state.Psi)
 
         # write checkpoints to file
         iteration += 1

@@ -21,8 +21,8 @@ Base.@kwdef struct Parameters
     m1::Float64 # [eV]  1st mass eigenstate of neutrino
     m2::Float64 # [eV]  2nd mass eigenstate of neutrino
     theta_nu::Float64 # mixing_angle
-    Δx::Float64 # [cm] assumed size of each particle cloud, used for determining neutrino density
-    Δp::Float64 # [cm] width of shape function. Numerical means of making interactions more or less local without changing physical phase space volume represented by site
-    α::Float64 # perturbation strength as mentioned in the paper for the inhomogenous Richers test
+    Delta_x::Float64 # [cm] assumed size of each particle cloud, used for determining neutrino density
+    Delta_p::Float64 # [cm] width of shape function. Numerical means of making interactions more or less local without changing physical phase space volume represented by site
+    alpha::Float64 # perturbation strength as mentioned in the paper for the inhomogenous Richers test
     L::Float64 # [cm] total size of the domain if using periodic boundary conditions
 end

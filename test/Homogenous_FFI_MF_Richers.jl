@@ -16,15 +16,15 @@ using HDF5
 function main()
     N_sites_eachflavor= 1 # total sites/particles that evenly spaced "for each (electron) flavor" 
     L = 1e7 # cm # domain size # (aka big box length)
-    Δx = L # length of the box of interacting neutrinos at a site in cm
+    Delta_x = L # length of the box of interacting neutrinos at a site in cm
     tolerance  = 0.2
 
     params = CCNO.Parameters(
         save_plots_flag = false,
         N_sites = 2* (N_sites_eachflavor),
         τ = 1.666e-5,
-        Δp = L,
-        Δx=Δx,
+        Delta_p = L,
+        Delta_x=Delta_x,
         L=L,
         ttotal = 1.666e-2,
         m1 = 0*CCNO.eV,
@@ -41,21 +41,21 @@ function main()
         datadir = joinpath(@__DIR__,"datafiles"),
         chkptdir = joinpath(@__DIR__, "checkpoints"),
         plotdir = joinpath(@__DIR__, "plots"),
-        α = 0
+        alpha = 0
     )
 
-    Δm² = (params.m2^2-params.m1^2) # mass square difference # (erg^2)
-    n_νₑ =  2.92e24 # cm^-3 # number density of electron flavor neutrino
-    n_νₑ̄ =  n_νₑ # cm^-3 # number density of electron flavor antineutrino
-    Eνₑ =  50*CCNO.MeV # energy of all neutrinos (P.S the its negative is energy of all antineutrinos)
-    Eνₑ̄ = -1 * Eνₑ # specific to my case only. Since all neutrinos have same energy, except in my case anti neutrinos are moving in opposite direction to give it a negative sign
+    Delta_m_squared = (params.m2^2-params.m1^2) # mass square difference # (erg^2)
+    n_nu_e =  2.92e24 # cm^-3 # number density of electron flavor neutrino
+    n_nu_ē =  n_nu_e # cm^-3 # number density of electron flavor antineutrino
+    Enu_e =  50*CCNO.MeV # energy of all neutrinos (P.S the its negative is energy of all antineutrinos)
+    Enu_ē = -1 * Enu_e # specific to my case only. Since all neutrinos have same energy, except in my case anti neutrinos are moving in opposite direction to give it a negative sign
 
     B = [-sin(2 * params.theta_nu), 0, cos(2 * params.theta_nu)]  # actual b vector that activates the vacuum oscillation term in Hamiltonian
     B = B / norm(B) 
     #Select a shape function based on the shape_name variable form the list defined in dictionary in shape_func file
     t1 = 0.008 #choose initial time for growth rate calculation
     t2 = 0.012 #choose final time for growth rate calculation
-    analytic_growth_rate=  (abs(params.m2^2 - params.m1^2)/ (2*CCNO.hbar* Eνₑ)) # analytic growth rate 
+    analytic_growth_rate=  (abs(params.m2^2 - params.m1^2)/ (2*CCNO.hbar* Enu_e)) # analytic growth rate 
     println("analytic_growth_rate:",analytic_growth_rate)
 
     x = CCNO.generate_x_array(N_sites_eachflavor, L)
@@ -63,7 +63,7 @@ function main()
     z = CCNO.generate_x_array(N_sites_eachflavor, L)
 
     # p matrix with numbers generated from the p_array for all components (x, y, z) #sherood has 
-    p = hcat(CCNO.generate_px_array(params.N_sites, Eνₑ, Eνₑ̄), CCNO.generate_py_array(params.N_sites), CCNO.generate_pz_array(params.N_sites))
+    p = hcat(CCNO.generate_px_array(params.N_sites, Enu_e, Enu_ē), CCNO.generate_py_array(params.N_sites), CCNO.generate_pz_array(params.N_sites))
 
     # Create an array with the first half as 1 and the rest as -1
     energy_sign = [i <= params.N_sites ÷ 2 ? -1 : 1 for i in 1:params.N_sites] # half sites are (e) neutrinos with positive 1 entry while other half is anti (e) neutrinos with negative 1 entry
@@ -77,11 +77,11 @@ function main()
     s = siteinds("S=1/2", params.N_sites; conserve_qns=false) #fixed #switched conserve_qns to false to avoid fluxes error in expect function
 
     # Initialize psi to be a product state (Of all electron flavor neutrino i.e. spin up in Richers notation which is equivalently half spin up and half chain spin down in my TN notation)
-    ψ = productMPS(s, n -> n <= params.N_sites/2 ? "Up" : "Dn")
+    Psi = productMPS(s, n -> n <= params.N_sites/2 ? "Up" : "Dn")
 
-    N = CCNO.Neutrino_number(params, n_νₑ,n_νₑ̄)
+    N = CCNO.Neutrino_number(params, n_nu_e,n_nu_ē)
 
-    state = CCNO.SimulationState(ψ=ψ,
+    state = CCNO.SimulationState(Psi=Psi,
                                  s=s,
                                  s0=s,
                                  p=p,
@@ -89,9 +89,9 @@ function main()
                                  N=N,
                                  xyz = hcat(x,y,z))
 
-    ρₑμ_at_t1 = nothing  # Initialize a variable to store ρₑμ at t1
-    ρₑμ_at_t2 = nothing  # Initialize a variable to store ρₑμ at t2
-    Δt = t2 - t1 #time difference between growth rates
+    rho_emu_at_t1 = nothing  # Initialize a variable to store rho_emu at t1
+    rho_emu_at_t2 = nothing  # Initialize a variable to store rho_emu at t2
+    Delta_t = t2 - t1 #time difference between growth rates
 
     #extract output for the survival probability values at each timestep
     CCNO.evolve(params, state)
@@ -102,9 +102,9 @@ function main()
     t_Sx_tot = readdlm(joinpath(params.datadir, "t_<Sx>.dat"))
     t_xsiteval = readdlm(joinpath(params.datadir, "t_xsiteval.dat"))
     t_pxsiteval = readdlm(joinpath(params.datadir, "t_pxsiteval.dat"))
-    t_ρₑₑ_tot = readdlm(joinpath(params.datadir, "t_ρₑₑ.dat"))
-    t_ρ_μμ_tot = readdlm(joinpath(params.datadir, "t_ρ_μμ.dat"))
-    t_ρₑμ_tot = readdlm(joinpath(params.datadir, "t_ρₑμ.dat"))
+    t_rho_e_e_tot = readdlm(joinpath(params.datadir, "t_rho_e_e.dat"))
+    t_rho_mumu_tot = readdlm(joinpath(params.datadir, "t_rho_mumu.dat"))
+    t_rho_emu_tot = readdlm(joinpath(params.datadir, "t_rho_emu.dat"))
     
     # Extract time array and corresponding values for plotting
     t_array = t_Sz_tot[:, 1]  
@@ -113,47 +113,47 @@ function main()
     Sz_array = t_Sz_tot[:,2]
     Sy_array = t_Sy_tot[:,2]
     Sx_array= t_Sx_tot[:,2] 
-    ρₑₑ_array = t_ρₑₑ_tot[:, 2]
-    ρ_μμ_array = t_ρ_μμ_tot[:, 2]
-    ρₑμ_array = t_ρₑμ_tot[:, 2]
+    rho_e_e_array = t_rho_e_e_tot[:, 2]
+    rho_mumu_array = t_rho_mumu_tot[:, 2]
+    rho_emu_array = t_rho_emu_tot[:, 2]
         
     # Loop over the time array to match t1 and t2
     for (i, t) in enumerate(t_array) 
         # Check if the current time is approximately t1
         if abs(t - t1) < params.τ / 2
-            println("corresponding ρₑμ index from the time array =",i)
-            ρₑμ_at_t1 = ρₑμ_array[i]
-            println("ρₑμ_at_t1=",ρₑμ_at_t1)
+            println("corresponding rho_emu index from the time array =",i)
+            rho_emu_at_t1 = rho_emu_array[i]
+            println("rho_emu_at_t1=",rho_emu_at_t1)
         end
 
         # Check if the current time is approximately t2
         if abs(t - t2) < params.τ / 2
-            println("corresponding ρₑμ index from the time array =",i)
-            ρₑμ_at_t2 = ρₑμ_array[i]
-            println("ρₑμ_at_t2=",ρₑμ_at_t2)
+            println("corresponding rho_emu index from the time array =",i)
+            rho_emu_at_t2 = rho_emu_array[i]
+            println("rho_emu_at_t2=",rho_emu_at_t2)
         end
     end
 
     # After the time evolution loop, calculate and print the growth rate
-    if ρₑμ_at_t1 !== nothing && ρₑμ_at_t2 !== nothing
-        Im_Ω = (1 / Δt) * log(ρₑμ_at_t2 / ρₑμ_at_t1)
-        println("Growth rate of flavor coherence of ρₑμ at t2 to ρₑμ at t1: $Im_Ω")
+    if rho_emu_at_t1 !== nothing && rho_emu_at_t2 !== nothing
+        Im_Ω = (1 / Delta_t) * log(rho_emu_at_t2 / rho_emu_at_t1)
+        println("Growth rate of flavor coherence of rho_emu at t2 to rho_emu at t1: $Im_Ω")
     else
-        println("ρₑμ was not captured at both t1 and t2.")
+        println("rho_emu was not captured at both t1 and t2.")
     end
 
     if params.save_plots_flag 
         x_values = t_xsiteval[:, 2:end]  # All rows, all columns except the first
         pₓ_values = t_pxsiteval[:, 2:end]  # All rows, all columns except the first
 
-        CCNO.save_plots(params, s,L,t_array, Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array)
+        CCNO.save_plots(params, s,L,t_array, Sz_array, Sy_array, Sx_array, prob_surv_array, x_values, pₓ_values, rho_e_e_array,rho_mumu_array, rho_emu_array)
     end
     if !params.save_plots_flag 
-        # Plotting ρₑμ vs t # for jenkins file 
-        plot(t_array, ρₑμ_array, xlabel = "t", ylabel = "<ρₑμ>_1", legend = false, 
+        # Plotting rho_emu vs t # for jenkins file 
+        plot(t_array, rho_emu_array, xlabel = "t", ylabel = "<rho_emu>_1", legend = false, 
         left_margin = 20mm, right_margin = 10mm, top_margin = 5mm, bottom_margin = 10mm) 
         # Save the plot as a PDF file
-        savefig( "Homo_MF_<ρₑμ>_site1_vs_t for $(params.N_sites) particles.pdf")
+        savefig( "Homo_MF_<rho_emu>_site1_vs_t for $(params.N_sites) particles.pdf")
     end
     @assert abs((Im_Ω - analytic_growth_rate)/  analytic_growth_rate) < tolerance 
 
