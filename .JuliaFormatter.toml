@@ -1,0 +1,8 @@
+style="default"
+# we specify things we care about (which may also be default) below
+align_matrix = true
+always_use_return = true
+indent = 4
+margin = 80
+whitespace_ops_in_indices = false
+remove_extra_newlines = true
