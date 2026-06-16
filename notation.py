@@ -16,6 +16,10 @@ dict_symbol2ascii = [
         ["p̂", "phat"],
         ["ω", "omega"],
         ["π", "pi"],
+        ["τ", "tau"],
+        ["ξ", "xi"],
+        ["ē", "antie"],
+        
     ]
 
 parser = argparse.ArgumentParser(
