@@ -1,6 +1,7 @@
 # Struct of parameters. Allow specifying arguments by keywords
 Base.@kwdef struct Parameters
     shape_name::String  # Specifies the shape function used in the nu-nu Hamiltonian ["flat_top", "triangular", "none"]
+    homogeneous = [false, true, true]
     geometric_name::String # Specifies the name of the geometric function used in the nu-nu Hamiltonian ["physical", "none"]
     recover_file::String # path to the file to recover from
     datadir::String # path to write data to
