@@ -12,10 +12,17 @@ using Random
 using HDF5
 
 function main()
-    N_sites_eachflavor = 5 # total sites/particles that evenly spaced "for each (electron) flavor" 
+    zone_number = 16 # quick fix to set the necessary zone number for now...
+    half_zone_number = 8
+    qtr_zone_number = 4
+    
+    N_sites_eachflavor = half_zone_number # total sites/particles that evenly spaced "for each (electron) flavor" 
+    
     L = 1.0 # cm # domain size # (aka big box length)
     Delta_x = L/N_sites_eachflavor # length of the box of interacting neutrinos at a site in cm  #variable
     tolerance = 5E-1
+
+    Delta_x = Delta_x * 2 # quick fix for crossing beams...
 
     params = CCNO.Parameters(
         N_sites = 2 * (N_sites_eachflavor),
@@ -27,7 +34,7 @@ function main()
         cutoff = 1e-100,
         theta_nu = 1.74532925E-8,
         shape_name = "triangular",
-        homogeneous = [false, true, true], # homogeneous in y, z dims
+        homogeneous = [false, false, true], # homogeneous in y, z dims
         geometric_name = "physical",
         Delta_x = Delta_x,
         L = L,
@@ -57,15 +64,37 @@ function main()
         (CCNO.c * k)  # analytic growth rate #fix it for inhomo from paper
     println("analytic_growth_rate=", analytic_growth_rate)
 
-    x = CCNO.generate_x_array(N_sites_eachflavor, L)
-    y = CCNO.generate_x_array(N_sites_eachflavor, L)
-    z = CCNO.generate_x_array(N_sites_eachflavor, L)
-
+    # Original (assumed homogeneous y, z)
+    # x = CCNO.generate_x_array(N_sites_eachflavor, L)
+    # y = CCNO.generate_x_array(N_sites_eachflavor, L)
+    # z = CCNO.generate_x_array(N_sites_eachflavor, L)
+    # 
     # p matrix with numbers generated from the p_array for all components (x, y, z) #sherood has 
+    # p = hcat(
+    #     CCNO.generate_px_array(params.N_sites, Enu_e, Enu_ē),
+    #     CCNO.generate_py_array(params.N_sites),
+    #     CCNO.generate_pz_array(params.N_sites),
+    # )
+   
+    # Testing x-line (same as orig when homogeneous in y, z)
+    # x = CCNO.generate_x_array(N_sites_eachflavor, L)
+    # y = [fill(0.5, half_zone_number); fill(0.5, half_zone_number)]
+    # z = [fill(0.5, half_zone_number); fill(0.5, half_zone_number)]
+    # p = hcat(CCNO.generate_px_array(params.N_sites, Enu_e, Enu_ē), CCNO.generate_py_array(params.N_sites), CCNO.generate_pz_array(params.N_sites))
+    
+    x = [CCNO.generate_x_array(qtr_zone_number, L); fill(0.5, half_zone_number)]
+    y = [fill(0.5, half_zone_number); CCNO.generate_x_array(qtr_zone_number, L)]
+    z = [fill(0.0, half_zone_number); fill(0.0, half_zone_number)]
     p = hcat(
-        CCNO.generate_px_array(params.N_sites, Enu_e, Enu_ē),
-        CCNO.generate_py_array(params.N_sites),
-        CCNO.generate_pz_array(params.N_sites),
+        [
+            CCNO.generate_px_array(half_zone_number, Enu_e, Enu_ē);
+            fill(0, half_zone_number)
+        ],
+        [
+            fill(0, half_zone_number);
+            CCNO.generate_px_array(half_zone_number, Enu_e, Enu_ē)
+        ],
+        [fill(0, half_zone_number); fill(0, half_zone_number)],
     )
 
     # Create an array with the first half as 1 and the rest as -1
@@ -80,7 +109,14 @@ function main()
     s = siteinds("S=1/2", params.N_sites; conserve_qns = false) #fixed #switched conserve_qns to false to avoid fluxes error in expect function
 
     # Initialize psi to be a product state (Of all electron flavor neutrino i.e. spin up in Richers notation which is equivalently half spin up and half chain spin down in my TN notation)
-    Psi = productMPS(s, n -> n <= params.N_sites/2 ? "Up" : "Dn")
+    # Psi = productMPS(s, n -> n <= params.N_sites/2 ? "Up" : "Dn")
+    
+    # Initialize spin based on momentum
+    spin_vec = fill("", zone_number)
+    for i = 1:zone_number
+        spin_vec[i] = (p[i, 1] + p[i, 2] + p[i, 3]) > 0 ? "Up" : "Dn"
+    end
+    Psi = productMPS(s, spin_vec)
 
     N = CCNO.Neutrino_number(params, n_nu_e, n_nu_ē)
 
