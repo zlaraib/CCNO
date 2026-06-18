@@ -1,12 +1,12 @@
-@inline function flat_top(Δp::Float64, ξ::Float64)
+@inline function flat_top(Delta_p::Float64, ξ::Float64)
     return heaviside(1/2 - abs(ξ))
 end
 
-@inline function triangular(Δp::Float64, ξ::Float64)
+@inline function triangular(Delta_p::Float64, ξ::Float64)
     return (1 - abs(ξ)) * heaviside(1 - abs(ξ))
 end
 
-@inline function none(Δp::Float64, ξ::Float64)
+@inline function none(Delta_p::Float64, ξ::Float64)
     return 1 
 end
 
@@ -30,21 +30,21 @@ const shapes = Dict(
     shape_function = shapes[params.shape_name]  # assign the corresponding function (selected in shape_name in the test file) to shape_function.
     # ξ determines the overlap of neutrinos (i.e. their shapes) on top of each other to signify the neutrino-neutrino interaction strength.
     dx_ij::Float64 = state.xyz[i,d] - state.xyz[j,d]
-    ξ::Float64 = dx_ij / params.Δp # dependent upon difference in distance of i and j sites and the width of the shape function. 
+    ξ::Float64 = dx_ij / params.Delta_p # dependent upon difference in distance of i and j sites and the width of the shape function. 
     if params.periodic 
         if dx_ij > params.L/2
-            ξ = ξ - params.L/params.Δp 
+            ξ = ξ - params.L/params.Delta_p 
         end
         if dx_ij < -params.L/2
-            ξ = ξ + params.L/params.Δp 
+            ξ = ξ + params.L/params.Delta_p 
         end
         
         if params.shape_name == "none"
-            @assert (params.Δp == params.L)
-        else @assert (2*params.Δp <params.L)
+            @assert (params.Delta_p == params.L)
+        else @assert (2*params.Delta_p <params.L)
         end
-        @assert (abs(ξ)<= params.L/(2* params.Δp))
+        @assert (abs(ξ)<= params.L/(2* params.Delta_p))
     end
     
-    return shapes[params.shape_name](params.Δp, ξ)
+    return shapes[params.shape_name](params.Delta_p, ξ)
 end

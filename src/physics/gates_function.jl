@@ -25,11 +25,11 @@ Base.@pure function create_gates(params::CCNO.Parameters, state::CCNO.Simulation
     gates_2site_other = ITensor[]
 
     # extract output of p_hat and p_mod for the p vector defined above for all sites. 
-    p_mod, p̂ = momentum(state.p)  
+    p_mod, phat = momentum(state.p)  
     
     # define an array of vacuum oscillation frequencies (units of ergs)
-    Δm²::Float64 = params.m2^2 - params.m1^2
-    ω::Vector{Float64} = [Δm² / (2 * p_mod[i]) * state.energy_sign[i] for i in 1:params.N_sites]
+    Delta_m_squared::Float64 = params.m2^2 - params.m1^2
+    omega::Vector{Float64} = [Delta_m_squared / (2 * p_mod[i]) * state.energy_sign[i] for i in 1:params.N_sites]
 
     # Precompute operators for all sites
     Id::Vector{ITensor} = [op("Id", state.s[i]) for i in 1:length(state.s)]
@@ -41,8 +41,8 @@ Base.@pure function create_gates(params::CCNO.Parameters, state::CCNO.Simulation
     
     # vacuum - one-site gate model. Faster, but order-dependent.
     for i in 1:params.N_sites
-        if ω[i] != 0
-            hj::ITensor = ω[i] * (B[1]*Sx[i] + B[2]*Sy[i] + B[3]*Sz[i])
+        if omega[i] != 0
+            hj::ITensor = omega[i] * (B[1]*Sx[i] + B[2]*Sy[i] + B[3]*Sz[i])
             Gj::ITensor = exp(-im * params.τ * hj / hbar)
             push!(gates_1site, Gj)
         end
@@ -58,8 +58,8 @@ Base.@pure function create_gates(params::CCNO.Parameters, state::CCNO.Simulation
                 shape_result *= shape_func(params, state, d, i, j)
             end
                 
-            geometric_factor::Float64 = geometric_func(params, p̂, i, j)
-            interaction_strength::Float64 = 2.0 * √2 * G_F * (state.N[i] + state.N[j]) / (2*params.Δx^3) * shape_result * geometric_factor
+            geometric_factor::Float64 = geometric_func(params, phat, i, j)
+            interaction_strength::Float64 = 2.0 * √2 * G_F * (state.N[i] + state.N[j]) / (2*params.Delta_x^3) * shape_result * geometric_factor
             if interaction_strength != 0
                 hj::ITensor = interaction_strength * (Sz[i]*Sz[j] + 0.5*Sp[i]*Sm[j] + 0.5*Sm[i]*Sp[j])
 

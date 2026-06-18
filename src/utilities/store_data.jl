@@ -32,21 +32,21 @@ function store_data(datadir::String, t::Float64, state::CCNO.SimulationState)
     #================================#
 
     # compute the avg expectation value of Sz at all sites
-    sz_arr = expect(state.ψ, "Sz")  # Compute Sz for each site and store the values in sz_arr
+    sz_arr = expect(state.Psi, "Sz")  # Compute Sz for each site and store the values in sz_arr
     
     # compute expectation value of sy and sx (inbuilt operator in ITensors library) at all sites on the chain
-    sy_arr = expect(complex(state.ψ), "Sy")
-    sx_arr = expect(state.ψ, "Sx")
+    sy_arr = expect(complex(state.Psi), "Sy")
+    sx_arr = expect(state.Psi, "Sx")
     
     #survival probability for all sites (neutrino) to be found in its initial flavor state
     #prob_surv_arr = 0.5 * (1 .- 2 .* sz_arr)
 
     # recall that in our code sigma_z = 2*Sz so make sure these expressions are consistent with "Sz in ITensors" 
-    ρₑₑ_arr = ((2 .* sz_arr) .+ 1) ./ 2
+    rho_e_e_arr = ((2 .* sz_arr) .+ 1) ./ 2
     
-    ρ_μμ_arr = ((-2 .* sz_arr) .+ 1) ./ 2
+    rho_mumu_arr = ((-2 .* sz_arr) .+ 1) ./ 2
     
-    ρₑμ_arr = sqrt.(sx_arr.^2 .+ sy_arr.^2)
+    rho_emu_arr = sqrt.(sx_arr.^2 .+ sy_arr.^2)
     
     #===============#
     # save the data #
@@ -99,22 +99,22 @@ function store_data(datadir::String, t::Float64, state::CCNO.SimulationState)
                         t,
                         state.p[:,3])
     
-    # 7. ρₑₑ arrays
+    # 7. rho_e_e arrays
     write_ordered_array(state,
-                        joinpath(datadir, "t_ρₑₑ.dat"),
+                        joinpath(datadir, "t_rho_e_e.dat"),
                         t,
-                        ρₑₑ_arr)
+                        rho_e_e_arr)
 
-    # 8. ρ_μμ arrays
+    # 8. rho_mumu arrays
     write_ordered_array(state,
-                        joinpath(datadir, "t_ρ_μμ.dat"),
+                        joinpath(datadir, "t_rho_mumu.dat"),
                         t,
-                        ρ_μμ_arr)
+                        rho_mumu_arr)
 
-    # 9. ρₑμ arrays
+    # 9. rho_emu arrays
     write_ordered_array(state,
-                        joinpath(datadir, "t_ρₑμ.dat"),
+                        joinpath(datadir, "t_rho_emu.dat"),
                         t,
-                        ρₑμ_arr)
+                        rho_emu_arr)
     
 end 
