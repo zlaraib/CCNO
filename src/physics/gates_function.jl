@@ -53,10 +53,7 @@ Base.@pure function create_gates(params::CCNO.Parameters, state::CCNO.Simulation
         for j in i+1:params.N_sites
 
             # get the shape function, multiplying all three directions together
-            shape_result::Float64 = 1
-            for d in 1:1
-                shape_result *= shape_func(params, state, d, i, j)
-            end
+            shape_result::Float64 = shape_func(params, state, i, j)
                 
             geometric_factor::Float64 = geometric_func(params, phat, i, j)
             interaction_strength::Float64 = 2.0 * √2 * G_F * (state.N[i] + state.N[j]) / (2*params.Delta_x^3) * shape_result * geometric_factor
