@@ -39,7 +39,7 @@ function evolve(params::CCNO.Parameters, state::CCNO.SimulationState)
     end    
 
     # get sites in the correct order
-    sort_sites!(state)
+    sort_sites!(state, params.N_sites)
 
     # Compute and print survival probability (found from <Sz>) at each time step then apply the gates to go to the next time
     for t in t_initial:params.τ:params.ttotal
@@ -58,7 +58,7 @@ function evolve(params::CCNO.Parameters, state::CCNO.SimulationState)
             @assert all(state.xyz .>= 0 .&& state.xyz .<= params.L)
         end
 
-        sort_sites!(state)
+        sort_sites!(state, params.N_sites)
 
         # apply each gate in gates(ITensors array) successively to the wavefunction Psi (MPS)(it is equivalent to time evolving psi according to the time-dependent Hamiltonian represented by gates).
         # The apply function is a matrix-vector multiplication operation that is smart enough to determine which site indices each gate has, and then figure out where to apply it to our MPS. 

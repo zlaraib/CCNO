@@ -163,7 +163,7 @@ function main()
         spin_vec = ["Up", "Up", "Up", "Up", "Dn", "Dn", "Dn", "Dn", "Dn", "Dn", "Dn", "Dn", "Up", "Up", "Up", "Up"]
         Psi = productMPS(s, spin_vec)
 
-        N = CCNO.Neutrino_number(params, n_nu_e, n_nu_ē)
+        N = n_nu_e * (params.Delta_x)^3
 
         state = CCNO.SimulationState(
             Psi = Psi,

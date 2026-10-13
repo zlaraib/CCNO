@@ -43,17 +43,6 @@ Combining (where index i represent a site and runs from 1:N_sites)
 ∑ᵢ Delta_xᵢ = L # domain size
 
 """
-function Neutrino_number(params::CCNO.Parameters, n_nu_e,n_nu_ē)
-    N_nu_e  = n_nu_e * (params.Delta_x)^3 
-    N_1 = fill(N_nu_e, params.N_sites ÷ 2)
-    N_nu_ē  = n_nu_ē * (params.Delta_x)^3 
-    N_2 = fill(N_nu_ē, params.N_sites ÷ 2)
-
-    N = vcat(N_1, N_2) # This is the total number of neutrinos in a unit cell
-    return N 
-
-end
-
 # generate x_array such that the first particle is at position L/(2*N_sites_eachflavor) while subsequent particles are at a position incremental by L/N_sites_eachflavor. 
 function generate_mu_x_array(N_sites_eachflavor, L)
     return [(i - 0.5) * L / N_sites_eachflavor for i in 1:N_sites_eachflavor]

@@ -77,7 +77,7 @@ function main()
 
     # @time main(s, τ, B,L, N_sites, N_sites_eachflavor, tolerance,
     # n_nu_e,n_nu_ē,Enu_e,Enu_ē,Delta_x,Delta_m_squared, p, x, Delta_p, Psi₀, shape_name, energy_sign, cutoff, maxdim, ttotal,periodic)
-    N = CCNO.Neutrino_number(params, n_nu_e,n_nu_ē)
+    N = n_nu_e * (params.Delta_x)^3
 
     state = CCNO.SimulationState(Psi=Psi,
                                  s=s,

@@ -79,7 +79,7 @@ function main()
     # Initialize psi to be a product state (Of all electron flavor neutrino i.e. spin up in Richers notation which is equivalently half spin up and half chain spin down in my TN notation)
     Psi = productMPS(s, n -> n <= params.N_sites/2 ? "Up" : "Dn")
 
-    N = CCNO.Neutrino_number(params, n_nu_e,n_nu_ē)
+    N = n_nu_e * (params.Delta_x)^3
 
     state = CCNO.SimulationState(Psi=Psi,
                                  s=s,

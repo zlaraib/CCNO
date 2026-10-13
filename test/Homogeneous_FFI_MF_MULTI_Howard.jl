@@ -172,7 +172,7 @@ function main()
         spin_vec = ["Up", "Dn", "Dn", "Up"]
         Psi = productMPS(s, spin_vec)
 
-        N = CCNO.Neutrino_number(params, n_nu_e, n_nu_ē)
+        N = n_nu_e * (params.Delta_x)^3
 
         state = CCNO.SimulationState(
             Psi = Psi,
@@ -231,6 +231,8 @@ function main()
         y = log.(rho_emu_array_domain_avg[(1*vecqtr):veclen])
 
         numerical_values[idx] = coef(linregress(x, y))[1]
+
+        print(numerical_values)
         
         # clean up
         rm(params.datadir, recursive = true)

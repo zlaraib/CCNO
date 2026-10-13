@@ -16,17 +16,17 @@ Base.@kwdef mutable struct SimulationState
     
     energy_sign::Vector{Int}
     Psi::MPS
-    N::Vector{Float64}
+    N::Float64 # Neutrino number density
 end
 
-function sort_sites!(state::SimulationState)
+function sort_sites!(state::SimulationState, num_sites)
     # reorder the sites in the MPS according to x coordinate
     perm = sortperm(state.xyz[:,1])
 
     # Create an index map: current_pos[i] = position of site i in current MPS
-    current_pos = collect(1:length(state.N))
+    current_pos = collect(1:num_sites)
 
-    for new_pos in 1:length(state.N)
+    for new_pos in 1:num_sites
         # Find site that should go to position `new_pos`
         site_to_move = perm[new_pos]
 
@@ -41,7 +41,7 @@ function sort_sites!(state::SimulationState)
         state.Psi = movesite(state.Psi, pos=>new_pos)
 
         # update current_pos. Every value between new_pos and pos increases by 1
-        for i in 1:length(state.N)
+        for i in 1:num_sites
             if current_pos[i] >= new_pos && current_pos[i] < pos
                 current_pos[i] += 1
             end
@@ -53,7 +53,6 @@ function sort_sites!(state::SimulationState)
     state.xyz = state.xyz[perm,:]
     state.p = state.p[perm,:]
     state.energy_sign = state.energy_sign[perm]
-    state.N = state.N[perm]
     state.s = state.s[perm]
 end
 
