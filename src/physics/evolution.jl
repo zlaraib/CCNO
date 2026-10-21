@@ -58,7 +58,7 @@ function evolve(params::CCNO.Parameters, state::CCNO.SimulationState)
             @assert all(state.xyz .>= 0 .&& state.xyz .<= params.L)
         end
 
-        sort_sites!(state)
+        sort_sites!(state, params)
 
         # apply each gate in gates(ITensors array) successively to the wavefunction ψ (MPS)(it is equivalent to time evolving psi according to the time-dependent Hamiltonian represented by gates).
         # The apply function is a matrix-vector multiplication operation that is smart enough to determine which site indices each gate has, and then figure out where to apply it to our MPS. 
@@ -67,7 +67,7 @@ function evolve(params::CCNO.Parameters, state::CCNO.SimulationState)
         # extract the gates array generated in the gates_function file
         gates_1site, gates_2site_even, gates_2site_odd, gates_2site_other = create_gates(params, state)
 
-        if(t%2==0)
+        if (iteration % 2 == 0)
             state.ψ = apply(              gates_2site_other , state.ψ; params.cutoff, params.maxdim)
             apply_2site_adjacent!(        gates_2site_even  , state, params)
             apply_2site_adjacent!(        gates_2site_odd   , state, params)

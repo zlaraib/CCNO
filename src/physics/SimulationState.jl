@@ -19,7 +19,7 @@ Base.@kwdef mutable struct SimulationState
     N::Vector{Float64}
 end
 
-function sort_sites!(state::SimulationState)
+function sort_sites!(state::SimulationState; cutoff::Float64=1e-15, maxdim::Int=typemax(Int))
     # reorder the sites in the MPS according to x coordinate
     perm = sortperm(state.xyz[:,1])
 
@@ -38,7 +38,7 @@ function sort_sites!(state::SimulationState)
         end
 
         # move the site
-        state.ψ = movesite(state.ψ, pos=>new_pos)
+        state.ψ = movesite(state.ψ, pos=>new_pos; cutoff=cutoff, maxdim=maxdim)
 
         # update current_pos. Every value between new_pos and pos increases by 1
         for i in 1:length(state.N)
@@ -56,6 +56,9 @@ function sort_sites!(state::SimulationState)
     state.N = state.N[perm]
     state.s = state.s[perm]
 end
+
+sort_sites!(state::SimulationState, params::Parameters) =
+    sort_sites!(state; cutoff=params.cutoff, maxdim=params.maxdim)
 
 # Find the site number (position) in the MPS where index i appears
 function find_site(i::Index, ψ::MPS)
