@@ -50,10 +50,11 @@ function main()
     s = siteinds("S=1/2", params.N_sites; conserve_qns=false)  #Fixed
     
     # Initialize an array of zeros for all params.N_sites particles
-    mu = zeros(params.N_sites) #Fixed
+    mu = 0 #Fixed
     
     # Create an array of dimension N and fill it with the value 1/(sqrt(2) * G_F). This is the number of neutrinos.
-    N = mu.* fill((params.Delta_x)^3/(sqrt(2) * CCNO.G_F), params.N_sites) 
+    
+    N = mu * (params.Delta_x)^3/(sqrt(2) * CCNO.G_F)
     
     # Create a B vector which would be same for all N particles 
     B = [sin(2*params.theta_nu), 0, -cos(2*params.theta_nu)] # is equivalent to B = [1, 0, 0] # variable. But only other case that can be tested from this file is B = [0,0,-1] for which theta_nu = pi/4.
