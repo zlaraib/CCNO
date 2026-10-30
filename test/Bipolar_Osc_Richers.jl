@@ -47,7 +47,6 @@ function main()
     Enu_e =  50.0*CCNO.MeV #ergs # energy of all neutrinos (P.S the its negative is energy of all antineutrinos) 
     Enu_ē = -1 * Enu_e # specific to my case only. Since all neutrinos have same energy, except in my case anti neutrinos are moving in opposite direction to give it a negative sign
     n_nu_e =  (10* (params.m2-params.m1)^2 )/(2*(√2)*CCNO.G_F*Enu_e) # cm^-3 # number density of electron flavor neutrino
-    n_nu_ē =  n_nu_e # cm^-3 # number density of electron flavor antineutrino
     #Select a shape function based on the shape_name variable form the list defined in dictionary in shape_func file
     t1 = 0.0084003052 #choose initial time for growth rate calculation
     t2 = 0.011700318 #choose final time for growth rate calculation

@@ -106,7 +106,6 @@ function main()
         # n_nu_e =  2.92e24 # cm^-3 # number density of electron flavor neutrino
 
         n_nu_e = 2.92e24 / 2.0 # cm^-3 # number density of electron flavor neutrino
-        n_nu_ē = n_nu_e # cm^-3 # number density of electron flavor antineutrino
         
         Enu_e = 50.0*CCNO.MeV # energy of all neutrinos (P.S the its negative is energy of all antineutrinos)
         Enu_ē = -1 * Enu_e # specific to my case only. Since all neutrinos have same energy, except in my case anti neutrinos are moving in opposite direction to give it a negative sign

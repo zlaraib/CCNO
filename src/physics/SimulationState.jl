@@ -16,7 +16,7 @@ Base.@kwdef mutable struct SimulationState
     
     energy_sign::Vector{Int}
     Psi::MPS
-    N::Float64 # Neutrino number density
+    N::Float64 # Total Neutrino number
 end
 
 function sort_sites!(state::SimulationState, num_sites)
