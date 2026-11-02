@@ -102,7 +102,6 @@ function main()
 
         Delta_m_squared = (params.m2^2-params.m1^2) # mass square difference # (erg^2)
         n_nu_e = 4.891290848285061e+32 # cm^-3 # number density of electron flavor neutrino
-        n_nu_ē = n_nu_e # cm^-3 # number density of electron flavor antineutrino
         Enu_e = 50.0*CCNO.MeV # energy of all neutrinos (P.S the its negative is energy of all antineutrinos)
         Enu_ē = -1 * Enu_e # specific to my case only. Since all neutrinos have same energy, except in my case anti neutrinos are moving in opposite direction to give it a negative sign
         #Select a shape function based on the shape_name variable form the list defined in dictionary in shape_func file
