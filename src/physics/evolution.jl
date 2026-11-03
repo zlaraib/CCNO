@@ -39,7 +39,7 @@ function evolve(params::CCNO.Parameters, state::CCNO.SimulationState)
     end    
 
     # get sites in the correct order
-    sort_sites!(state)
+    sort_sites!(state, params)
 
     # Compute and print survival probability (found from <Sz>) at each time step then apply the gates to go to the next time
     for t in t_initial:params.τ:params.ttotal
