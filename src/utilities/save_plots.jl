@@ -2,27 +2,27 @@ using Measures
 using Plots
 
 # This function reads data from output files and saves the plots
-function save_plots(params::CCNO.Parameters, L, t_array, Sz_array, Sy_array, Sx_array, x_values, pₓ_values, ρₑₑ_array,ρ_μμ_array, ρₑμ_array)
+function save_plots(params::CCNO.Parameters, L, t_array, Sz_array, Sy_array, Sx_array, x_values, pₓ_values, rho_e_e_array,rho_mumu_array, rho_emu_array)
     
         save_plot_flag = isdir(params.plotdir) || mkpath(params.plotdir)
 
-        # Plotting ρ_μμ vs t
-        plot(t_array, ρ_μμ_array, xlabel = "t", ylabel = "<ρ_μμ>", legend = false, 
+        # Plotting rho_mumu vs t
+        plot(t_array, rho_mumu_array, xlabel = "t", ylabel = "<rho_mumu>", legend = false, 
             left_margin = 20mm, right_margin = 10mm, top_margin = 5mm, bottom_margin = 10mm) 
         # Save the plot as a PDF file
-        savefig(joinpath(params.plotdir, "<ρ_μμ>_vs_t.pdf"))
+        savefig(joinpath(params.plotdir, "<rho_mumu>_vs_t.pdf"))
 
-        # Plotting ρ_ee vs t
-        plot(t_array, ρₑₑ_array, xlabel = "t", ylabel = "<ρₑₑ>", legend = false, 
+        # Plotting rho_ee vs t
+        plot(t_array, rho_e_e_array, xlabel = "t", ylabel = "<rho_e_e>", legend = false, 
             left_margin = 20mm, right_margin = 10mm, top_margin = 5mm, bottom_margin = 10mm) 
         # Save the plot as a PDF file
-        savefig(joinpath(params.plotdir, "<ρₑₑ>_vs_t.pdf"))
+        savefig(joinpath(params.plotdir, "<rho_e_e>_vs_t.pdf"))
         
-        # Plotting ρₑμ vs t
-        plot(t_array, ρₑμ_array, xlabel = "t", ylabel = "<ρₑμ>", legend = false, 
+        # Plotting rho_emu vs t
+        plot(t_array, rho_emu_array, xlabel = "t", ylabel = "<rho_emu>", legend = false, 
             left_margin = 20mm, right_margin = 10mm, top_margin = 5mm, bottom_margin = 10mm) 
         # Save the plot as a PDF file
-        savefig(joinpath(params.plotdir, "<ρₑμ>_vs_t.pdf"))
+        savefig(joinpath(params.plotdir, "<rho_emu>_vs_t.pdf"))
 
         # Plotting Sz vs t
         plot(t_array, Sz_array, xlabel = "t", ylabel = "<Sz>", legend = false,

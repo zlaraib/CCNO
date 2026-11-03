@@ -3,7 +3,7 @@ using ITensorMPS
 # This file generates the create_perturbation_gates function that holds ITensors Trotter gates and returns the dimensionless unitary 
 # operators that will generate the perturbation via this hamiltonian which includes effects of the vacuum one-body potential for each site 
 # Then, this file generates the evolve_perturbation function which utilizes the unitary operators created as perturb_gates from the 
-# create_perturbation_gates function to evolve the initial ψ state in time and return the normalized perturbed state after evolution.
+# create_perturbation_gates function to evolve the initial Psi state in time and return the normalized perturbed state after evolution.
 
 @doc """
     Expected (CGS) units of the quantities defined in the files in tests directory that are being used in the gates function.                                                                   
@@ -38,7 +38,7 @@ function perturb(params::CCNO.Parameters, state::CCNO.SimulationState,k::Float64
             B_pert[3] * op("Sz", state.s[i])
 
         # make Trotter gate Gj that would correspond to each gate in the gate array of ITensors             
-        Gj::ITensor = exp(-im * params.α * hj)
+        Gj::ITensor = exp(-im * params.alpha * hj)
         
         # The push! function adds (appends) an element to the end of an array;
         # ! performs an operation without creating a new object, (in a way overwites the previous array in consideration); 
@@ -46,11 +46,11 @@ function perturb(params::CCNO.Parameters, state::CCNO.SimulationState,k::Float64
         push!(gates, Gj)
     end
 
-    state.ψ = apply(gates, state.ψ; params.cutoff, params.maxdim)
+    state.Psi = apply(gates, state.Psi; params.cutoff, params.maxdim)
         
     # The normalize! function is used to ensure that the MPS is properly normalized after each application of the time evolution gates. 
     # This is necessary to ensure that the MPS represents a valid quantum state.
-    normalize!(state.ψ)
+    normalize!(state.Psi)
 end
 
 

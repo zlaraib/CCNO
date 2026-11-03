@@ -12,10 +12,10 @@ function checkpoint_simulation_hdf5(params::CCNO.Parameters, checkpoint_filename
     #write(f, "τ(sec)", τ)
     write(f, "L(cm)", params.L)
     write(f, "N_sites(unitless const)", params.N_sites)
-    write(f, "Δx(cm)", params.Δx)
+    write(f, "Delta_x(cm)", params.Delta_x)
     write(f, "m1(erg)", params.m1)
     write(f, "m2(erg)", params.m2)
-    write(f, "Δp(cm)", params.Δp)
+    write(f, "Delta_p(cm)", params.Delta_p)
     write(f, "theta_nu(rad)", params.theta_nu)
     write(f, "cutoff(unitless const)", params.cutoff)
     write(f, "maxdim(unitless const)", params.maxdim)
@@ -32,8 +32,8 @@ function checkpoint_simulation_hdf5(params::CCNO.Parameters, checkpoint_filename
     # Write string values
     write(f, "shape_name(unitless string)", params.shape_name)
 
-    # Write MPS ψ (ITensor type)
-    write(f, "ψ(unitless ITensor)", state.ψ)
+    # Write MPS Psi (ITensor type)
+    write(f, "Psi(unitless ITensor)", state.Psi)
 
     # Close the HDF5 file after writing
     close(f)
@@ -59,16 +59,16 @@ function recover_checkpoint_hdf5(params::CCNO.Parameters)
     # Read string values
     shape_name = read(f, "shape_name(unitless string)")
     
-    # Read MPS ψ (ITensor type)
-    ψ = read(f, "ψ(unitless ITensor)", MPS)
+    # Read MPS Psi (ITensor type)
+    Psi = read(f, "Psi(unitless ITensor)", MPS)
     
     # Close the file after reading
     close(f)
     
     println("Recovered checkpoint from $params.recover_file, iteration $iteration, time $t_initial")
 
-    s = siteinds(ψ)
-    state = CCNO.SimulationState(ψ=ψ, s=s, energy_sign=energy_sign, N=N, p=p, xyz=xyz)
+    s = siteinds(Psi)
+    state = CCNO.SimulationState(Psi=Psi, s=s, energy_sign=energy_sign, N=N, p=p, xyz=xyz)
     t_initial += params.τ
     return state, t_initial, iteration
 end

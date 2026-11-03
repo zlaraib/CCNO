@@ -30,8 +30,8 @@ n = N / V
 
 small box (for 'each' site/particle)
 total vol = Vᵢ
-length of each side = Δx 
-Δx³ = Vᵢ
+length of each side = Delta_x 
+Delta_x³ = Vᵢ
 Nᵢ =  total no.of neutrinos at site i 
 nᵢ  = total no.density of neutrinos at site i 
 Nᵢ = nᵢ  * Vᵢ
@@ -40,14 +40,14 @@ Combining (where index i represent a site and runs from 1:N_sites)
 ∑ᵢ nᵢ = n # total no.density of neutrinos
 ∑ᵢ  Nᵢ = N # total no.of neutrinos
 ∑ᵢ Vᵢ = V # total volume of the grid
-∑ᵢ Δxᵢ = L # domain size
+∑ᵢ Delta_xᵢ = L # domain size
 
 """
-function Neutrino_number(params::CCNO.Parameters, n_νₑ,n_νₑ̄)
-    N_νₑ  = n_νₑ * (params.Δx)^3 
-    N_1 = fill(N_νₑ, params.N_sites ÷ 2)
-    N_νₑ̄  = n_νₑ̄ * (params.Δx)^3 
-    N_2 = fill(N_νₑ̄, params.N_sites ÷ 2)
+function Neutrino_number(params::CCNO.Parameters, n_nu_e,n_nu_ē)
+    N_nu_e  = n_nu_e * (params.Delta_x)^3 
+    N_1 = fill(N_nu_e, params.N_sites ÷ 2)
+    N_nu_ē  = n_nu_ē * (params.Delta_x)^3 
+    N_2 = fill(N_nu_ē, params.N_sites ÷ 2)
 
     N = vcat(N_1, N_2) # This is the total number of neutrinos in a unit cell
     return N 
@@ -75,9 +75,9 @@ function generate_p_array(N_sites)
     return [fill(1, half_N_sites); fill(1, half_N_sites)]
 end
 
-function generate_px_array(N_sites, Eνₑ, Eνₑ̄)                                                                                                                                                                                   
+function generate_px_array(N_sites, Enu_e, Enu_ē)                                                                                                                                                                                   
     half_N_sites = div(N_sites, 2)
-    return [fill(Eνₑ, half_N_sites); fill(Eνₑ̄, half_N_sites)]
+    return [fill(Enu_e, half_N_sites); fill(Enu_ē, half_N_sites)]
 end
 
 

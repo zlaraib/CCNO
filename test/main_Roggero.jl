@@ -34,7 +34,7 @@ const pmin::Vector{Float64} = Roggero_table[:,5]
 
 function main(N_sites, delta_omega)
     L = 1 # cm # not being used in this test but defined to keep the evolve function arguments consistent.
-    Δm²= delta_omega # erg^2 # Artifically Fixed for Rog bipolar test #change accordingly in gates_fnction too if need be.
+    Delta_m_squared= delta_omega # erg^2 # Artifically Fixed for Rog bipolar test #change accordingly in gates_fnction too if need be.
     tolerance  = 5E-1 # acceptable level of error or deviation from the exact value or solution
 
     params = CCNO.Parameters(
@@ -42,12 +42,12 @@ function main(N_sites, delta_omega)
         cutoff = 1E-14, # specifies a truncation threshold for the SVD in MPS representation (SMALL CUTOFF = MORE ENTANGLEMENT)
         τ = 0.05*CCNO.hbar, # time step 
         ttotal = 5*CCNO.hbar, # total time of evolution 
-        Δx = 1E-3, # length of the box of interacting neutrinos at a site/shape function width of neutrinos in cm
+        Delta_x = 1E-3, # length of the box of interacting neutrinos at a site/shape function width of neutrinos in cm
         maxdim = 1000, #bond dimension
-        m1 = Δm²<0 ? sqrt(-Δm²) : 0.0,
-        m2 = Δm²>0 ? sqrt( Δm²) : 0.0,
+        m1 = Delta_m_squared<0 ? sqrt(-Delta_m_squared) : 0.0,
+        m2 = Delta_m_squared>0 ? sqrt( Delta_m_squared) : 0.0,
         L=L,
-        Δp = L, # width of shape function # not being used in this test but defined to keep the evolve function arguments consistent.  
+        Delta_p = L, # width of shape function # not being used in this test but defined to keep the evolve function arguments consistent.  
         periodic = false,  # true = imposes periodic boundary conditions while false doesn't
         checkpoint_every = 100,
         do_recover = false,
@@ -58,7 +58,7 @@ function main(N_sites, delta_omega)
         chkptdir = joinpath(@__DIR__, "checkpoints"),
         plotdir = joinpath(@__DIR__, "plots"),
         save_plots_flag = false,
-        α = 0,
+        alpha = 0,
         theta_nu = 0 # mixing_angle #rad 
     )
 
@@ -73,13 +73,13 @@ function main(N_sites, delta_omega)
     mu = ones(params.N_sites) # erg
     
     # Create an array of dimension N_sites and fill it with the value 1/(sqrt(2) * G_F). This is the number of neutrinos. 
-    N = mu .* fill(((params.Δx)^3 )/(√2 * CCNO.G_F * params.N_sites), params.N_sites)
+    N = mu .* fill(((params.Delta_x)^3 )/(√2 * CCNO.G_F * params.N_sites), params.N_sites)
     
     x = fill(0, params.N_sites) # variable.
     y = fill(0, params.N_sites) # variable.
     z = fill(0, params.N_sites) # variable.
 
-    ψ = productMPS(s, N -> N <= params.N_sites/2 ? "Dn" : "Up")
+    Psi = productMPS(s, N -> N <= params.N_sites/2 ? "Dn" : "Up")
 
     # Fixed Constants for Rogerro's fit (only self-interaction term)
     #a_t = 0
@@ -89,13 +89,13 @@ function main(N_sites, delta_omega)
 
     # array p with N rows and 3 columns, all initialized to 0.0 with colums representing components and rows representing sites
     px_a = fill(0.5, div(params.N_sites,2))
-    px_b = fill(0.5, div(params.N_sites,2)) # Δm²/(2.0*omega_b)
+    px_b = fill(0.5, div(params.N_sites,2)) # Delta_m_squared/(2.0*omega_b)
     px = vcat(px_a, px_b)
     p = hcat(px,fill(0, params.N_sites), fill(0, params.N_sites))
 
     energy_sign = [i <= params.N_sites ÷ 2 ? 1 : -1 for i in 1:params.N_sites] # all of the sites are neutrinos
 
-    state = CCNO.SimulationState(ψ=ψ,
+    state = CCNO.SimulationState(Psi=Psi,
                                  s=s,
                                  s0=s,
                                  p=p,
