@@ -19,7 +19,7 @@ Base.@kwdef mutable struct SimulationState
     N::Float64 # Total Neutrino number
 end
 
-function sort_sites!(state::SimulationState, num_sites)
+function sort_sites!(state::SimulationState; cutoff::Float64=1e-15, maxdim::Int=typemax(Int))
     # reorder the sites in the MPS according to x coordinate
     perm = sortperm(state.xyz[:,1])
 
@@ -38,7 +38,7 @@ function sort_sites!(state::SimulationState, num_sites)
         end
 
         # move the site
-        state.Psi = movesite(state.Psi, pos=>new_pos)
+        state.Psi = movesite(state.Psi, pos=>new_pos; cutoff=cutoff, maxdim=maxdim)
 
         # update current_pos. Every value between new_pos and pos increases by 1
         for i in 1:num_sites
@@ -55,6 +55,9 @@ function sort_sites!(state::SimulationState, num_sites)
     state.energy_sign = state.energy_sign[perm]
     state.s = state.s[perm]
 end
+
+sort_sites!(state::SimulationState, params::Parameters) =
+    sort_sites!(state; cutoff=params.cutoff, maxdim=params.maxdim)
 
 # Find the site number (position) in the MPS where index i appears
 function find_site(i::Index, Psi::MPS)
