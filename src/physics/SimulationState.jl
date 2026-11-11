@@ -19,14 +19,14 @@ Base.@kwdef mutable struct SimulationState
     N::Float64 # Total Neutrino number
 end
 
-function sort_sites!(state::SimulationState, num_sites)
+function sort_sites!(state::SimulationState; N_sites::Int64, cutoff::Float64=1e-15, maxdim::Int=typemax(Int))
     # reorder the sites in the MPS according to x coordinate
     perm = sortperm(state.xyz[:,1])
 
     # Create an index map: current_pos[i] = position of site i in current MPS
-    current_pos = collect(1:num_sites)
+    current_pos = collect(1:N_sites)
 
-    for new_pos in 1:num_sites
+    for new_pos in 1:N_sites
         # Find site that should go to position `new_pos`
         site_to_move = perm[new_pos]
 
@@ -38,10 +38,10 @@ function sort_sites!(state::SimulationState, num_sites)
         end
 
         # move the site
-        state.Psi = movesite(state.Psi, pos=>new_pos)
+        state.Psi = movesite(state.Psi, pos=>new_pos; cutoff=cutoff, maxdim=maxdim)
 
         # update current_pos. Every value between new_pos and pos increases by 1
-        for i in 1:num_sites
+        for i in 1:N_sites
             if current_pos[i] >= new_pos && current_pos[i] < pos
                 current_pos[i] += 1
             end
@@ -55,6 +55,9 @@ function sort_sites!(state::SimulationState, num_sites)
     state.energy_sign = state.energy_sign[perm]
     state.s = state.s[perm]
 end
+
+sort_sites!(state::SimulationState, params::Parameters) =
+    sort_sites!(state; N_sites=params.N_sites, cutoff=params.cutoff, maxdim=params.maxdim)
 
 # Find the site number (position) in the MPS where index i appears
 function find_site(i::Index, Psi::MPS)

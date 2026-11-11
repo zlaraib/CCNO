@@ -3,6 +3,7 @@ exp
 *.pdf
 *.dat
 *.gif
+*.h5
 
 # Julia generated artifacts
 Manifest.toml
