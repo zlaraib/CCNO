@@ -46,7 +46,6 @@ function main()
 
     Delta_m_squared = (params.m2^2-params.m1^2) # mass square difference # (erg^2)
     n_nu_e =  2.92e24 # cm^-3 # number density of electron flavor neutrino
-    n_nu_ē =  n_nu_e # cm^-3 # number density of electron flavor antineutrino
     Enu_e =  50*CCNO.MeV # energy of all neutrinos (P.S the its negative is energy of all antineutrinos)
     Enu_ē = -1 * Enu_e # specific to my case only. Since all neutrinos have same energy, except in my case anti neutrinos are moving in opposite direction to give it a negative sign
 
@@ -79,7 +78,7 @@ function main()
     # Initialize psi to be a product state (Of all electron flavor neutrino i.e. spin up in Richers notation which is equivalently half spin up and half chain spin down in my TN notation)
     Psi = productMPS(s, n -> n <= params.N_sites/2 ? "Up" : "Dn")
 
-    N = CCNO.Neutrino_number(params, n_nu_e,n_nu_ē)
+    N = n_nu_e * (params.Delta_x)^3
 
     state = CCNO.SimulationState(Psi=Psi,
                                  s=s,

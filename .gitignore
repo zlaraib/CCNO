@@ -1,7 +1,9 @@
 exp
 .DS_Store
 *.pdf
+*.dat
 *.gif
+*.h5
 
 # Julia generated artifacts
 Manifest.toml
