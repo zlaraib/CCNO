@@ -183,9 +183,9 @@ function generate_params_from_beamarr(beam_arr, L, n_nu, bonddim)
         checkpoint_every = 20,
         do_recover = false,
         recover_file = "",
-        plotdir = joinpath(@__DIR__, "plots"),
-        datadir = joinpath(@__DIR__, "datafiles"),
-        chkptdir = joinpath(@__DIR__, "checkpoints"),
+        plotdir = joinpath(@__DIR__, "../../test/plots"),
+        datadir = joinpath(@__DIR__, "../../test/datafiles"),
+        chkptdir = joinpath(@__DIR__, "../../test/checkpoints"),
         save_plots_flag = false,
         alpha = 1e-6,
     ),  CCNO.SimulationState(

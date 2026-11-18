@@ -24,7 +24,7 @@ function checkpoint_simulation_hdf5(params::CCNO.Parameters, checkpoint_filename
     
     # Write arrays and vectors
     write(f, "s(unitless array)", state.s)
-    write(f, "N(unitless array)", state.N)
+    write(f, "N(unitless const)", state.N)
     write(f, "p(erg)", state.p)
     write(f, "xyz(cm)", state.xyz)
     write(f, "energy_sign(unitless array)", state.energy_sign)
@@ -50,7 +50,7 @@ function recover_checkpoint_hdf5(params::CCNO.Parameters)
     
     # Read arrays and vectors with units
     s = read(f, "s(unitless array)")
-    N = read(f, "N(unitless array)")
+    N = read(f, "N(unitless const)")
     theta_nu = read(f, "theta_nu(rad)")
     p = read(f, "p(erg)")
     xyz = read(f, "xyz(cm)")
@@ -68,7 +68,7 @@ function recover_checkpoint_hdf5(params::CCNO.Parameters)
     println("Recovered checkpoint from $params.recover_file, iteration $iteration, time $t_initial")
 
     s = siteinds(Psi)
-    state = CCNO.SimulationState(Psi=Psi, s=s, energy_sign=energy_sign, N=N, p=p, xyz=xyz)
+    state = CCNO.SimulationState(Psi=Psi, s=s, s0=s, energy_sign=energy_sign, N=N, p=p, xyz=xyz)
     t_initial += params.τ
     return state, t_initial, iteration
 end

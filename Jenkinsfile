@@ -57,6 +57,11 @@ pipeline {
 		archiveArtifacts artifacts: '*.pdf'
     } 
 }
+	stage('HDF5 Checkpointing and Recovery'){ steps{
+		sh 'rm -rf test/datafiles; julia --project=. test/hdf5_checkpoint_test.jl'
+		archiveArtifacts artifacts: '*.pdf'
+    } 
+}
 	stage('Roggero(2021) full Hamiltonian'){ steps{
 		sh 'rm -rf test/datafiles; julia --project=. test/main_Roggero.jl'
 		archiveArtifacts artifacts: '*.pdf'
