@@ -106,7 +106,6 @@ function main()
         # n_nu_e =  2.92e24 # cm^-3 # number density of electron flavor neutrino
 
         n_nu_e = 2.92e24 / 2.0 # cm^-3 # number density of electron flavor neutrino
-        n_nu_ē = n_nu_e # cm^-3 # number density of electron flavor antineutrino
         
         Enu_e = 50.0*CCNO.MeV # energy of all neutrinos (P.S the its negative is energy of all antineutrinos)
         Enu_ē = -1 * Enu_e # specific to my case only. Since all neutrinos have same energy, except in my case anti neutrinos are moving in opposite direction to give it a negative sign
@@ -172,7 +171,7 @@ function main()
         spin_vec = ["Up", "Dn", "Dn", "Up"]
         Psi = productMPS(s, spin_vec)
 
-        N = CCNO.Neutrino_number(params, n_nu_e, n_nu_ē)
+        N = n_nu_e * (params.Delta_x)^3
 
         state = CCNO.SimulationState(
             Psi = Psi,
@@ -231,6 +230,8 @@ function main()
         y = log.(rho_emu_array_domain_avg[(1*vecqtr):veclen])
 
         numerical_values[idx] = coef(linregress(x, y))[1]
+
+        print(numerical_values)
         
         # clean up
         rm(params.datadir, recursive = true)

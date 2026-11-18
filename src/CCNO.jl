@@ -6,6 +6,7 @@ __precompile__()
 
 include("physics/Parameters.jl")
 include("physics/SimulationState.jl")
+include("physics/Beam.jl")
 
 include("initializations/initial_cond.jl")
 
