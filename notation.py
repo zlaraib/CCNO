@@ -19,7 +19,6 @@ dict_symbol2ascii = [
         ["τ", "tau"],
         ["ξ", "xi"],
         ["ē", "antie"],
-        
     ]
 
 parser = argparse.ArgumentParser(

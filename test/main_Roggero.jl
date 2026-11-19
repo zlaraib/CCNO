@@ -70,10 +70,10 @@ function main(N_sites, delta_omega)
     s = siteinds("S=1/2", params.N_sites; conserve_qns=false)  
     
     # Initialize an array of ones for all N_sites sites
-    mu = ones(params.N_sites) # erg
+    mu = 1.0 # erg
     
     # Create an array of dimension N_sites and fill it with the value 1/(sqrt(2) * G_F). This is the number of neutrinos. 
-    N = mu .* fill(((params.Delta_x)^3 )/(√2 * CCNO.G_F * params.N_sites), params.N_sites)
+    N = mu * ((params.Delta_x)^3 )/(√2 * CCNO.G_F * params.N_sites)
     
     x = fill(0, params.N_sites) # variable.
     y = fill(0, params.N_sites) # variable.
